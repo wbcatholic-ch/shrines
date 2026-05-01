@@ -1435,7 +1435,7 @@ html.retreat-mode .tab-btn.active{
       <button type="button" class="pr-font-btn pr-lg" onclick="event.stopPropagation();prAdjustFont(1);">가</button>
     </div>
     <div class="cover-grid" aria-label="가톨릭 앱 카테고리">
-        <button id="cc-1" class="cover-card" data-cover-category="prayer" onclick="launchCoverCategory('prayer')">
+        <button id="cc-1" class="cover-card" data-cover-category="prayer" onclick="hideCoverAndRun(function(){ if(typeof openPrayerBook === 'function') openPrayerBook(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">📖</span></div>
             <span class="cover-name">주요기도문</span>
         </button>
@@ -1459,7 +1459,7 @@ html.retreat-mode .tab-btn.active{
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌐</span></div>
             <span class="cover-name">가톨릭 웹사이트</span>
         </button>
-        <button id="cc-7" class="cover-card" data-cover-category="diocese-new" onclick="launchCoverCategory('diocese-new')">
+        <button id="cc-7" class="cover-card" data-cover-category="diocese-new" onclick="hideCoverAndRun(function(){ if(typeof openDioceseNewView === 'function') openDioceseNewView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🧭</span></div>
             <span class="cover-name">관구·교구 알아보기</span>
         </button>
@@ -5904,7 +5904,7 @@ function init(){ensureQna();applyFont();injectDioceseAll();relayoutAll()}documen
   window.__OAI_applyGlobalFont=applyScale;
   window.prAdjustFont=function(delta){var cur=getPx(),i=SIZES.indexOf(cur);if(i<0)i=SIZES.indexOf(BASE);i+=(delta>0?1:-1);if(i<0)i=0;if(i>=SIZES.length)i=SIZES.length-1;setPx(SIZES[i]);applyScale();setTimeout(applyScale,80);setTimeout(applyScale,220);};
   function ensureCoverControls(){var cover=el('cover');if(!cover)return;var box=el('cover-font-controls');if(!box){box=document.createElement('div');box.id='cover-font-controls';cover.appendChild(box);}box.className='pr-font-ctrl';box.innerHTML='<button class="pr-font-btn pr-sm" type="button" aria-label="글자 작게">가</button><div class="pr-font-divider"></div><button class="pr-font-btn pr-lg" type="button" aria-label="글자 크게">가</button>';var sm=box.querySelector('.pr-sm'),lg=box.querySelector('.pr-lg');if(sm)sm.onclick=function(e){e.preventDefault();e.stopPropagation();window.prAdjustFont(-1)};if(lg)lg.onclick=function(e){e.preventDefault();e.stopPropagation();window.prAdjustFont(1)};}
-  function setEmojiIcons(){var icons={'cc-1':'✝️','cc-2':'📖','cc-3':'🙏','cc-4':'⛪','cc-5':'🌿','cc-6':'🥾','cc-7':'🌐','cc-8':'🧭'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
+  function setEmojiIcons(){var icons={'cc-1':'D83DDCD6','cc-2':'D83DDE4F','cc-3':'26EA','cc-4':'D83CDF3F','cc-5':'D83EDD7E','cc-6':'D83CDF10','cc-7':'D83EDDED','cc-8':'271DFE0F'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
   function normalizeLabels(root){root=root||document;try{root.querySelectorAll('button,a,span,div').forEach(function(n){if(!n||!n.childNodes||n.childNodes.length!==1||n.childNodes[0].nodeType!==3)return;var t=n.textContent,nt=t;nt=nt.replace(/카카오\s*맵/g,'카카오내비').replace(/카카오\s*나비/g,'카카오내비').replace(/Kakao\s*Map/gi,'카카오내비').replace(/Kakao\s*Navi/gi,'카카오내비');nt=nt.replace(/상장예식\s*\(\s*위령기도1\s*\)/g,'위령기도1(상장예식)').replace(/^위령기도1$/g,'위령기도1(상장예식)').replace(/Memorial Prayer 1\s*\(\s*Courting Ceremony\s*\)/gi,'위령기도1(상장예식)');nt=nt.replace(/위령\s*기도2\s*\(\s*짧은\s*위령기도\s*\)/g,'위령기도2 (짧은 위령기도)').replace(/^위령기도2$/g,'위령기도2 (짧은 위령기도)').replace(/Memorial Prayer 2\s*\(\s*short Memorial Prayer\s*\)/gi,'위령기도2 (짧은 위령기도)');if(nt!==t)n.textContent=nt;});}catch(e){}}
   function configureQna(){window.QNA_FORM_URL=SHEET_URL;window.QNA_ANSWER_URL=SHEET_URL;var q=el('qna-list');if(q&&q.innerHTML.indexOf('Google Form')>=0){q.innerHTML='<div class="qna-card"><div class="qna-kicker">문의 · 수정건의</div><div class="qna-title">Google Sheet 연결</div><div class="qna-text">문의와 수정건의는 연결된 Google Sheet에 남길 수 있습니다. 비밀 작성은 시트 권한 설정 또는 Google Form/Apps Script 연결이 필요합니다.</div><div class="qna-actions"><button class="primary" type="button" onclick="qnaOpenFormUrl()">문의 작성하기</button><button type="button" onclick="qnaOpenAnswerUrl()">답변 보기</button></div></div>';}}
   window.qnaOpenFormUrl=function(){try{window.open(SHEET_URL,'_blank','noopener');}catch(_){location.href=SHEET_URL;}};window.qnaOpenAnswerUrl=function(){try{window.open(SHEET_URL,'_blank','noopener');}catch(_){location.href=SHEET_URL;}};
@@ -6432,6 +6432,33 @@ document.addEventListener('click', function(e){
     return true;
   }
 }, true);
+</script>
+<script>
+(function(){
+  if(window.__OAI_COVER_FINAL_DIRECT_20260501__) return;
+  window.__OAI_COVER_FINAL_DIRECT_20260501__=true;
+  function byId(id){return document.getElementById(id)}
+  function run(fn){ if(typeof window.hideCoverAndRun==='function') window.hideCoverAndRun(fn); else fn(); }
+  function setBtn(id, cat, label, icon, fn){
+    var b=byId(id); if(!b) return;
+    b.setAttribute('data-cover-category', cat);
+    var name=b.querySelector('.cover-name'); if(name) name.textContent=label;
+    var wrap=b.querySelector('.cover-icon-wrap'); if(wrap) wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icon+'</span>';
+    b.onclick=function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} run(fn); return false; };
+  }
+  function apply(){
+    setBtn('cc-1','prayer','\uC8FC\uC694\uAE30\uB3C4\uBB38','\uD83D\uDCD6',function(){ if(typeof window.openPrayerBook==='function') window.openPrayerBook(); });
+    setBtn('cc-2','shrine','\uC131\uC9C0\uC21C\uB840 167\uACF3','\uD83D\uDE4F',function(){ if(typeof window.startApp==='function') window.startApp('shrine'); });
+    setBtn('cc-3','parish','\uB0B4 \uC8FC\uBCC0 \uC131\uB2F9\uCC3E\uAE30','\u26EA',function(){ if(typeof window.startApp==='function') window.startApp('parish'); });
+    setBtn('cc-4','retreat','\uD53C\uC815\uC758 \uC9D1 \uCC3E\uAE30','\uD83C\uDF3F',function(){ if(typeof window.startApp==='function') window.startApp('retreat'); });
+    setBtn('cc-5','trail','\uAC00\uD1A8\uB9AD \uC21C\uB840\uAE38','\uD83E\uDD7E',function(){ if(typeof window.openTrailView==='function') window.openTrailView(); });
+    setBtn('cc-6','web','\uAC00\uD1A8\uB9AD \uC6F9\uC0AC\uC774\uD2B8','\uD83C\uDF10',function(){ if(typeof window.openWebView==='function') window.openWebView(); });
+    setBtn('cc-7','diocese-new','\uAD00\uAD6C\u00B7\uAD50\uAD6C \uC54C\uC544\uBCF4\uAE30','\uD83E\uDDED',function(){ if(typeof window.openDioceseNewView==='function') window.openDioceseNewView(); });
+    setBtn('cc-8','missa','\uB9E4\uC77C\uBBF8\uC0AC','\u271D\uFE0F',function(){ if(typeof window.openMissa==='function') window.openMissa(); });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true}); else apply();
+  window.addEventListener('load',function(){apply();setTimeout(apply,250);setTimeout(apply,900);},{once:true});
+})();
 </script>
 </body>
 </html>
