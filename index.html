@@ -6460,5 +6460,106 @@ document.addEventListener('click', function(e){
   window.addEventListener('load',function(){apply();setTimeout(apply,250);setTimeout(apply,900);},{once:true});
 })();
 </script>
+<script id="oai-final-independent-category-fix-20260501">
+(function(){
+  if(window.__OAI_FINAL_INDEPENDENT_CATEGORY_FIX_20260501__) return;
+  window.__OAI_FINAL_INDEPENDENT_CATEGORY_FIX_20260501__ = true;
+
+  function $(id){ return document.getElementById(id); }
+  function hideCover(){
+    var cover=$('cover');
+    if(cover) cover.style.display='none';
+    document.documentElement.classList.add('app-active');
+  }
+  function closePanels(){
+    try{
+      document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#diocese-new-view.open,#missa-view.open').forEach(function(v){
+        v.classList.remove('open');
+        if(v.id==='diocese-new-view') v.style.display='none';
+      });
+      var pd=$('prayer-detail'); if(pd) pd.classList.remove('show');
+      if(typeof window.closeInfoCard==='function') window.closeInfoCard();
+    }catch(e){}
+  }
+  function openPrayerSafe(){
+    hideCover();
+    closePanels();
+    var view=$('prayer-view');
+    if(!view){ alert('주요기도문 화면 요소를 찾지 못했습니다.'); return; }
+    view.style.display='flex';
+    view.classList.add('open');
+    try{ if(typeof window.renderPrayerList==='function') window.renderPrayerList(); }catch(e){}
+  }
+  function openMissaSafe(){
+    hideCover();
+    closePanels();
+    var view=$('missa-view'), frame=$('missa-frame'), loading=$('missa-loading');
+    if(!view || !frame){ alert('매일미사 화면 요소를 찾지 못했습니다.'); return; }
+    var d=new Date();
+    var y=d.getFullYear();
+    var m=String(d.getMonth()+1).padStart(2,'0');
+    var day=String(d.getDate()).padStart(2,'0');
+    if(loading) loading.style.display='flex';
+    frame.src='https://missa.cbck.or.kr/DailyMissa/'+y+m+day;
+    view.style.display='flex';
+    view.classList.add('open');
+  }
+  function dioceseHtml(){
+    var dioceses=[
+      ['서울대교구','https://aos.catholic.or.kr'],['대구대교구','https://www.daegu-archdiocese.or.kr'],
+      ['광주대교구','https://www.gjcatholic.or.kr'],['수원교구','https://www.casuwon.or.kr'],
+      ['인천교구','http://www.caincheon.or.kr'],['대전교구','https://www.djcatholic.or.kr'],
+      ['부산교구','https://www.catholicbusan.or.kr'],['의정부교구','https://www.cdcj.or.kr'],
+      ['춘천교구','https://www.cccatholic.or.kr'],['원주교구','https://www.wjcatholic.or.kr'],
+      ['청주교구','https://www.cdcj.or.kr'],['안동교구','https://www.acatholic.or.kr'],
+      ['마산교구','https://cathms.kr'],['전주교구','https://www.jcatholic.or.kr'],
+      ['제주교구','https://www.diocesejeju.or.kr'],['군종교구','https://www.gunjong.or.kr']
+    ];
+    var cards=dioceses.map(function(d){return '<a class="card" href="'+d[1]+'" target="_blank" rel="noopener"><b>'+d[0]+'</b><span>'+d[1].replace(/^https?:\/\//,'')+'</span></a>';}).join('');
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,sans-serif;background:#f8fafc;color:#1f2937}.head{position:sticky;top:0;background:linear-gradient(135deg,#1f2a44,#2f4167);color:white;padding:18px 16px;box-shadow:0 8px 24px rgba(15,23,42,.14)}h1{font-size:20px;margin:0 0 4px;font-weight:900}.sub{font-size:12px;opacity:.75}.grid{padding:14px;display:grid;grid-template-columns:1fr;gap:10px}.card{display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;background:white;border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 4px 12px rgba(15,23,42,.05)}.card b{font-size:16px;color:#111827}.card span{font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%}</style></head><body><div class="head"><h1>관구·교구 알아보기</h1><div class="sub">교구별 공식 홈페이지 링크</div></div><div class="grid">'+cards+'</div></body></html>';
+  }
+  function openDioceseNewSafe(){
+    hideCover();
+    closePanels();
+    var view=$('diocese-new-view'), frame=$('diocese-new-frame'), loading=$('diocese-new-loading');
+    if(!view || !frame){ alert('새 교구 화면 요소를 찾지 못했습니다.'); return; }
+    if(loading) loading.style.display='none';
+    frame.removeAttribute('src');
+    frame.srcdoc=dioceseHtml();
+    view.style.display='flex';
+    view.classList.add('open');
+  }
+  window.openPrayerBook = openPrayerSafe;
+  window.openMissa = openMissaSafe;
+  window.openDioceseNewView = openDioceseNewSafe;
+  window.closeDioceseNewView = function(){
+    var view=$('diocese-new-view'), frame=$('diocese-new-frame');
+    if(view){ view.classList.remove('open'); view.style.display='none'; }
+    if(frame){ frame.removeAttribute('srcdoc'); frame.src='about:blank'; }
+  };
+  function bind(){
+    var cfg=[
+      ['cc-1','prayer','주요기도문','📖',openPrayerSafe],
+      ['cc-2','shrine','성지순례 167곳','🙏',function(){ hideCover(); closePanels(); if(typeof window.startApp==='function') window.startApp('shrine'); }],
+      ['cc-3','parish','내 주변 성당찾기','⛪',function(){ hideCover(); closePanels(); if(typeof window.startApp==='function') window.startApp('parish'); }],
+      ['cc-4','retreat','피정의 집 찾기','🌿',function(){ hideCover(); closePanels(); if(typeof window.startApp==='function') window.startApp('retreat'); }],
+      ['cc-5','trail','가톨릭 순례길','🥾',function(){ hideCover(); closePanels(); if(typeof window.openTrailView==='function') window.openTrailView(); }],
+      ['cc-6','web','가톨릭 웹사이트','🌐',function(){ hideCover(); closePanels(); if(typeof window.openWebView==='function') window.openWebView(); }],
+      ['cc-7','diocese-new','관구·교구 알아보기','🧭',openDioceseNewSafe],
+      ['cc-8','missa','매일미사','✝️',openMissaSafe]
+    ];
+    cfg.forEach(function(c){
+      var b=$(c[0]); if(!b) return;
+      b.setAttribute('data-cover-category',c[1]);
+      var name=b.querySelector('.cover-name'); if(name) name.textContent=c[2];
+      var ico=b.querySelector('.cover-icon-wrap'); if(ico) ico.innerHTML='<span class="cover-emoji" aria-hidden="true">'+c[3]+'</span>';
+      b.onclick=function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} c[4](); return false; };
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind,{once:true}); else bind();
+  window.addEventListener('load',function(){ bind(); setTimeout(bind,250); setTimeout(bind,900); },{once:true});
+})();
+</script>
+
 </body>
 </html>
