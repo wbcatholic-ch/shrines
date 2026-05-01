@@ -1372,6 +1372,13 @@ html.retreat-mode .tab-btn.active{
   </div>
   <iframe id="diocese-frame" src="about:blank" onload="if(typeof dioceseLoaded==='function')dioceseLoaded()" style="flex:1;width:100%;border:none;background:#fff;"></iframe>
 </div>
+<div id="diocese-new-view" aria-label="새 독립 관구교구" style="display:none;position:fixed;inset:0;width:100vw;height:100dvh;background:#fff;z-index:21000;overflow:hidden;flex-direction:column;">
+  <div id="diocese-new-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8F6F2;z-index:2;pointer-events:none;">
+    <div class="missa-spinner"></div>
+    <div class="missa-loading-txt">새 교구 화면을 불러오는 중…</div>
+  </div>
+  <iframe id="diocese-new-frame" src="about:blank" title="관구·교구 알아보기" style="flex:1;width:100%;height:100%;border:none;background:#fff;"></iframe>
+</div>
 <div id="prayer-view">
   <div id="prayer-bar">
     <div id="prayer-bar-brand">
@@ -1452,7 +1459,7 @@ html.retreat-mode .tab-btn.active{
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌐</span></div>
             <span class="cover-name">가톨릭 웹사이트</span>
         </button>
-        <button id="cc-7" class="cover-card" data-cover-category="diocese" onclick="launchCoverCategory('diocese')">
+        <button id="cc-7" class="cover-card" data-cover-category="diocese-new" onclick="launchCoverCategory('diocese-new')">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🧭</span></div>
             <span class="cover-name">관구·교구 알아보기</span>
         </button>
@@ -1472,7 +1479,7 @@ html.retreat-mode .tab-btn.active{
 // We push a history state when leaving the cover so the back button has something to pop.
 function hideCoverAndRun(callback) {
   try{
-    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#missa-view.open').forEach(function(v){v.classList.remove('open');});
+    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#diocese-new-view.open,#missa-view.open').forEach(function(v){v.classList.remove('open'); if(v.id==='diocese-new-view') v.style.display='none';});
     var pd=document.getElementById('prayer-detail'); if(pd) pd.classList.remove('show');
     if(typeof closeAllTabs==='function') closeAllTabs();
     if(typeof closeInfoCard==='function') closeInfoCard();
@@ -1497,6 +1504,7 @@ function launchCoverCategory(category){
     trail: function(){ if(typeof openTrailView === 'function') openTrailView(); },
     web: function(){ if(typeof openWebView === 'function') openWebView(); },
     diocese: function(){ if(typeof openDioceseView === 'function') openDioceseView(); },
+    'diocese-new': function(){ if(typeof openDioceseNewView === 'function') openDioceseNewView(); },
     missa: function(){ if(typeof openMissa === 'function') openMissa(); }
   };
   if(!actions[category]) return;
@@ -1542,7 +1550,7 @@ function openMissa(){
     return;
   }
   try{
-    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open').forEach(function(v){v.classList.remove('open');});
+    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#diocese-new-view.open').forEach(function(v){v.classList.remove('open');});
   }catch(e){}
   if(loading) loading.style.display='flex';
   frame.src=url;
@@ -1596,6 +1604,35 @@ function closeDioceseView(){
   var frame=document.getElementById('diocese-frame');
   if(view) view.classList.remove('open');
   if(frame){ try{ frame.removeAttribute('srcdoc'); }catch(e){} frame.src='about:blank'; }
+}
+function openDioceseNewView(){
+  var view=document.getElementById('diocese-new-view');
+  var frame=document.getElementById('diocese-new-frame');
+  var loading=document.getElementById('diocese-new-loading');
+  if(!view || !frame){
+    alert('새 교구 화면 요소를 찾지 못했습니다.');
+    return;
+  }
+  try{
+    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#missa-view.open').forEach(function(v){v.classList.remove('open');});
+  }catch(e){}
+  if(loading) loading.style.display='flex';
+  view.classList.add('open');
+  view.style.display='flex';
+  frame.onload=function(){
+    if(loading) loading.style.display='none';
+    frame._loaded=true;
+  };
+  // 기존 openDioceseView 연결을 타지 않고, 새 독립 iframe에서 교구 링크만 직접 연다.
+  if(!frame.src || frame.src==='about:blank' || !frame._loaded){
+    frame.src='diocese.html';
+  }
+}
+function closeDioceseNewView(){
+  var view=document.getElementById('diocese-new-view');
+  var frame=document.getElementById('diocese-new-frame');
+  if(view){ view.classList.remove('open'); view.style.display='none'; }
+  if(frame){ try{ frame.removeAttribute('srcdoc'); }catch(e){} frame.src='about:blank'; frame._loaded=false; }
 }
 function dioceseLoaded(){
   const loading=$('diocese-loading');
@@ -2034,6 +2071,7 @@ function _resetMapState(){
   _mapInited=false;
 }
 function goToCover(){
+  try{ if(typeof closeDioceseNewView === 'function') closeDioceseNewView(); }catch(e){}
   closeTab(_activeTab);
   closeInfoCard();
   resetRoute();
@@ -4132,6 +4170,7 @@ function _fmtTime(s){
   function hideIntegratedViews(){
     ig$('web-view')?.classList.remove('open');
     ig$('trail-view')?.classList.remove('open');
+    if(typeof closeDioceseNewView === 'function') closeDioceseNewView();
     if(typeof trailCloseSheet === 'function') trailCloseSheet();
   }
   function saveReturnState(state){
@@ -5140,6 +5179,13 @@ window.initPrayerView = function(){
       }
       if(typeof window.closePrayerView === 'function') window.closePrayerView();
       else prayer.classList.remove('open');
+      callGTC(); return true;
+    }
+    /* 새 독립 교구지도 */
+    var dioceseNew = $b('diocese-new-view');
+    if(dioceseNew && dioceseNew.classList.contains('open')){
+      if(typeof window.closeDioceseNewView === 'function') window.closeDioceseNewView();
+      else { dioceseNew.classList.remove('open'); dioceseNew.style.display='none'; }
       callGTC(); return true;
     }
     /* 교구지도 */
@@ -6376,5 +6422,16 @@ html.retreat-mode #sm-tab-bar .sm-tab.active {
 })();
 </script>
 
+
+<script>
+// OAI: 새 독립 교구 화면 전용 안전 닫기 보조. 기존 교구 연결과 분리됨.
+document.addEventListener('click', function(e){
+  var a=e.target && e.target.closest && e.target.closest('a[href]');
+  if(a && a.closest && a.closest('#diocese-new-view')){
+    // iframe 내부 링크는 iframe 자체에서 처리되고, 부모 링크가 생길 경우만 보호
+    return true;
+  }
+}, true);
+</script>
 </body>
 </html>
