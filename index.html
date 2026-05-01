@@ -1371,13 +1371,6 @@ html.retreat-mode .tab-btn.active{
   </div>
   <iframe id="diocese-frame" src="about:blank" onload="if(typeof dioceseLoaded==='function')dioceseLoaded()" style="flex:1;width:100%;border:none;background:#fff;"></iframe>
 </div>
-<div id="diocese-new-view" aria-label="새 독립 관구교구" style="display:none;position:fixed;inset:0;width:100vw;height:100dvh;background:#fff;z-index:21000;overflow:hidden;flex-direction:column;">
-  <div id="diocese-new-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8F6F2;z-index:2;pointer-events:none;">
-    <div class="missa-spinner"></div>
-    <div class="missa-loading-txt">새 교구 화면을 불러오는 중…</div>
-  </div>
-  <iframe id="diocese-new-frame" src="about:blank" title="관구·교구 알아보기" style="flex:1;width:100%;height:100%;border:none;background:#fff;"></iframe>
-</div>
 <div id="prayer-view">
   <div id="prayer-bar">
     <div id="prayer-bar-brand">
@@ -1433,36 +1426,36 @@ html.retreat-mode .tab-btn.active{
       <div class="pr-font-divider"></div>
       <button type="button" class="pr-font-btn pr-lg" onclick="event.stopPropagation();prAdjustFont(1);">가</button>
     </div>
-    <div class="cover-grid" aria-label="가톨릭 앱 카테고리">
-        <button id="cc-1" class="cover-card" data-cover-category="prayer" onclick="hideCoverAndRun(function(){ if(typeof openPrayerBook === 'function') openPrayerBook(); })">
+    <div class="cover-grid">
+        <button id="cc-1" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openPrayerBook === 'function') openPrayerBook(); else alert('기도문 기능이 연결되지 않았습니다.'); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">📖</span></div>
             <span class="cover-name">주요기도문</span>
         </button>
-        <button id="cc-2" class="cover-card" data-cover-category="shrine" onclick="launchCoverCategory('shrine')">
+        <button id="cc-2" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('shrine'); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🙏</span></div>
             <span class="cover-name">성지순례 167곳</span>
         </button>
-        <button id="cc-3" class="cover-card" data-cover-category="parish" onclick="launchCoverCategory('parish')">
+        <button id="cc-3" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('parish'); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">⛪</span></div>
             <span class="cover-name">내 주변 성당찾기</span>
         </button>
-        <button id="cc-4" class="cover-card" data-cover-category="retreat" onclick="launchCoverCategory('retreat')">
+        <button id="cc-4" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('retreat'); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌿</span></div>
             <span class="cover-name">피정의 집 찾기</span>
         </button>
-        <button id="cc-5" class="cover-card" data-cover-category="trail" onclick="launchCoverCategory('trail')">
+        <button id="cc-5" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openTrailView === 'function') openTrailView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🥾</span></div>
             <span class="cover-name">가톨릭 순례길</span>
         </button>
-        <button id="cc-6" class="cover-card" data-cover-category="web" onclick="launchCoverCategory('web')">
+        <button id="cc-6" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openWebView === 'function') openWebView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌐</span></div>
             <span class="cover-name">가톨릭 웹사이트</span>
         </button>
-        <button id="cc-7" class="cover-card" data-cover-category="diocese-new" onclick="hideCoverAndRun(function(){ if(typeof openDioceseNewView === 'function') openDioceseNewView(); })">
+        <button id="cc-7" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openDioceseView === 'function') openDioceseView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🧭</span></div>
             <span class="cover-name">관구·교구 알아보기</span>
         </button>
-        <button id="cc-8" class="cover-card" data-cover-category="missa" onclick="hideCoverAndRun(function(){ if(typeof openMissa === 'function') openMissa(); })">
+        <button id="cc-8" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openMissa === 'function') openMissa(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">✝️</span></div>
             <span class="cover-name">매일미사</span>
         </button>
@@ -1478,7 +1471,7 @@ html.retreat-mode .tab-btn.active{
 // We push a history state when leaving the cover so the back button has something to pop.
 function hideCoverAndRun(callback) {
   try{
-    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#diocese-new-view.open,#missa-view.open').forEach(function(v){v.classList.remove('open'); if(v.id==='diocese-new-view') v.style.display='none';});
+    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#missa-view.open').forEach(function(v){v.classList.remove('open');});
     var pd=document.getElementById('prayer-detail'); if(pd) pd.classList.remove('show');
     if(typeof closeAllTabs==='function') closeAllTabs();
     if(typeof closeInfoCard==='function') closeInfoCard();
@@ -1489,25 +1482,6 @@ function hideCoverAndRun(callback) {
   document.documentElement.classList.add('app-active');
   // RAF로 커버 숨김 후 다음 프레임에 콜백 실행 → 버벅거림 방지
   if (callback) requestAnimationFrame(function(){ setTimeout(callback, 0); });
-}
-
-
-// 커버 8개 카테고리를 각각 독립 실행으로 분리한다.
-// 버튼 순서와 실제 실행 함수가 섞이지 않도록 이 함수 하나에서만 연결한다.
-function launchCoverCategory(category){
-  var actions = {
-    prayer: function(){ if(typeof openPrayerBook === 'function') openPrayerBook(); else alert('기도문 기능이 연결되지 않았습니다.'); },
-    shrine: function(){ if(typeof startApp === 'function') startApp('shrine'); },
-    parish: function(){ if(typeof startApp === 'function') startApp('parish'); },
-    retreat: function(){ if(typeof startApp === 'function') startApp('retreat'); },
-    trail: function(){ if(typeof openTrailView === 'function') openTrailView(); },
-    web: function(){ if(typeof openWebView === 'function') openWebView(); },
-    diocese: function(){ if(typeof openDioceseView === 'function') openDioceseView(); },
-    'diocese-new': function(){ if(typeof openDioceseNewView === 'function') openDioceseNewView(); },
-    missa: function(){ if(typeof openMissa === 'function') openMissa(); }
-  };
-  if(!actions[category]) return;
-  hideCoverAndRun(actions[category]);
 }
 
 /* ── 뒤로가기 핸들러는 principle-back-controller-20260424 에서 통합 관리 ── */
@@ -1536,24 +1510,18 @@ function handleBack() {} // 하위호환용 stub
 <script>
 
 function openMissa(){
-  var today=new Date();
-  var yyyy=today.getFullYear();
-  var mm=String(today.getMonth()+1).padStart(2,'0');
-  var dd=String(today.getDate()).padStart(2,'0');
-  var url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
-  var view=document.getElementById('missa-view');
-  var frame=document.getElementById('missa-frame');
-  var loading=document.getElementById('missa-loading');
-  if(!view || !frame){
-    alert('매일미사 화면 요소를 찾지 못했습니다.');
-    return;
-  }
-  try{
-    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#diocese-new-view.open').forEach(function(v){v.classList.remove('open');});
-  }catch(e){}
+  const today=new Date();
+  const yyyy=today.getFullYear();
+  const mm=String(today.getMonth()+1).padStart(2,'0');
+  const dd=String(today.getDate()).padStart(2,'0');
+  const url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
+  const view=$('missa-view');
+  const frame=$('missa-frame');
+  const loading=$('missa-loading');
   if(loading) loading.style.display='flex';
   frame.src=url;
   view.classList.add('open');
+  // pushState 없음: hideCoverAndRun이 이미 pushState 처리함
 }
 function closeMissa(){
   const view=$('missa-view');
@@ -1603,35 +1571,6 @@ function closeDioceseView(){
   var frame=document.getElementById('diocese-frame');
   if(view) view.classList.remove('open');
   if(frame){ try{ frame.removeAttribute('srcdoc'); }catch(e){} frame.src='about:blank'; }
-}
-function openDioceseNewView(){
-  var view=document.getElementById('diocese-new-view');
-  var frame=document.getElementById('diocese-new-frame');
-  var loading=document.getElementById('diocese-new-loading');
-  if(!view || !frame){
-    alert('새 교구 화면 요소를 찾지 못했습니다.');
-    return;
-  }
-  try{
-    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#missa-view.open').forEach(function(v){v.classList.remove('open');});
-  }catch(e){}
-  if(loading) loading.style.display='flex';
-  view.classList.add('open');
-  view.style.display='flex';
-  frame.onload=function(){
-    if(loading) loading.style.display='none';
-    frame._loaded=true;
-  };
-  // 기존 openDioceseView 연결을 타지 않고, 새 독립 iframe에서 교구 링크만 직접 연다.
-  if(!frame.src || frame.src==='about:blank' || !frame._loaded){
-    frame.src='diocese.html';
-  }
-}
-function closeDioceseNewView(){
-  var view=document.getElementById('diocese-new-view');
-  var frame=document.getElementById('diocese-new-frame');
-  if(view){ view.classList.remove('open'); view.style.display='none'; }
-  if(frame){ try{ frame.removeAttribute('srcdoc'); }catch(e){} frame.src='about:blank'; frame._loaded=false; }
 }
 function dioceseLoaded(){
   const loading=$('diocese-loading');
@@ -2070,7 +2009,6 @@ function _resetMapState(){
   _mapInited=false;
 }
 function goToCover(){
-  try{ if(typeof closeDioceseNewView === 'function') closeDioceseNewView(); }catch(e){}
   closeTab(_activeTab);
   closeInfoCard();
   resetRoute();
@@ -4169,7 +4107,6 @@ function _fmtTime(s){
   function hideIntegratedViews(){
     ig$('web-view')?.classList.remove('open');
     ig$('trail-view')?.classList.remove('open');
-    if(typeof closeDioceseNewView === 'function') closeDioceseNewView();
     if(typeof trailCloseSheet === 'function') trailCloseSheet();
   }
   function saveReturnState(state){
@@ -5180,13 +5117,6 @@ window.initPrayerView = function(){
       else prayer.classList.remove('open');
       callGTC(); return true;
     }
-    /* 새 독립 교구지도 */
-    var dioceseNew = $b('diocese-new-view');
-    if(dioceseNew && dioceseNew.classList.contains('open')){
-      if(typeof window.closeDioceseNewView === 'function') window.closeDioceseNewView();
-      else { dioceseNew.classList.remove('open'); dioceseNew.style.display='none'; }
-      callGTC(); return true;
-    }
     /* 교구지도 */
     var diocese = $b('diocese-view');
     if(diocese && diocese.classList.contains('open')){
@@ -5903,7 +5833,7 @@ function init(){ensureQna();applyFont();injectDioceseAll();relayoutAll()}documen
   window.__OAI_applyGlobalFont=applyScale;
   window.prAdjustFont=function(delta){var cur=getPx(),i=SIZES.indexOf(cur);if(i<0)i=SIZES.indexOf(BASE);i+=(delta>0?1:-1);if(i<0)i=0;if(i>=SIZES.length)i=SIZES.length-1;setPx(SIZES[i]);applyScale();setTimeout(applyScale,80);setTimeout(applyScale,220);};
   function ensureCoverControls(){var cover=el('cover');if(!cover)return;var box=el('cover-font-controls');if(!box){box=document.createElement('div');box.id='cover-font-controls';cover.appendChild(box);}box.className='pr-font-ctrl';box.innerHTML='<button class="pr-font-btn pr-sm" type="button" aria-label="글자 작게">가</button><div class="pr-font-divider"></div><button class="pr-font-btn pr-lg" type="button" aria-label="글자 크게">가</button>';var sm=box.querySelector('.pr-sm'),lg=box.querySelector('.pr-lg');if(sm)sm.onclick=function(e){e.preventDefault();e.stopPropagation();window.prAdjustFont(-1)};if(lg)lg.onclick=function(e){e.preventDefault();e.stopPropagation();window.prAdjustFont(1)};}
-  function setEmojiIcons(){var icons={'cc-1':'D83DDCD6','cc-2':'D83DDE4F','cc-3':'26EA','cc-4':'D83CDF3F','cc-5':'D83EDD7E','cc-6':'D83CDF10','cc-7':'D83EDDED','cc-8':'271DFE0F'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
+  function setEmojiIcons(){var icons={'cc-1':'📖','cc-2':'🙏','cc-3':'⛪','cc-4':'🌿','cc-5':'🥾','cc-6':'🌐','cc-7':'🧭','cc-8':'✝️'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
   function normalizeLabels(root){root=root||document;try{root.querySelectorAll('button,a,span,div').forEach(function(n){if(!n||!n.childNodes||n.childNodes.length!==1||n.childNodes[0].nodeType!==3)return;var t=n.textContent,nt=t;nt=nt.replace(/카카오\s*맵/g,'카카오내비').replace(/카카오\s*나비/g,'카카오내비').replace(/Kakao\s*Map/gi,'카카오내비').replace(/Kakao\s*Navi/gi,'카카오내비');nt=nt.replace(/상장예식\s*\(\s*위령기도1\s*\)/g,'위령기도1(상장예식)').replace(/^위령기도1$/g,'위령기도1(상장예식)').replace(/Memorial Prayer 1\s*\(\s*Courting Ceremony\s*\)/gi,'위령기도1(상장예식)');nt=nt.replace(/위령\s*기도2\s*\(\s*짧은\s*위령기도\s*\)/g,'위령기도2 (짧은 위령기도)').replace(/^위령기도2$/g,'위령기도2 (짧은 위령기도)').replace(/Memorial Prayer 2\s*\(\s*short Memorial Prayer\s*\)/gi,'위령기도2 (짧은 위령기도)');if(nt!==t)n.textContent=nt;});}catch(e){}}
   function configureQna(){window.QNA_FORM_URL=SHEET_URL;window.QNA_ANSWER_URL=SHEET_URL;var q=el('qna-list');if(q&&q.innerHTML.indexOf('Google Form')>=0){q.innerHTML='<div class="qna-card"><div class="qna-kicker">문의 · 수정건의</div><div class="qna-title">Google Sheet 연결</div><div class="qna-text">문의와 수정건의는 연결된 Google Sheet에 남길 수 있습니다. 비밀 작성은 시트 권한 설정 또는 Google Form/Apps Script 연결이 필요합니다.</div><div class="qna-actions"><button class="primary" type="button" onclick="qnaOpenFormUrl()">문의 작성하기</button><button type="button" onclick="qnaOpenAnswerUrl()">답변 보기</button></div></div>';}}
   window.qnaOpenFormUrl=function(){try{window.open(SHEET_URL,'_blank','noopener');}catch(_){location.href=SHEET_URL;}};window.qnaOpenAnswerUrl=function(){try{window.open(SHEET_URL,'_blank','noopener');}catch(_){location.href=SHEET_URL;}};
@@ -6418,145 +6348,6 @@ html.retreat-mode #sm-tab-bar .sm-tab.active {
     };
     window._restoreRouteDestinationSelection.__oaiYellowSafety=true;
   }
-})();
-</script>
-
-
-<script>
-// OAI: 새 독립 교구 화면 전용 안전 닫기 보조. 기존 교구 연결과 분리됨.
-document.addEventListener('click', function(e){
-  var a=e.target && e.target.closest && e.target.closest('a[href]');
-  if(a && a.closest && a.closest('#diocese-new-view')){
-    // iframe 내부 링크는 iframe 자체에서 처리되고, 부모 링크가 생길 경우만 보호
-    return true;
-  }
-}, true);
-</script>
-<script>
-(function(){
-  if(window.__OAI_COVER_FINAL_DIRECT_20260501__) return;
-  window.__OAI_COVER_FINAL_DIRECT_20260501__=true;
-  function byId(id){return document.getElementById(id)}
-  function run(fn){ if(typeof window.hideCoverAndRun==='function') window.hideCoverAndRun(fn); else fn(); }
-  function setBtn(id, cat, label, icon, fn){
-    var b=byId(id); if(!b) return;
-    b.setAttribute('data-cover-category', cat);
-    var name=b.querySelector('.cover-name'); if(name) name.textContent=label;
-    var wrap=b.querySelector('.cover-icon-wrap'); if(wrap) wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icon+'</span>';
-    b.onclick=function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} run(fn); return false; };
-  }
-  function apply(){
-    setBtn('cc-1','prayer','\uC8FC\uC694\uAE30\uB3C4\uBB38','\uD83D\uDCD6',function(){ if(typeof window.openPrayerBook==='function') window.openPrayerBook(); });
-    setBtn('cc-2','shrine','\uC131\uC9C0\uC21C\uB840 167\uACF3','\uD83D\uDE4F',function(){ if(typeof window.startApp==='function') window.startApp('shrine'); });
-    setBtn('cc-3','parish','\uB0B4 \uC8FC\uBCC0 \uC131\uB2F9\uCC3E\uAE30','\u26EA',function(){ if(typeof window.startApp==='function') window.startApp('parish'); });
-    setBtn('cc-4','retreat','\uD53C\uC815\uC758 \uC9D1 \uCC3E\uAE30','\uD83C\uDF3F',function(){ if(typeof window.startApp==='function') window.startApp('retreat'); });
-    setBtn('cc-5','trail','\uAC00\uD1A8\uB9AD \uC21C\uB840\uAE38','\uD83E\uDD7E',function(){ if(typeof window.openTrailView==='function') window.openTrailView(); });
-    setBtn('cc-6','web','\uAC00\uD1A8\uB9AD \uC6F9\uC0AC\uC774\uD2B8','\uD83C\uDF10',function(){ if(typeof window.openWebView==='function') window.openWebView(); });
-    setBtn('cc-7','diocese-new','\uAD00\uAD6C\u00B7\uAD50\uAD6C \uC54C\uC544\uBCF4\uAE30','\uD83E\uDDED',function(){ if(typeof window.openDioceseNewView==='function') window.openDioceseNewView(); });
-    setBtn('cc-8','missa','\uB9E4\uC77C\uBBF8\uC0AC','\u271D\uFE0F',function(){ if(typeof window.openMissa==='function') window.openMissa(); });
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true}); else apply();
-  window.addEventListener('load',function(){apply();setTimeout(apply,250);setTimeout(apply,900);},{once:true});
-})();
-</script>
-<script id="oai-final-independent-category-fix-20260501">
-(function(){
-  if(window.__OAI_FINAL_INDEPENDENT_CATEGORY_FIX_20260501__) return;
-  window.__OAI_FINAL_INDEPENDENT_CATEGORY_FIX_20260501__ = true;
-
-  function $(id){ return document.getElementById(id); }
-  function hideCover(){
-    var cover=$('cover');
-    if(cover) cover.style.display='none';
-    document.documentElement.classList.add('app-active');
-  }
-  function closePanels(){
-    try{
-      document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open,#diocese-new-view.open,#missa-view.open').forEach(function(v){
-        v.classList.remove('open');
-        if(v.id==='diocese-new-view') v.style.display='none';
-      });
-      var pd=$('prayer-detail'); if(pd) pd.classList.remove('show');
-      if(typeof window.closeInfoCard==='function') window.closeInfoCard();
-    }catch(e){}
-  }
-  function openPrayerSafe(){
-    hideCover();
-    closePanels();
-    var view=$('prayer-view');
-    if(!view){ alert('주요기도문 화면 요소를 찾지 못했습니다.'); return; }
-    view.style.display='flex';
-    view.classList.add('open');
-    try{ if(typeof window.renderPrayerList==='function') window.renderPrayerList(); }catch(e){}
-  }
-  function openMissaSafe(){
-    hideCover();
-    closePanels();
-    var view=$('missa-view'), frame=$('missa-frame'), loading=$('missa-loading');
-    if(!view || !frame){ alert('매일미사 화면 요소를 찾지 못했습니다.'); return; }
-    var d=new Date();
-    var y=d.getFullYear();
-    var m=String(d.getMonth()+1).padStart(2,'0');
-    var day=String(d.getDate()).padStart(2,'0');
-    if(loading) loading.style.display='flex';
-    frame.src='https://missa.cbck.or.kr/DailyMissa/'+y+m+day;
-    view.style.display='flex';
-    view.classList.add('open');
-  }
-  function dioceseHtml(){
-    var dioceses=[
-      ['서울대교구','https://aos.catholic.or.kr'],['대구대교구','https://www.daegu-archdiocese.or.kr'],
-      ['광주대교구','https://www.gjcatholic.or.kr'],['수원교구','https://www.casuwon.or.kr'],
-      ['인천교구','http://www.caincheon.or.kr'],['대전교구','https://www.djcatholic.or.kr'],
-      ['부산교구','https://www.catholicbusan.or.kr'],['의정부교구','https://www.cdcj.or.kr'],
-      ['춘천교구','https://www.cccatholic.or.kr'],['원주교구','https://www.wjcatholic.or.kr'],
-      ['청주교구','https://www.cdcj.or.kr'],['안동교구','https://www.acatholic.or.kr'],
-      ['마산교구','https://cathms.kr'],['전주교구','https://www.jcatholic.or.kr'],
-      ['제주교구','https://www.diocesejeju.or.kr'],['군종교구','https://www.gunjong.or.kr']
-    ];
-    var cards=dioceses.map(function(d){return '<a class="card" href="'+d[1]+'" target="_blank" rel="noopener"><b>'+d[0]+'</b><span>'+d[1].replace(/^https?:\/\//,'')+'</span></a>';}).join('');
-    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans KR,sans-serif;background:#f8fafc;color:#1f2937}.head{position:sticky;top:0;background:linear-gradient(135deg,#1f2a44,#2f4167);color:white;padding:18px 16px;box-shadow:0 8px 24px rgba(15,23,42,.14)}h1{font-size:20px;margin:0 0 4px;font-weight:900}.sub{font-size:12px;opacity:.75}.grid{padding:14px;display:grid;grid-template-columns:1fr;gap:10px}.card{display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;background:white;border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 4px 12px rgba(15,23,42,.05)}.card b{font-size:16px;color:#111827}.card span{font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%}</style></head><body><div class="head"><h1>관구·교구 알아보기</h1><div class="sub">교구별 공식 홈페이지 링크</div></div><div class="grid">'+cards+'</div></body></html>';
-  }
-  function openDioceseNewSafe(){
-    hideCover();
-    closePanels();
-    var view=$('diocese-new-view'), frame=$('diocese-new-frame'), loading=$('diocese-new-loading');
-    if(!view || !frame){ alert('새 교구 화면 요소를 찾지 못했습니다.'); return; }
-    if(loading) loading.style.display='none';
-    frame.removeAttribute('src');
-    frame.srcdoc=dioceseHtml();
-    view.style.display='flex';
-    view.classList.add('open');
-  }
-  window.openPrayerBook = openPrayerSafe;
-  window.openMissa = openMissaSafe;
-  window.openDioceseNewView = openDioceseNewSafe;
-  window.closeDioceseNewView = function(){
-    var view=$('diocese-new-view'), frame=$('diocese-new-frame');
-    if(view){ view.classList.remove('open'); view.style.display='none'; }
-    if(frame){ frame.removeAttribute('srcdoc'); frame.src='about:blank'; }
-  };
-  function bind(){
-    var cfg=[
-      ['cc-1','prayer','주요기도문','📖',openPrayerSafe],
-      ['cc-2','shrine','성지순례 167곳','🙏',function(){ hideCover(); closePanels(); if(typeof window.startApp==='function') window.startApp('shrine'); }],
-      ['cc-3','parish','내 주변 성당찾기','⛪',function(){ hideCover(); closePanels(); if(typeof window.startApp==='function') window.startApp('parish'); }],
-      ['cc-4','retreat','피정의 집 찾기','🌿',function(){ hideCover(); closePanels(); if(typeof window.startApp==='function') window.startApp('retreat'); }],
-      ['cc-5','trail','가톨릭 순례길','🥾',function(){ hideCover(); closePanels(); if(typeof window.openTrailView==='function') window.openTrailView(); }],
-      ['cc-6','web','가톨릭 웹사이트','🌐',function(){ hideCover(); closePanels(); if(typeof window.openWebView==='function') window.openWebView(); }],
-      ['cc-7','diocese-new','관구·교구 알아보기','🧭',openDioceseNewSafe],
-      ['cc-8','missa','매일미사','✝️',openMissaSafe]
-    ];
-    cfg.forEach(function(c){
-      var b=$(c[0]); if(!b) return;
-      b.setAttribute('data-cover-category',c[1]);
-      var name=b.querySelector('.cover-name'); if(name) name.textContent=c[2];
-      var ico=b.querySelector('.cover-icon-wrap'); if(ico) ico.innerHTML='<span class="cover-emoji" aria-hidden="true">'+c[3]+'</span>';
-      b.onclick=function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} c[4](); return false; };
-    });
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind,{once:true}); else bind();
-  window.addEventListener('load',function(){ bind(); setTimeout(bind,250); setTimeout(bind,900); },{once:true});
 })();
 </script>
 
