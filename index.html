@@ -1428,35 +1428,35 @@ html.retreat-mode .tab-btn.active{
     </div>
     <div class="cover-grid">
         <button id="cc-1" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openPrayerBook === 'function') openPrayerBook(); else alert('기도문 기능이 연결되지 않았습니다.'); })">
-            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">📖</span></div>
+            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🙏</span></div>
             <span class="cover-name">주요기도문</span>
         </button>
         <button id="cc-2" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('shrine'); })">
-            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🙏</span></div>
-            <span class="cover-name">성지순례 167곳</span>
+            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">⛪</span></div>
+            <span class="cover-name">천주교 성지</span>
         </button>
         <button id="cc-3" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('parish'); })">
-            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">⛪</span></div>
-            <span class="cover-name">내 주변 성당찾기</span>
+            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">📍</span></div>
+            <span class="cover-name">내주변 성당 찾기</span>
         </button>
         <button id="cc-4" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('retreat'); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌿</span></div>
             <span class="cover-name">피정의 집 찾기</span>
         </button>
         <button id="cc-5" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openTrailView === 'function') openTrailView(); })">
-            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🥾</span></div>
-            <span class="cover-name">가톨릭 순례길</span>
+            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🚶</span></div>
+            <span class="cover-name">전국 순례길</span>
         </button>
         <button id="cc-6" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openWebView === 'function') openWebView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌐</span></div>
-            <span class="cover-name">가톨릭 웹사이트</span>
+            <span class="cover-name">가톨릭 주요 웹사이트</span>
         </button>
         <button id="cc-7" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openDioceseView === 'function') openDioceseView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🧭</span></div>
             <span class="cover-name">관구·교구 알아보기</span>
         </button>
         <button id="cc-8" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openMissa === 'function') openMissa(); })">
-            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">✝️</span></div>
+            <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">📖</span></div>
             <span class="cover-name">매일미사</span>
         </button>
     </div>
@@ -5833,7 +5833,7 @@ function init(){ensureQna();applyFont();injectDioceseAll();relayoutAll()}documen
   window.__OAI_applyGlobalFont=applyScale;
   window.prAdjustFont=function(delta){var cur=getPx(),i=SIZES.indexOf(cur);if(i<0)i=SIZES.indexOf(BASE);i+=(delta>0?1:-1);if(i<0)i=0;if(i>=SIZES.length)i=SIZES.length-1;setPx(SIZES[i]);applyScale();setTimeout(applyScale,80);setTimeout(applyScale,220);};
   function ensureCoverControls(){var cover=el('cover');if(!cover)return;var box=el('cover-font-controls');if(!box){box=document.createElement('div');box.id='cover-font-controls';cover.appendChild(box);}box.className='pr-font-ctrl';box.innerHTML='<button class="pr-font-btn pr-sm" type="button" aria-label="글자 작게">가</button><div class="pr-font-divider"></div><button class="pr-font-btn pr-lg" type="button" aria-label="글자 크게">가</button>';var sm=box.querySelector('.pr-sm'),lg=box.querySelector('.pr-lg');if(sm)sm.onclick=function(e){e.preventDefault();e.stopPropagation();window.prAdjustFont(-1)};if(lg)lg.onclick=function(e){e.preventDefault();e.stopPropagation();window.prAdjustFont(1)};}
-  function setEmojiIcons(){var icons={'cc-1':'📖','cc-2':'🙏','cc-3':'⛪','cc-4':'🌿','cc-5':'🥾','cc-6':'🌐','cc-7':'🧭','cc-8':'✝️'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
+  function setEmojiIcons(){var icons={'cc-1':'✝️','cc-2':'📖','cc-3':'🙏','cc-4':'⛪','cc-5':'🌿','cc-6':'🥾','cc-7':'🌐','cc-8':'🧭'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
   function normalizeLabels(root){root=root||document;try{root.querySelectorAll('button,a,span,div').forEach(function(n){if(!n||!n.childNodes||n.childNodes.length!==1||n.childNodes[0].nodeType!==3)return;var t=n.textContent,nt=t;nt=nt.replace(/카카오\s*맵/g,'카카오내비').replace(/카카오\s*나비/g,'카카오내비').replace(/Kakao\s*Map/gi,'카카오내비').replace(/Kakao\s*Navi/gi,'카카오내비');nt=nt.replace(/상장예식\s*\(\s*위령기도1\s*\)/g,'위령기도1(상장예식)').replace(/^위령기도1$/g,'위령기도1(상장예식)').replace(/Memorial Prayer 1\s*\(\s*Courting Ceremony\s*\)/gi,'위령기도1(상장예식)');nt=nt.replace(/위령\s*기도2\s*\(\s*짧은\s*위령기도\s*\)/g,'위령기도2 (짧은 위령기도)').replace(/^위령기도2$/g,'위령기도2 (짧은 위령기도)').replace(/Memorial Prayer 2\s*\(\s*short Memorial Prayer\s*\)/gi,'위령기도2 (짧은 위령기도)');if(nt!==t)n.textContent=nt;});}catch(e){}}
   function configureQna(){window.QNA_FORM_URL=SHEET_URL;window.QNA_ANSWER_URL=SHEET_URL;var q=el('qna-list');if(q&&q.innerHTML.indexOf('Google Form')>=0){q.innerHTML='<div class="qna-card"><div class="qna-kicker">문의 · 수정건의</div><div class="qna-title">Google Sheet 연결</div><div class="qna-text">문의와 수정건의는 연결된 Google Sheet에 남길 수 있습니다. 비밀 작성은 시트 권한 설정 또는 Google Form/Apps Script 연결이 필요합니다.</div><div class="qna-actions"><button class="primary" type="button" onclick="qnaOpenFormUrl()">문의 작성하기</button><button type="button" onclick="qnaOpenAnswerUrl()">답변 보기</button></div></div>';}}
   window.qnaOpenFormUrl=function(){try{window.open(SHEET_URL,'_blank','noopener');}catch(_){location.href=SHEET_URL;}};window.qnaOpenAnswerUrl=function(){try{window.open(SHEET_URL,'_blank','noopener');}catch(_){location.href=SHEET_URL;}};
@@ -6348,6 +6348,33 @@ html.retreat-mode #sm-tab-bar .sm-tab.active {
     };
     window._restoreRouteDestinationSelection.__oaiYellowSafety=true;
   }
+})();
+</script>
+
+<script id="oai-final-user-1-7-guard">
+(function(){
+  function openDioceseAsBuiltInWeb(){
+    if(typeof window.openWebView === 'function'){
+      window.openWebView();
+      var apply=function(){
+        var btn=document.getElementById('web-cat_교구');
+        if(btn) btn.click();
+        var title=document.querySelector('#web-view .module-bar-title');
+        var sub=document.querySelector('#web-view .module-bar-sub');
+        if(title) title.innerHTML='관구·교구 알아보기 <span class="module-count" id="web-count">0개</span>';
+        if(sub) sub.textContent='한국 천주교 관구와 교구 공식 홈페이지';
+      };
+      apply(); setTimeout(apply,60); setTimeout(apply,220); setTimeout(apply,600);
+    }
+  }
+  window.openDioceseView = openDioceseAsBuiltInWeb;
+  function bind(){
+    var b1=document.getElementById('cc-1');
+    if(b1){ b1.setAttribute('onclick', "hideCoverAndRun(function(){ if(typeof openPrayerBook === 'function') openPrayerBook(); })"); var n=b1.querySelector('.cover-name'); if(n)n.textContent='주요기도문'; }
+    var b7=document.getElementById('cc-7');
+    if(b7){ b7.setAttribute('onclick', "hideCoverAndRun(function(){ if(typeof openDioceseView === 'function') openDioceseView(); })"); var n7=b7.querySelector('.cover-name'); if(n7)n7.textContent='관구·교구 알아보기'; }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind,{once:true}); else bind();
 })();
 </script>
 
