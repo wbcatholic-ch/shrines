@@ -1456,7 +1456,7 @@ html.retreat-mode .tab-btn.active{
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🧭</span></div>
             <span class="cover-name">관구·교구 알아보기</span>
         </button>
-        <button id="cc-8" class="cover-card" data-cover-category="missa" onclick="launchCoverCategory('missa')">
+        <button id="cc-8" class="cover-card" data-cover-category="missa" onclick="hideCoverAndRun(function(){ if(typeof openMissa === 'function') openMissa(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">✝️</span></div>
             <span class="cover-name">매일미사</span>
         </button>
@@ -1529,18 +1529,24 @@ function handleBack() {} // 하위호환용 stub
 <script>
 
 function openMissa(){
-  const today=new Date();
-  const yyyy=today.getFullYear();
-  const mm=String(today.getMonth()+1).padStart(2,'0');
-  const dd=String(today.getDate()).padStart(2,'0');
-  const url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
-  const view=$('missa-view');
-  const frame=$('missa-frame');
-  const loading=$('missa-loading');
+  var today=new Date();
+  var yyyy=today.getFullYear();
+  var mm=String(today.getMonth()+1).padStart(2,'0');
+  var dd=String(today.getDate()).padStart(2,'0');
+  var url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
+  var view=document.getElementById('missa-view');
+  var frame=document.getElementById('missa-frame');
+  var loading=document.getElementById('missa-loading');
+  if(!view || !frame){
+    alert('매일미사 화면 요소를 찾지 못했습니다.');
+    return;
+  }
+  try{
+    document.querySelectorAll('.module-view.open,#prayer-view.open,#diocese-view.open').forEach(function(v){v.classList.remove('open');});
+  }catch(e){}
   if(loading) loading.style.display='flex';
   frame.src=url;
   view.classList.add('open');
-  // pushState 없음: hideCoverAndRun이 이미 pushState 처리함
 }
 function closeMissa(){
   const view=$('missa-view');
