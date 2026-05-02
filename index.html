@@ -867,7 +867,7 @@ html.retreat-mode .filter-btn{background:#fff!important;color:#0F766E!important;
 #cover .cover-icon-wrap svg{width:25px!important;height:25px!important;display:none!important}
 #cover .cover-name,#cover .cv-btn-label{font-size:16px!important;line-height:1.18!important;font-weight:850!important;letter-spacing:-.02em!important;text-align:center!important}
 #cover .cv-btn-meta,#cover .cv-btn-desc{font-size:10px!important;line-height:1.1!important;display:none!important}
-#cover .cv-shell,#cover .cv-shell-stage{justify-content:flex-start!important;gap:12px!important;padding-top:calc(env(safe-area-inset-top,0px) + 2px)!important;padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))!important;width:min(100%,560px)!important;height:100dvh!important;min-height:100dvh!important;padding:0 0 0!important;margin:0 auto!important}
+#cover .cv-shell,#cover .cv-shell-stage{justify-content:flex-start!important;gap:12px!important;width:min(100%,560px)!important;height:auto!important;min-height:0!important;padding:0!important;margin:0 auto!important;flex:1 1 auto!important}
 #cover .cv-stats{padding:5px 8px!important;margin:0!important;font-size:10px!important;line-height:1.15!important}
 /* cover never follows zoom */
 html.oai-font-global #cover,html.oai-font-global #cover *{font-size:inherit}
@@ -899,7 +899,7 @@ html.oai-font-global .pr-icon-dot{width:calc(36px * var(--app-font-scale,1))!imp
 /* retreat direction button unified blue */
 html.retreat-mode .ic-route-btn{background:#1565c0!important;color:#fff!important;border-color:#1565c0!important}
 /* 2026-04-29 final: cover restored, labels fixed, marker focus corrected */
-#cover{padding:calc(env(safe-area-inset-top,0px) + 18px) 14px calc(env(safe-area-inset-bottom,0px) + 22px)!important;overflow:hidden!important}
+#cover{padding:calc(10vh + env(safe-area-inset-top,0px)) 14px calc(10vh + env(safe-area-inset-bottom,0px))!important;overflow:hidden!important;justify-content:center!important}
 #cover-font-controls{position:absolute!important;right:14px!important;top:calc(env(safe-area-inset-top,0px) + 14px)!important;z-index:10050!important;display:flex!important;gap:6px!important;align-items:center!important;height:40px!important;min-height:40px!important;border-radius:14px!important;overflow:hidden!important;background:#fff!important;border:1.5px solid #dbe3ef!important;box-shadow:0 8px 20px rgba(31,42,68,.12)!important;pointer-events:auto!important}
 /* cover fixed, not linked to font zoom */
 html.oai-font-global #cover .cover-title,html.oai-font-global #cover .cv-title{font-size:clamp(32px,8.6vw,42px)!important}
@@ -908,7 +908,7 @@ html.oai-font-global #prayer-bar-ttl,html.oai-font-global #prayer-detail-ttl,htm
 #cover .cover-header{flex:0 0 auto!important;width:100%!important;padding:0 4px 18px!important;margin:0!important;text-align:center!important}
 #cover .cover-title{font-size:clamp(30px,8.2vw,38px)!important;line-height:1.14!important;font-weight:800!important;letter-spacing:-.03em!important;margin:0!important;color:#3E362E!important}
 #cover .cover-subtitle{font-size:14px!important;line-height:1.45!important;margin:0 0 8px!important;color:#81B29A!important;font-weight:600!important}
-#cover .cover-grid{flex:1 1 auto!important;width:100%!important;max-width:min(420px,calc(100vw - 38px))!important;margin:0 auto!important;padding:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,1fr)!important;gap:10px!important;align-content:stretch!important;box-sizing:border-box!important;min-height:0!important;padding-left:4px!important;padding-right:4px!important}
+#cover .cover-grid{flex:0 0 auto!important;width:100%!important;max-width:min(420px,calc(100vw - 38px))!important;margin:0 auto!important;padding:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,1fr)!important;gap:10px!important;align-content:stretch!important;box-sizing:border-box!important;min-height:0!important;padding-left:4px!important;padding-right:4px!important}
 #cover .cover-card{width:100%!important;min-height:0!important;height:auto!important;padding:10px 8px!important;border-radius:18px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:13px!important;text-align:center!important;transform:none!important;pointer-events:auto!important;cursor:pointer!important}
 #cover .cover-icon-wrap{width:auto!important;height:auto!important;min-width:0!important;margin:0!important;border-radius:0!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:26px!important;line-height:1!important;flex:0 0 auto!important;padding:0!important;background:transparent!important;background-color:transparent!important;box-shadow:none!important;border:none!important;overflow:visible!important}
 #cover .cover-emoji{display:block!important;font-size:34px!important;line-height:1!important;background:transparent!important;box-shadow:none!important}
@@ -1215,14 +1215,14 @@ html,body{overflow-x:hidden!important;overscroll-behavior-x:none!important}
 #web-cats .web-cat-btn[data-web-cat="⭐ 즐겨찾기"]{color:#E8780C!important;border-color:rgba(232,120,12,.35)!important}
 /* 기도문·웹사이트 좌우 이동 액션: 화면 번쩍임 없이 금색 방향 하이라이트만 표시 */
 @keyframes oaiSwipeArrowPop20260502{
-  0%{opacity:0;transform:translateY(-50%) scale(.86);}
-  30%{opacity:1;transform:translateY(-50%) scale(1.04);}
-  100%{opacity:0;transform:translateY(-50%) scale(1);}
+  0%{opacity:0;transform:scale(.86);}
+  30%{opacity:1;transform:scale(1.04);}
+  100%{opacity:0;transform:scale(1);}
 }
 .oai-swipe-left::before,.oai-swipe-right::before{content:none!important;display:none!important}
-.oai-swipe-left::after,.oai-swipe-right::after{position:absolute;top:50%;z-index:31;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.98);color:#b8965a;border:2px solid rgba(212,170,106,.72);box-shadow:0 6px 18px rgba(14,21,53,.14);font-size:26px;font-weight:900;line-height:1;pointer-events:none;animation:oaiSwipeArrowPop20260502 .34s ease-out both!important}
-.oai-swipe-left::after{content:'›';right:16px}
-.oai-swipe-right::after{content:'‹';left:16px}
+.oai-swipe-left::after,.oai-swipe-right::after{position:fixed;top:50dvh;z-index:31;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.98);color:#b8965a;border:2px solid rgba(212,170,106,.72);box-shadow:0 6px 18px rgba(14,21,53,.14);font-size:28px;font-weight:900;line-height:1;pointer-events:none;animation:oaiSwipeArrowPop20260502 .38s ease-out both!important;transform-origin:center center}
+.oai-swipe-left::after{content:'›';right:16px;margin-top:-22px}
+.oai-swipe-right::after{content:'‹';left:16px;margin-top:-22px}
 #pr-list-ul.oai-swipe-left,#pr-list-ul.oai-swipe-right,
 #web-list.oai-swipe-left,#web-list.oai-swipe-right{transform:none!important;max-width:100vw!important}
 #trail-list.oai-swipe-left,#trail-list.oai-swipe-right,
@@ -1399,7 +1399,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
       <button type="button" class="pr-font-btn pr-lg" onclick="event.stopPropagation();prAdjustFont(1);">가</button>
     </div>
     <div class="cover-grid">
-        <button id="cc-1" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openMissa === 'function') openMissa(); })">
+        <button id="cc-1" class="cover-card" onclick="if(typeof openMissa==='function') openMissa();">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">✝️</span></div>
             <span class="cover-name">매일미사</span>
         </button>
@@ -5591,10 +5591,15 @@ window.initPrayerView = function(){
         d.addEventListener('click',function(ev){
           var t=ev.target;
           if(!t||!t.closest) return;
-          if(t.closest('.close,.close-btn,.info-close,.map-info-close,.diocese-info-close,.btn-close,[data-close],button[aria-label*=\"닫\"],button[title*=\"닫\"]')){ closeCard(); return; }
+          /* 닫기 버튼 클릭 */
+          if(t.closest('.close,.close-btn,.info-close,.map-info-close,.diocese-info-close,.btn-close,[data-close],button[aria-label*="닫"],button[title*="닫"]')){ closeCard(); return; }
+          /* 카드 내부 클릭이면 유지 */
           var card=t.closest('#info-card,.info-card,.map-info-card,.diocese-info-card,#mapInfo,#infoPanel,.detail-card,.place-card,.lv-info-card');
           if(card) return;
-          if(t.closest('#map,.map,.map-wrap,.map-area,.kakao-map,.leaflet-container,canvas')) closeCard();
+          /* 마커 클릭이면 유지 */
+          if(t.closest('.map-marker,.kakao_map_marker,.customoverlay,img[src*="marker"],img[src*="pin"]')) return;
+          /* 그 외 모든 빈 곳 터치 → 닫기 */
+          closeCard();
         },true);
         if(f && f.contentWindow) f.contentWindow.oaiCloseDioceseInfoCard=closeCard;
       }
