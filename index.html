@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko" class="oai-font-global">
 <head>
@@ -230,7 +229,7 @@ html.retreat-mode .sm-tab.active{color:#ffffff!important;border-bottom-color:var
 .empty-msg{padding:40px 20px;text-align:center;color:#aaa;font-size:13px;line-height:1.8}
 #missa-view{display:none;position:fixed;inset:0;z-index:2000;background:#fff;flex-direction:column}
 #missa-view.open{display:flex}
-#missa-bar{background:#0e1535;padding:env(safe-area-inset-top,0) 0 0;display:flex;align-items:center;justify-content:space-between;padding-left:14px;padding-right:14px;min-height:calc(52px + env(safe-area-inset-top,0));flex-shrink:0;border-bottom:2px solid var(--gold)}
+#missa-bar{background:#0e1535;padding:env(safe-area-inset-top,0) 0 0;display:flex;align-items:center;justify-content:flex-start;gap:12px;padding-left:14px;padding-right:14px;min-height:calc(52px + env(safe-area-inset-top,0));flex-shrink:0;border-bottom:2px solid var(--gold)}
 #missa-bar-title{font-size:16px;font-weight:700;color:var(--gold);letter-spacing:.05em}
 #missa-close{background:rgba(255,255,255,.12);border:none;border-radius:50%;color:rgba(212,170,106,.9);font-size:20px;font-weight:900;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:env(safe-area-inset-top,0)}
 .module-view{display:none;position:fixed;inset:0;z-index:1800;background:linear-gradient(180deg,#d8d0c8 0%,#c8bfb7 100%);color:#252018;flex-direction:column;align-items:stretch}
@@ -300,7 +299,7 @@ html.retreat-mode .sm-tab.active{color:#ffffff!important;border-bottom-color:var
 .trail-sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;background:linear-gradient(180deg,#fffdf9 0%,#f6efe4 100%);border-radius:26px 26px 0 0;border-top:1px solid #eadfce;box-shadow:0 -16px 32px rgba(0,0,0,.18);padding:0 0 calc(28px + env(safe-area-inset-bottom,0));transform:translateY(110%);transition:transform .25s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow:visible!important;max-height:none!important;height:auto!important;overflow-y:visible!important}
 .trail-sheet.open{transform:translateY(0);pointer-events:all}
 .trail-sh-handle{width:36px;height:4px;border-radius:2px;background:#e8ecf3;margin:10px auto 0}
-.trail-sh-close{position:absolute;top:12px;right:14px;width:32px;height:32px;border-radius:50%;background:#334155;border:none;cursor:pointer;font-size:16px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.trail-sh-close{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;background:#f1f5f9;border:none;cursor:pointer;font-size:13px;color:#64748b;display:flex;align-items:center;justify-content:center}
 .trail-sh-top{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 0;gap:8px}
 .trail-sh-bdg{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;flex-shrink:0}
 .trail-sh-bdg.d{background:#1D4ED8}
@@ -456,7 +455,7 @@ html.retreat-mode .region-item .nearby-num{background:#4f46e5!important}
 #prayer-bar-ico{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 #prayer-bar-ttl{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.02em}
 #prayer-bar-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
-#prayer-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:rgba(212,170,106,.9);font-size:20px;font-weight:900;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;flex:0 0 auto!important;margin-left:auto!important}
+#prayer-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:rgba(212,170,106,.9);font-size:20px;font-weight:900;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;flex:0 0 auto!important;margin-left:0!important}
 #prayer-tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding:9px 12px;background:#EDE8E0;border-bottom:1px solid #d8d0c8;flex-shrink:0;overscroll-behavior-x:contain!important}
 #prayer-tabs::-webkit-scrollbar{display:none}
 .pr-tab{flex:0 0 auto;height:36px;padding:8px 12px;border-radius:10px;border:1.5px solid transparent;font-size:13px;font-weight:700;font-family:inherit;white-space:nowrap;cursor:pointer;align-items:center;gap:8px;background:#FFFBF2;border-bottom:1px solid #ddd5c8;flex-shrink:0}
@@ -1162,6 +1161,8 @@ html.app-active #pwa-install-btn{display:none!important}
 #prayer-list-view,#pr-list-ul,#web-list{touch-action:pan-y!important;overscroll-behavior-x:none!important;transform:none!important}
 @keyframes oaiSwipeSoftFlash{0%{opacity:1}100%{opacity:1}}
 .oai-swipe-left,.oai-swipe-right{animation:none!important;transform:none!important;position:relative!important;overflow:hidden!important;filter:none!important;will-change:auto!important}
+/* OAI tab transition unification: pr-tab & web-cat-btn same speed/easing */
+#prayer-tabs .pr-tab,#web-view .web-cat-btn{transition:background .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease!important}
 /* ① 앱(standalone/app-active)에서는 설치 버튼 완전 숨김 */
 html.app-active #pwa-install-btn{display:none!important}
 @media (display-mode: standalone) { #pwa-install-btn { display:none!important; } }
@@ -1312,69 +1313,6 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 #info-card .ic-name,#info-card .ic-addr-val{font-size:16px!important;line-height:1.45!important}
 #info-card .ic-link-btn,#info-card .ic-route-btn,#info-card .ic-tel-btn,#info-card .btn-kakao-nav{font-size:16px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;box-shadow:none!important}
 #info-card .ic-btn-row,#info-card .ic-links{gap:7px!important}
-/* ── 통일 닫기 버튼 (prayer/web/trail/diocese/missa 헤더) ── */
-#prayer-close,#prayer-detail-close,#diocese-close,
-#web-view .module-close,
-#trail-view .module-close,
-#qna-view .module-close{
-  width:36px!important;height:36px!important;min-width:36px!important;
-  border-radius:50%!important;
-  background:rgba(255,255,255,.14)!important;
-  border:1px solid rgba(255,255,255,.22)!important;
-  color:rgba(212,170,106,.9)!important;
-  font-size:20px!important;font-weight:900!important;
-  cursor:pointer!important;flex-shrink:0!important;
-  display:flex!important;align-items:center!important;justify-content:center!important;
-  line-height:1!important;padding:0!important;
-  font-family:sans-serif!important;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .15s!important;
-}
-#prayer-close:active,#diocese-close:active,
-#web-view .module-close:active,
-#trail-view .module-close:active,
-#qna-view .module-close:active{
-  background:rgba(255,255,255,.28)!important;
-}
-/* X가 오른쪽인 module-bar: justify-content space-between */
-#web-view .module-bar,#trail-view .module-bar{justify-content:space-between!important;}
-/* qna-view X 오른쪽 */
-#qna-view .module-bar{justify-content:space-between!important;}
-#qna-view .module-bar .module-bar-main{flex:1!important;min-width:0!important;}
-
-/* ── diocese-bar: 숨김 (iframe 내부에 X 주입) ── */
-#diocese-bar{display:none!important;}
-
-/* ── info-card 하단 닫기 행 ── */
-.ic-close-row{
-  display:none!important;
-}
-/* ── info-card 우상단 X 복원 ── */
-.ic-close-btn{display:flex!important;}
-/* ── 지도 줌 컨트롤 세로 중간 배치 ── */
-#map-wrap .kakaomap_zoom_in,#map-wrap .kakaomap_zoom_out,
-#map-wrap [class*="zoom_wrap"],#map-wrap [class*="zoom_control"],
-#map-wrap [class*="widget_zoom"],#map-wrap [class*="ZoomWidget"],
-.kakao_widget_zoom{
-  top:50%!important;transform:translateY(-50%)!important;bottom:auto!important;
-}
-.ic-x-bottom{
-  width:100%;height:42px;
-  background:#f5ede0;
-  border:1px solid #e0d0bc;
-  border-radius:12px;
-  font-size:18px;font-weight:700;
-  color:#8a6a40;
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  gap:6px;
-  font-family:inherit;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .12s;
-}
-.ic-x-bottom:active{background:#eddfc9;}
-.ic-x-bottom::before{content:'×';font-size:22px;line-height:1;}
-
 /* ── 커버 위아래 10% 여백 ── */
 #cover{
   padding-top:calc(10vh + env(safe-area-inset-top,0px))!important;
@@ -1414,13 +1352,25 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 }
 </style>
 <body>
-
+<div id="missa-view">
+  <div id="missa-bar">
+    <button id="missa-close" onclick="closeMissa()"><i class="fa-solid fa-arrow-left"></i></button>
+    <span id="missa-bar-title">✝ 매일미사</span>
+  </div>
+  <div id="missa-external-panel">
+    <div class="missa-external-card">
+      <div class="missa-external-icon">✝</div>
+      <div class="missa-external-title">매일미사는 공식 페이지에서 열립니다</div>
+      <div class="missa-external-desc">저작권 보호를 위해 외부 페이지를 앱 안 iframe으로 불러오지 않습니다.<br>글자 크기는 공식 페이지의 확대 버튼 또는 브라우저 설정을 사용해 주세요.</div>
+      <a id="missa-open-link" class="missa-open-link" href="#" target="_blank" rel="noopener">오늘의 매일미사 열기</a>
+    </div>
+  </div>
+</div>
 <div id="exit-dlg"><div class="exit-box"><h3>앱을 종료할까요?</h3><p>성지순례 앱을 종료합니다.</p><div class="exit-btns"><button class="exit-cancel" onclick="closeExitDlg()">취소</button><button class="exit-ok" onclick="doExit()">종료</button></div></div>
 </div>
 <div id="diocese-view">
-  <div id="diocese-bar">
+  <div id="diocese-bar" style="display:none!important;">
     <span id="diocese-bar-title">✝ 한국 천주교 교구 지도</span>
-    <button id="diocese-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div id="diocese-loading">
     <div class="missa-spinner"></div>
@@ -1430,6 +1380,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 </div>
 <div id="prayer-view">
   <div id="prayer-bar">
+    <button id="prayer-close" onclick="_closePrayerAndReturn()" aria-label="뒤로가기"><i class="fa-solid fa-arrow-left"></i></button>
     <div id="prayer-bar-brand">
       <div id="prayer-bar-ico">✝</div>
       <div>
@@ -1437,8 +1388,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
         <div id="prayer-bar-sub">CATHOLIC PRAYERS</div>
       </div>
     </div>
-    <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">굿뉴스기도문</a>
-    <button id="prayer-close" onclick="closePrayerView();if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
+    <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">🙏 굿뉴스기도문</a>
   </div>
   <div id="prayer-tabs"></div>
   <div id="prayer-search-bar">
@@ -1465,7 +1415,6 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
         <div class="pr-font-divider"></div>
         <button class="pr-font-btn pr-lg" onclick="prAdjustFont(1)">가</button>
       </div>
-      <button id="prayer-detail-close" style="margin-left:8px;" onclick="prCloseDetail()" aria-label="목록으로">×</button>
     </div>
     <div id="prayer-detail-body">
       <div class="pr-content-card" id="prayer-detail-content"></div>
@@ -1580,7 +1529,7 @@ function handleBack() {} // 하위호환용 stub
               onclick="event.stopPropagation();clearRoute('end')"
               style="display:none">×</button></div></div><div style="display:flex;align-items:center;padding-left:10px;"><button class="rs-swap-btn" onclick="swapRoute()">⇅</button></div></div><button id="rs-search-btn" onclick="doSearchRoute()">
         🔍 경로 검색
-      </button></div><div id="rs-bottom" style="padding:10px 14px 14px;"><div id="rs-result" style="display:none;"><div class="rs-result"><div class="rs-stats"><div class="rs-stat"><div class="rs-stat-lbl">🛣 도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div><div class="rs-stat"><div class="rs-stat-lbl">🚗 소요시간</div><div class="rs-stat-val"><span id="rs-time">—</span></div></div></div><div class="rs-note" id="rs-note"></div><div class="route-btns"><button class="btn-kakao-route" onclick="doKakaoRoute()">🗺 카카오내비</button><button class="btn-route-reset" onclick="resetRoute()">↩ 다시선택</button></div></div></div><div class="rs-hint" id="rs-hint">출발·도착을 탭하거나<br>지도에서 마커를 직접 탭하세요</div></div></div><div id="info-card"><div class="ic-header"><div class="ic-name" id="ic-name"></div><button class="ic-close-btn" onclick="closeInfoCard()">×</button></div><div class="ic-body"><div class="ic-meta"><span class="ic-sub" id="ic-sub"></span><span class="ic-type-badge" id="ic-type"></span></div><div class="ic-addr-row"><div class="ic-addr-left"><div class="ic-addr-lbl">주소</div><div class="ic-addr-val" id="ic-addr"></div></div><div class="ic-dist-col" id="ic-dist-col"><div class="ic-dist-lbl">내위치에서 거리</div><div class="ic-dist-box" id="ic-dist"></div></div></div><div class="ic-btn-row"><a class="ic-tel-btn" id="ic-tel-link" href="#" style="display:none"><span class="ic-tel-icon">📞</span><span class="ic-tel" id="ic-tel"></span></a><button class="ic-route-btn" onclick="openInAppRoute()">길찾기</button></div><div class="ic-links" id="ic-links-row" style="display:none;padding:7px 14px 0;"><a class="ic-link-btn ic-hp-btn" id="ic-hp" href="#" target="_blank" style="display:none">🌐 홈페이지</a><button class="ic-link-btn ic-guide-btn" id="ic-guide" style="display:none">✝ 성지 상세페이지</button></div><div style="padding:7px 14px 0;"><button class="btn-kakao-nav" id="ic-kakao-nav" onclick="openKakaoNav()">🗺️ 카카오내비</button></div><div class="ic-close-row"><button class="ic-x-bottom" onclick="closeInfoCard()" aria-label="닫기">닫기</button></div></div></div><div id="srch-modal"><div class="sm-inner"><div class="sm-hd"><span class="sm-title" id="sm-title">성지 검색</span><button class="sm-x" onclick="closeSearchModal()">×</button></div><div class="sm-filter" id="sm-filter-bar"></div><div class="sm-srch"><div class="sm-si"><span>🔍</span><input type="text" id="sm-inp" placeholder="이름 또는 장소 입력" onkeyup="if(event.key==='Enter'){_blurAll();}"
+      </button></div><div id="rs-bottom" style="padding:10px 14px 14px;"><div id="rs-result" style="display:none;"><div class="rs-result"><div class="rs-stats"><div class="rs-stat"><div class="rs-stat-lbl">🛣 도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div><div class="rs-stat"><div class="rs-stat-lbl">🚗 소요시간</div><div class="rs-stat-val"><span id="rs-time">—</span></div></div></div><div class="rs-note" id="rs-note"></div><div class="route-btns"><button class="btn-kakao-route" onclick="doKakaoRoute()">🗺 카카오내비</button><button class="btn-route-reset" onclick="resetRoute()">↩ 다시선택</button></div></div></div><div class="rs-hint" id="rs-hint">출발·도착을 탭하거나<br>지도에서 마커를 직접 탭하세요</div></div></div><div id="info-card"><div class="ic-header"><div class="ic-name" id="ic-name"></div><button class="ic-close-btn" onclick="closeInfoCard()">×</button></div><div class="ic-body"><div class="ic-meta"><span class="ic-sub" id="ic-sub"></span><span class="ic-type-badge" id="ic-type"></span></div><div class="ic-addr-row"><div class="ic-addr-left"><div class="ic-addr-lbl">주소</div><div class="ic-addr-val" id="ic-addr"></div></div><div class="ic-dist-col" id="ic-dist-col"><div class="ic-dist-lbl">내위치에서 거리</div><div class="ic-dist-box" id="ic-dist"></div></div></div><div class="ic-btn-row"><a class="ic-tel-btn" id="ic-tel-link" href="#" style="display:none"><span class="ic-tel-icon">📞</span><span class="ic-tel" id="ic-tel"></span></a><button class="ic-route-btn" onclick="openInAppRoute()">길찾기</button></div><div class="ic-links" id="ic-links-row" style="display:none;padding:7px 14px 0;"><a class="ic-link-btn ic-hp-btn" id="ic-hp" href="#" target="_blank" style="display:none">🌐 홈페이지</a><button class="ic-link-btn ic-guide-btn" id="ic-guide" style="display:none">✝ 성지 상세페이지</button></div><div style="padding:7px 14px 0;"><button class="btn-kakao-nav" id="ic-kakao-nav" onclick="openKakaoNav()">🗺️ 카카오내비</button></div></div></div><div id="srch-modal"><div class="sm-inner"><div class="sm-hd"><span class="sm-title" id="sm-title">성지 검색</span><button class="sm-x" onclick="closeSearchModal()">×</button></div><div class="sm-filter" id="sm-filter-bar"></div><div class="sm-srch"><div class="sm-si"><span>🔍</span><input type="text" id="sm-inp" placeholder="이름 또는 장소 입력" onkeyup="if(event.key==='Enter'){_blurAll();}"
             oninput="onSmInp(this.value)"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div></div><div style="display:flex;border-bottom:1px solid #eee;flex-shrink:0;background:#f8f9fc;" id="sm-tab-bar"><button class="sm-tab active" id="sm-tab-cat" onclick="smSwitchTab(&#39;cat&#39;)">📋 성지/성당/피정</button><button class="sm-tab" id="sm-tab-place" onclick="smSwitchTab(&#39;place&#39;)">🔍 일반장소</button></div><div class="sm-body" id="sm-body"></div><div class="sm-body" id="sm-body-place" style="display:none;"></div></div></div></div>
 <script>
@@ -1591,10 +1540,18 @@ function openMissa(){
   const mm=String(today.getMonth()+1).padStart(2,'0');
   const dd=String(today.getDate()).padStart(2,'0');
   const url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
-  try{ window.open(url,'_blank','noopener'); }catch(e){ location.href=url; }
+  const view=$('missa-view');
+  const link=$('missa-open-link');
+  if(link) link.href=url;
+  try{ localStorage.setItem('oai_last_missa_url', url); }catch(e){}
+  /* missa-view 패널을 열고, 외부링크 버튼으로 이동 — 뒤로가기 1회로 커버 복귀 */
+  try{ if(typeof closeInfoCard==='function') closeInfoCard(); }catch(ex){}
+  try{ if(typeof closeAllTabs==='function') closeAllTabs(); }catch(ex){}
+  if(view) view.classList.add('open');
 }
 function closeMissa(){
-  if(typeof goToCover==='function') goToCover();
+  const view=$('missa-view');
+  if(view) view.classList.remove('open');
 }
 function missaLoaded(){
   // 매일미사 외부 iframe 제거: 남겨둔 호환용 빈 함수
@@ -1642,38 +1599,6 @@ function closeDioceseView(){
 function dioceseLoaded(){
   const loading=$('diocese-loading');
   if(loading) loading.style.display='none';
-  /* diocese.html 자체 헤더 숨기고 X 버튼 주입 */
-  try{
-    var frame=document.getElementById('diocese-frame');
-    var fdoc=frame && frame.contentDocument;
-    if(fdoc){
-      /* 헤더 CSS 숨김 */
-      var s=fdoc.createElement('style');
-      s.id='oai-diocese-inject';
-      s.textContent=[
-        '#diocese-bar,#diocese-hd,#diocese-header,.diocese-bar,.page-header,.module-bar,',
-        'header,.app-bar,.top-bar,.hd,.header-bar{display:none!important}',
-        '#oai-diocese-close-btn{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:14px;',
-        'z-index:99999;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.22);',
-        'background:rgba(255,255,255,.14);color:rgba(212,170,106,.9);font-size:20px;font-weight:900;',
-        'cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:sans-serif;',
-        '-webkit-tap-highlight-color:transparent;}'
-      ].join('');
-      fdoc.head.appendChild(s);
-      /* X 버튼 주입 */
-      if(!fdoc.getElementById('oai-diocese-close-btn')){
-        var btn=fdoc.createElement('button');
-        btn.id='oai-diocese-close-btn';
-        btn.textContent='×';
-        btn.setAttribute('aria-label','닫기');
-        btn.onclick=function(){
-          try{ window.parent.closeDioceseView(); }catch(e){}
-          try{ window.parent.goToCover(); }catch(e){}
-        };
-        fdoc.body.appendChild(btn);
-      }
-    }
-  }catch(ex){}
   /* 교구 지도 빈 곳 터치 → 인포카드 닫기 */
   try{
     var frame=document.getElementById('diocese-frame');
@@ -3941,6 +3866,7 @@ function _fmtTime(s){
 </script>
 <div id="web-view" class="module-view">
   <div class="module-bar web">
+    <button class="module-close" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="뒤로가기"><i class="fa-solid fa-arrow-left"></i></button>
     <div class="module-bar-main">
       <div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">🌐</div>
       <div class="module-bar-txt">
@@ -3948,7 +3874,6 @@ function _fmtTime(s){
         <div class="module-bar-sub">가톨릭 신앙과 정보를 한곳에서 만나보세요</div>
       </div>
     </div>
-    <button class="module-close" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div class="web-body">
     <div class="web-cats" id="web-cats"></div>
@@ -3957,6 +3882,7 @@ function _fmtTime(s){
 </div>
 <div id="trail-view" class="module-view">
   <div class="module-bar trail">
+    <button class="module-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="뒤로가기"><i class="fa-solid fa-arrow-left"></i></button>
     <div class="module-bar-main">
       <div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">🚶</div>
       <div class="module-bar-txt">
@@ -3964,7 +3890,6 @@ function _fmtTime(s){
         <div class="module-bar-sub">신앙의 길을 따라 순례를 시작하세요</div>
       </div>
     </div>
-    <button class="module-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div class="trail-body">
     <div class="trail-tabs">
@@ -4954,7 +4879,7 @@ function prApplyTabColors(){
     btn.classList.toggle('on', on);
     if(on) activeBtn = btn;
   });
-  if(activeBtn) activeBtn.scrollIntoView({behavior:'instant', block:'nearest', inline:'center'});
+  if(activeBtn) activeBtn.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
 }
 function prSwitchCat(cat){
   prCurCat = cat;
@@ -5117,7 +5042,7 @@ window.initPrayerView = function(){
 })();
 </script>
 
-<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div><button class="module-close" onclick="document.getElementById('qna-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button></div><div class="qna-body"><div class="qna-tabs" id="qna-tabs-bar"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div><div id="qna-write-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden;"><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fff;border-bottom:1px solid #E5E7EB;flex-shrink:0;"><span style="font-size:15px;font-weight:800;color:#1F2937;">글쓰기</span><button onclick="document.getElementById('qna-write-panel').style.display='none';document.getElementById('qna-list').style.display='';document.getElementById('qna-tabs-bar').style.display='';" style="width:30px;height:30px;border-radius:50%;border:1px solid #DDE3EE;background:#f1f5f9;color:#334155;font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button></div><div style="flex:1;overflow-y:auto;padding:14px;"></div></div></div></div>
+<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
 
 <script id="patches">
 /*
