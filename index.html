@@ -1418,7 +1418,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
         <div id="prayer-bar-sub">CATHOLIC PRAYERS</div>
       </div>
     </div>
-    <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">🙏 굿뉴스기도문</a>
+    <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">굿뉴스기도문</a>
     <button id="prayer-close" onclick="_closePrayerAndReturn()" aria-label="닫기">×</button>
   </div>
   <div id="prayer-tabs"></div>
@@ -1576,8 +1576,6 @@ function openMissa(){
   try{ if(typeof closeInfoCard==='function') closeInfoCard(); }catch(ex){}
   try{ if(typeof closeAllTabs==='function') closeAllTabs(); }catch(ex){}
   if(view) view.classList.add('open');
-  /* history state 1개 추가 → 뒤로가기 1회에 popstate 발동 → closeExtOrModule → closeMissa → goToCover */
-  try{ var h=location.href.split('#')[0]; history.pushState({_p:1},'',h); }catch(e){}
   /* 외부 브라우저로 이동 */
   try{ window.open(url,'_blank','noopener'); }catch(e){}
 }
@@ -1619,7 +1617,7 @@ function openDioceseView(opts){
   view.classList.add('open');
   if(loading) loading.style.display = needsLoad ? 'flex' : 'none';
   if(needsLoad){
-    frame.onload=function(){ if(loading) loading.style.display='none'; frame._loaded=true; };
+    frame.onload=function(){ if(loading) loading.style.display='none'; frame._loaded=true; if(typeof dioceseLoaded==='function') dioceseLoaded(); };
     frame.src='diocese.html';
   }
 }
