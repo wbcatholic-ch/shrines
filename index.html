@@ -1310,12 +1310,48 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 /* 인포카드: 제목/주소 본문 16px, 버튼도 16px에서 시작하고 넘칠 때 JS가 축소 */
 #info-card .ic-name,#info-card .ic-addr-val{font-size:16px!important;line-height:1.45!important}
 #info-card .ic-link-btn,#info-card .ic-route-btn,#info-card .ic-tel-btn,#info-card .btn-kakao-nav{font-size:16px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;box-shadow:none!important}
-#info-card .ic-btn-row,#info-card .ic-links{gap:7px!important}</style>
+#info-card .ic-btn-row,#info-card .ic-links{gap:7px!important}
+/* ── iOS Safari 안내 팝업 ── */
+#ios-safari-popup{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px}
+#ios-safari-popup.show{display:flex}
+.ios-popup-box{background:#fff;border-radius:24px;padding:28px 22px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.36)}
+.ios-popup-icon{font-size:52px;line-height:1;margin-bottom:14px}
+.ios-popup-title{font-size:20px;font-weight:900;color:#1a1a2e;margin-bottom:8px;line-height:1.25}
+.ios-popup-desc{font-size:14px;font-weight:500;color:#4b5563;line-height:1.75;margin-bottom:20px;word-break:keep-all}
+.ios-popup-desc b{color:#1a1a2e;font-weight:800}
+.ios-popup-steps{background:#f3f4f6;border-radius:14px;padding:14px 16px;margin-bottom:20px;text-align:left}
+.ios-popup-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13.5px;color:#374151;line-height:1.5;font-weight:600}
+.ios-popup-step:last-child{margin-bottom:0}
+.ios-popup-step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#0e1535;color:#d4aa6a;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.ios-popup-close{width:100%;height:50px;background:linear-gradient(135deg,#0e1535,#1f2a44);color:#d4aa6a;border:none;border-radius:14px;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer}
+/* ── 공통 X 닫기 버튼 ── */
+.oai-view-close{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;line-height:1;-webkit-tap-highlight-color:transparent}
+.oai-view-close:active{background:rgba(255,255,255,.28)}
+/* 매일미사 X: bar가 flex이므로 absolute 아닌 flex 아이템 */
+#missa-close.oai-view-close{position:static;margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(212,170,106,.9)}
+/* diocese X */
+#diocese-close-btn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;z-index:10;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#diocese-close-btn:active{background:rgba(255,255,255,.28)}
+
 <body>
+<!-- iOS Safari 설치 안내 팝업 -->
+<div id="ios-safari-popup">
+  <div class="ios-popup-box">
+    <div class="ios-popup-icon">🧭</div>
+    <div class="ios-popup-title">사파리(Safari)로 열어주세요</div>
+    <div class="ios-popup-desc">아이폰에서 홈 화면에 앱을 설치하려면<br><b>Safari 브라우저</b>에서만 가능합니다.</div>
+    <div class="ios-popup-steps">
+      <div class="ios-popup-step"><div class="ios-popup-step-num">1</div><div>주소창의 주소를 <b>복사</b>하거나,<br>아래 버튼을 누르세요</div></div>
+      <div class="ios-popup-step"><div class="ios-popup-step-num">2</div><div><b>Safari</b> 앱을 실행하고<br>주소를 붙여넣어 접속하세요</div></div>
+      <div class="ios-popup-step"><div class="ios-popup-step-num">3</div><div>하단 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b></div></div>
+    </div>
+    <button class="ios-popup-close" onclick="document.getElementById('ios-safari-popup').classList.remove('show')">확인</button>
+  </div>
+</div>
 <div id="missa-view">
   <div id="missa-bar">
     <span id="missa-bar-title">✝ 매일미사</span>
-    <button id="missa-close" onclick="closeMissa()">×</button>
+    <button id="missa-close" class="oai-view-close" onclick="closeMissa();">✕</button>
   </div>
   <div id="missa-external-panel">
     <div class="missa-external-card">
@@ -1332,6 +1368,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
   <div id="diocese-bar" style="display:none!important;">
     <span id="diocese-bar-title">✝ 한국 천주교 교구 지도</span>
   </div>
+  <button id="diocese-close-btn" onclick="if(typeof closeDioceseView==='function')closeDioceseView();else{document.getElementById('diocese-view').classList.remove('open');if(typeof goToCover==='function')goToCover();}" aria-label="닫기">✕</button>
   <div id="diocese-loading">
     <div class="missa-spinner"></div>
     <div class="missa-loading-txt">교구 지도를 불러오는 중…</div>
@@ -1348,6 +1385,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
       </div>
     </div>
     <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">🙏 굿뉴스기도문</a>
+    <button id="prayer-close" class="oai-view-close" style="position:static;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(212,170,106,.9);" onclick="if(typeof closePrayerView==='function')closePrayerView();else{document.getElementById('prayer-view').classList.remove('open');if(typeof goToCover==='function')goToCover();}" aria-label="닫기">✕</button>
   </div>
   <div id="prayer-tabs"></div>
   <div id="prayer-search-bar">
@@ -3818,6 +3856,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">가톨릭 신앙과 정보를 한곳에서 만나보세요</div>
       </div>
     </div>
+    <button class="module-close oai-view-close" style="position:static;" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button>
   </div>
   <div class="web-body">
     <div class="web-cats" id="web-cats"></div>
@@ -3833,6 +3872,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">신앙의 길을 따라 순례를 시작하세요</div>
       </div>
     </div>
+    <button class="module-close oai-view-close" style="position:static;" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button>
   </div>
   <div class="trail-body">
     <div class="trail-tabs">
@@ -4985,7 +5025,7 @@ window.initPrayerView = function(){
 })();
 </script>
 
-<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
+<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div><button class="module-close oai-view-close" style="position:static;" onclick="document.getElementById('qna-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
 
 <script id="patches">
 /*
@@ -5962,6 +6002,62 @@ window.initPrayerView = function(){
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   window.addEventListener('load',function(){boot();setTimeout(boot,200);setTimeout(boot,800);},{once:true});
   try{new MutationObserver(function(){normalizeAll();resetNativeExitToastOnCoverEntry();}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});}catch(e){}
+})();
+</script>
+
+<script>
+/* ── iOS Safari 안내 팝업 + 설치 버튼 로직 ── */
+(function(){
+  'use strict';
+  var ua = navigator.userAgent;
+  var isIOS = /iphone|ipad|ipod/i.test(ua);
+  var isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  if(!isIOS || isStandalone) return; // iOS가 아니거나 이미 설치된 경우 종료
+
+  var isSafari = /safari/i.test(ua) && !/crios|fxios|opios|chrome|chromium|edgios|gsa|kakaotalk|naver|line|instagram|fb_iab|fbios/i.test(ua);
+
+  // 사파리인데 아직 설치 안 된 경우: 홈화면 추가 안내 버튼 표시
+  if(isSafari){
+    // PWA install 버튼을 iOS 안내용으로 변환
+    function showIOSInstallBtn(){
+      var btn = document.getElementById('pwa-install-btn');
+      if(!btn) return;
+      btn.style.display = 'flex';
+      btn.textContent = '';
+      btn.innerHTML = '📲 홈 화면에 추가하기';
+      btn.onclick = function(){
+        document.getElementById('ios-safari-install-guide') && document.getElementById('ios-safari-install-guide').classList.add('show');
+        showIOSInstallGuide();
+      };
+    }
+    function showIOSInstallGuide(){
+      // 사파리 전용 가이드 팝업
+      var popup = document.getElementById('ios-safari-popup');
+      if(popup){
+        // 팝업 내용을 사파리용으로 교체
+        popup.querySelector('.ios-popup-title').textContent = '홈 화면에 앱 추가하기';
+        popup.querySelector('.ios-popup-desc').innerHTML = '아래 단계를 따라 <b>홈 화면에 추가</b>하면<br>앱처럼 사용할 수 있습니다.';
+        popup.querySelector('.ios-popup-steps').innerHTML =
+          '<div class="ios-popup-step"><div class="ios-popup-step-num">1</div><div>하단 <b>공유 버튼</b> (□↑) 을 누르세요</div></div>' +
+          '<div class="ios-popup-step"><div class="ios-popup-step-num">2</div><div>스크롤해서 <b>홈 화면에 추가</b>를 선택하세요</div></div>' +
+          '<div class="ios-popup-step"><div class="ios-popup-step-num">3</div><div>오른쪽 위 <b>추가</b> 버튼을 누르면 완료!</div></div>';
+        popup.classList.add('show');
+      }
+    }
+    window.addEventListener('load', function(){
+      setTimeout(showIOSInstallBtn, 800);
+    });
+    return;
+  }
+
+  // 사파리가 아닌 iOS 브라우저(크롬, 카카오 등): 사파리 이동 팝업 표시
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      var popup = document.getElementById('ios-safari-popup');
+      if(popup) popup.classList.add('show');
+    }, 1200);
+  });
 })();
 </script>
 </body>
