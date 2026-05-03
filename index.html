@@ -1126,6 +1126,10 @@ html:not(.parish-mode):not(.retreat-mode) .nearby-dist{color:#b07a3d!important}
 /* 1) backdrop-filter 제거: 성능 저하 주범 */
 .srch-bar,.filter-bar,.region-wrap{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 #cv-install-wrap .cv-install-btn{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* 1-a) tabbar blur 제거: 항상 표시되는 요소라 가장 치명적 */
+#tabbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(255,255,255,.99)!important}
+/* 1-b) 커버 카드 blur 제거: 45개 동시 렌더링 */
+.cv-btn{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#fff!important}
 /* 2) 커버 전환 애니메이션 제거: display:none 전환에 transition 불필요 */
 #cover{transition:none!important}
 /* 3) GPU 레이어 힌트: 자주 움직이는 요소만 */
