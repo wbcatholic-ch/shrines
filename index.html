@@ -235,7 +235,7 @@ html.retreat-mode .sm-tab.active{color:#ffffff!important;border-bottom-color:var
 .module-view{display:none;position:fixed;inset:0;z-index:1800;background:linear-gradient(180deg,#d8d0c8 0%,#c8bfb7 100%);color:#252018;flex-direction:column;align-items:stretch}
 .module-view.open{display:flex!important;flex-direction:column!important;align-items:stretch!important}
 .module-bar{padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 14px!important;display:flex!important;align-items:center!important;justify-content:space-between;gap:12px;color:#fff;position:relative;overflow:hidden;border-bottom:none;box-shadow:0 12px 28px rgba(18,24,38,.18);background:linear-gradient(135deg,#1f2a44,#31446c)!important;min-height:var(--mod-header-h)!important;box-sizing:border-box!important}
-.module-bar.trail{background:linear-gradient(135deg,#1565c0 0%,#42a5f5 100%)!important}
+.module-bar.trail{background:#0e1535!important}
 .module-bar.web{background:linear-gradient(135deg,#0e1a3a 0%,#1a2d5a 100%)!important}
 .module-bar-main{display:flex;align-items:center;gap:12px;min-width:0}
 .module-bar-ico{width:42px;height:42px;border-radius:16px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(255,255,255,.18)}
@@ -450,7 +450,7 @@ html.retreat-mode .region-item .nearby-num{background:#4f46e5!important}
 #diocese-frame{flex:1;width:100%;border:none;background:#fff}
 #prayer-view{display:none;position:fixed;inset:0;z-index:20000!important;flex-direction:column;background:#EDE8E0;font-family:'Noto Sans KR',sans-serif}
 #prayer-view.open{display:flex;left:0!important;right:0!important;width:100vw!important;position:fixed!important;top:0!important;bottom:0!important;transform:none!important}
-#prayer-bar{background:linear-gradient(135deg,#1f2a44,#2f4167);padding:calc(env(safe-area-inset-top,0) + 12px) 14px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;border-bottom:2px solid var(--gold)}
+#prayer-bar{background:#0e1535;padding:calc(env(safe-area-inset-top,0) + 12px) 14px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;border-bottom:2px solid var(--gold)}
 #prayer-bar-brand{display:flex;align-items:center;gap:10px}
 #prayer-bar-ico{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 #prayer-bar-ttl{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.02em}
@@ -593,9 +593,6 @@ html.app-active #qna-cover-btn{display:none!important}
 #web-view.module-view.open,
 #trail-view.module-view.open{display:flex!important;flex-direction:column!important;align-items:stretch!important}
 /* 2) 헤더 높이 통일 */
-#prayer-bar,
-#web-view .module-bar,
-#trail-view .module-bar{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;flex-shrink:0!important;box-sizing:border-box!important}
 #prayer-bar-brand,
 #web-view .module-bar-main,
 #trail-view .module-bar-main{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important}
@@ -879,7 +876,6 @@ html.oai-font-global #cover .cover-icon-wrap,html.oai-font-global #cover .cv-btn
 #cover-font-controls{position:absolute;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:30;display:flex;gap:5px}
 #cover-font-controls button{width:40px!important;height:34px!important;border-radius:999px!important;border:1px solid #d6dce8!important;background:rgba(255,255,255,.94)!important;color:#1f2a44!important;font-weight:900!important;font-size:16px!important;box-shadow:0 6px 14px rgba(31,42,68,.12)!important;line-height:1!important}
 /* category headers fixed: they do not grow */
-html.oai-font-global #prayer-bar-ttl,html.oai-font-global #prayer-detail-ttl,html.oai-font-global .module-bar-title{font-size:20px!important;line-height:1.24!important}
 html.oai-font-global #prayer-bar-sub,html.oai-font-global .module-bar-sub{font-size:11px!important;line-height:1.25!important}
 html.oai-font-global #prayer-bar-ico,html.oai-font-global .module-bar-ico{font-size:22px!important;width:42px!important;height:42px!important;min-width:42px!important}
 html.oai-font-global .module-bar-ico svg{width:22px!important;height:22px!important}
@@ -904,7 +900,6 @@ html.retreat-mode .ic-route-btn{background:#1565c0!important;color:#fff!importan
 /* cover fixed, not linked to font zoom */
 html.oai-font-global #cover .cover-title,html.oai-font-global #cover .cv-title{font-size:clamp(32px,8.6vw,42px)!important}
 /* category headers fixed against zoom */
-html.oai-font-global #prayer-bar-ttl,html.oai-font-global #prayer-detail-ttl,html.oai-font-global .module-bar-title{font-size:20px!important;line-height:1.24!important}
 #cover .cover-header{flex:0 0 auto!important;width:100%!important;padding:0 4px 18px!important;margin:0!important;text-align:center!important}
 #cover .cover-title{font-size:clamp(30px,8.2vw,38px)!important;line-height:1.14!important;font-weight:800!important;letter-spacing:-.03em!important;margin:0!important;color:#3E362E!important}
 #cover .cover-subtitle{font-size:14px!important;line-height:1.45!important;margin:0 0 8px!important;color:#81B29A!important;font-weight:600!important}
@@ -1445,7 +1440,8 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
         <div class="pr-font-divider"></div>
         <button class="pr-font-btn pr-lg" onclick="prAdjustFont(1)">가</button>
       </div>
-      <button class="pr-back" onclick="prCloseDetail()" aria-label="닫기" style="margin-left:8px;font-size:20px;font-weight:900;color:#8a7a66;">×</button>
+      <button id="pr-detail-star" class="pr-star" onclick="prToggleDetailFav(event)" aria-label="즐겨찾기" style="margin-left:6px;font-size:20px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-star"></i></button>
+      <button class="pr-back" onclick="prCloseDetail()" aria-label="닫기" style="margin-left:4px;font-size:20px;font-weight:900;color:#8a7a66;">×</button>
     </div>
     <div id="prayer-detail-body">
       <div class="pr-content-card" id="prayer-detail-content"></div>
@@ -1630,18 +1626,51 @@ function closeDioceseView(){
 function dioceseLoaded(){
   const loading=$('diocese-loading');
   if(loading) loading.style.display='none';
-  /* 교구 지도 빈 곳 터치 → 인포카드 닫기 */
+  /* 교구 지도 빈 곳 터치 → 인포카드 닫기: 동일출처 iframe에 스크립트 직접 주입 */
   try{
     var frame=document.getElementById('diocese-frame');
-    if(frame && frame.contentDocument){
-      frame.contentDocument.addEventListener('click',function(e){
-        var doc=frame.contentDocument;
-        var card=doc.querySelector('.info-card.open,.diocese-info-card.open,#diocese-info.open,#info-panel.open,.lv-info-card');
-        if(!card) return;
-        if(!e.target.closest('.info-card,.diocese-info-card,#diocese-info,#info-panel,.info-wrap,.marker-info,.lv-info-card,.lv-info-wrap'))
-          card.classList.remove('open','show','active','on');
-      },true);
-    }
+    if(!frame||!frame.contentDocument) return;
+    var doc=frame.contentDocument;
+    /* 이미 주입됐으면 스킵 */
+    if(doc.__oaiCloseInjected) return;
+    doc.__oaiCloseInjected = true;
+    var s=doc.createElement('script');
+    s.textContent=[
+      '(function(){',
+      '  function _oaiCloseCard(){',
+      '    /* 다양한 셀렉터로 열린 카드 탐색 */
+',
+      '    var sels=['.info-card','.diocese-info-card','#diocese-info','#info-panel','.lv-info-card','[class*="info-card"]','[class*="info_window"]','[class*="infowindow"]','[class*="popup"]'];',
+      '    for(var i=0;i<sels.length;i++){',
+      '      var cards=document.querySelectorAll(sels[i]);',
+      '      for(var j=0;j<cards.length;j++){',
+      '        var el=cards[j];',
+      '        var st=window.getComputedStyle(el);',
+      '        if(st.display!=="none"&&st.visibility!=="hidden"&&el.offsetHeight>0){',
+      '          el.style.display="none";',
+      '          el.classList.remove("open","show","active","on","visible");',
+      '        }',
+      '      }',
+      '    }',
+      '    /* kakao/naver map 전용 닫기 */
+',
+      '    try{ if(window._map&&window._map.closeOverlay) window._map.closeOverlay(); }catch(e){}',
+      '    try{ if(window.map&&window.map.closeOverlay) window.map.closeOverlay(); }catch(e){}',
+      '    try{ if(window.closeInfoCard) window.closeInfoCard(); }catch(e){}',
+      '  }',
+      '  function _oaiIsCard(el){',
+      '    if(!el) return false;',
+      '    return !!(el.closest&&el.closest('.info-card,.diocese-info-card,#diocese-info,#info-panel,.lv-info-card,[class*="info-card"],[class*="info_window"],[class*="infowindow"],[class*="popup"]'));',
+      '  }',
+      '  document.addEventListener("click",function(e){',
+      '    if(!_oaiIsCard(e.target)) _oaiCloseCard();',
+      '  },true);',
+      '  document.addEventListener("touchend",function(e){',
+      '    if(!_oaiIsCard(e.target)) _oaiCloseCard();',
+      '  },true);',
+      '})();'
+    ].join('\n');
+    (doc.head||doc.body).appendChild(s);
   }catch(ex){}
 }
 
@@ -3917,10 +3946,10 @@ function _fmtTime(s){
 <div id="trail-view" class="module-view">
   <div class="module-bar trail">
     <div class="module-bar-main">
-      <div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">🚶</div>
+      <div class="module-bar-ico">✝</div>
       <div class="module-bar-txt">
         <div class="module-bar-title">전국 순례길 <span class="module-count" id="trail-count">11개</span></div>
-        <div class="module-bar-sub">신앙의 길을 따라 순례를 시작하세요</div>
+        <div class="module-bar-sub">CATHOLIC PILGRIMAGE</div>
       </div>
     </div>
     <button class="module-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
@@ -4984,6 +5013,21 @@ window.prToggleFav = function(id, e){
   prSaveFavorites();
   prRenderList();
   const lv = prG('prayer-list-view'); if(lv) lv.scrollTop = 0;
+}
+/* 본문 화면 즐겨찾기 토글 */
+window.prToggleDetailFav = function(e){
+  e.stopPropagation();
+  var btn = document.getElementById('pr-detail-star');
+  if(!btn) return;
+  var id = btn.dataset.pid;
+  if(!id) return;
+  prFavorites = prFavorites.includes(id) ? prFavorites.filter(f=>f!==id) : [...prFavorites,id];
+  prSaveFavorites();
+  var isFav = prFavorites.includes(id);
+  btn.classList.toggle('on', isFav);
+  /* 목록 동기화 */
+  var listBtn = document.querySelector('.pr-star[data-pid="'+id+'"]');
+  if(listBtn) listBtn.classList.toggle('on', isFav);
 };
 
 function prOpenDetail(prayer){
@@ -4995,6 +5039,14 @@ function prOpenDetail(prayer){
   ttl.textContent = prayer.title;
   content.innerHTML = ((prayer.content||prayer.body||'')+'').replace(/class="symbol"/g,'class="pr-symbol"');
   detail.classList.add('show');
+  // 현재 기도문 ID 저장 → 본문 즐겨찾기 버튼에 반영
+  detail.dataset.pid = prayer.id || '';
+  var starBtn = prG('pr-detail-star');
+  if(starBtn){
+    var isFav = prFavorites.includes(prayer.id);
+    starBtn.classList.toggle('on', isFav);
+    starBtn.dataset.pid = prayer.id || '';
+  }
   // 본문 맨 위로 즉시 이동
   if(body){ body.style.scrollBehavior='auto'; body.scrollTop=0; body.style.scrollBehavior=''; }
   setTimeout(function(){ if(body) body.scrollTop=0; }, 50);
