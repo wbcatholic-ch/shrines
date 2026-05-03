@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko" class="oai-font-global">
 <head>
@@ -1335,31 +1336,28 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 #qna-view .module-close:active{
   background:rgba(255,255,255,.28)!important;
 }
-/* X가 왼쪽인 module-bar: justify-content 재정의, main이 나머지 채움 */
-#web-view .module-bar,#trail-view .module-bar{justify-content:flex-start!important;gap:12px!important;}
-#web-view .module-bar .module-bar-main,#trail-view .module-bar .module-bar-main{flex:1!important;min-width:0!important;}
+/* X가 오른쪽인 module-bar: justify-content space-between */
+#web-view .module-bar,#trail-view .module-bar{justify-content:space-between!important;}
 /* qna-view X 오른쪽 */
 #qna-view .module-bar{justify-content:space-between!important;}
 #qna-view .module-bar .module-bar-main{flex:1!important;min-width:0!important;}
 
-/* ── diocese-bar: 표시 ── */
-#diocese-bar{
-  display:flex!important;
-  min-height:calc(56px + env(safe-area-inset-top,0px))!important;
-  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px!important;
-  background:linear-gradient(135deg,#1f2a44,#2f4167)!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  flex-shrink:0!important;
-  z-index:1!important;
-}
+/* ── diocese-bar: 숨김 (iframe 내부에 X 주입) ── */
+#diocese-bar{display:none!important;}
 
 /* ── info-card 하단 닫기 행 ── */
 .ic-close-row{
   display:none!important;
 }
-/* ── info-card 우상단 X 닫기 버튼 숨김 ── */
-.ic-close-btn{display:none!important;}
+/* ── info-card 우상단 X 복원 ── */
+.ic-close-btn{display:flex!important;}
+/* ── 지도 줌 컨트롤 세로 중간 배치 ── */
+#map-wrap .kakaomap_zoom_in,#map-wrap .kakaomap_zoom_out,
+#map-wrap [class*="zoom_wrap"],#map-wrap [class*="zoom_control"],
+#map-wrap [class*="widget_zoom"],#map-wrap [class*="ZoomWidget"],
+.kakao_widget_zoom{
+  top:50%!important;transform:translateY(-50%)!important;bottom:auto!important;
+}
 .ic-x-bottom{
   width:100%;height:42px;
   background:#f5ede0;
@@ -1644,13 +1642,36 @@ function closeDioceseView(){
 function dioceseLoaded(){
   const loading=$('diocese-loading');
   if(loading) loading.style.display='none';
-  /* diocese.html 자체 헤더 숨기기 */
+  /* diocese.html 자체 헤더 숨기고 X 버튼 주입 */
   try{
     var frame=document.getElementById('diocese-frame');
-    if(frame && frame.contentDocument){
-      var s=frame.contentDocument.createElement('style');
-      s.textContent='.module-bar,.module-hd,.page-header,.hd,.header,header,[class*="header"],[class*="bar"]:first-child{display:none!important}';
-      frame.contentDocument.head.appendChild(s);
+    var fdoc=frame && frame.contentDocument;
+    if(fdoc){
+      /* 헤더 CSS 숨김 */
+      var s=fdoc.createElement('style');
+      s.id='oai-diocese-inject';
+      s.textContent=[
+        '#diocese-bar,#diocese-hd,#diocese-header,.diocese-bar,.page-header,.module-bar,',
+        'header,.app-bar,.top-bar,.hd,.header-bar{display:none!important}',
+        '#oai-diocese-close-btn{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:14px;',
+        'z-index:99999;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.22);',
+        'background:rgba(255,255,255,.14);color:rgba(212,170,106,.9);font-size:20px;font-weight:900;',
+        'cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:sans-serif;',
+        '-webkit-tap-highlight-color:transparent;}'
+      ].join('');
+      fdoc.head.appendChild(s);
+      /* X 버튼 주입 */
+      if(!fdoc.getElementById('oai-diocese-close-btn')){
+        var btn=fdoc.createElement('button');
+        btn.id='oai-diocese-close-btn';
+        btn.textContent='×';
+        btn.setAttribute('aria-label','닫기');
+        btn.onclick=function(){
+          try{ window.parent.closeDioceseView(); }catch(e){}
+          try{ window.parent.goToCover(); }catch(e){}
+        };
+        fdoc.body.appendChild(btn);
+      }
     }
   }catch(ex){}
   /* 교구 지도 빈 곳 터치 → 인포카드 닫기 */
@@ -3920,7 +3941,6 @@ function _fmtTime(s){
 </script>
 <div id="web-view" class="module-view">
   <div class="module-bar web">
-    <button class="module-close" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
     <div class="module-bar-main">
       <div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">🌐</div>
       <div class="module-bar-txt">
@@ -3928,6 +3948,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">가톨릭 신앙과 정보를 한곳에서 만나보세요</div>
       </div>
     </div>
+    <button class="module-close" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div class="web-body">
     <div class="web-cats" id="web-cats"></div>
@@ -3936,7 +3957,6 @@ function _fmtTime(s){
 </div>
 <div id="trail-view" class="module-view">
   <div class="module-bar trail">
-    <button class="module-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
     <div class="module-bar-main">
       <div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">🚶</div>
       <div class="module-bar-txt">
@@ -3944,6 +3964,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">신앙의 길을 따라 순례를 시작하세요</div>
       </div>
     </div>
+    <button class="module-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div class="trail-body">
     <div class="trail-tabs">
