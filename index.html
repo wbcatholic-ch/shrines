@@ -1311,6 +1311,65 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 #info-card .ic-name,#info-card .ic-addr-val{font-size:16px!important;line-height:1.45!important}
 #info-card .ic-link-btn,#info-card .ic-route-btn,#info-card .ic-tel-btn,#info-card .btn-kakao-nav{font-size:16px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;box-shadow:none!important}
 #info-card .ic-btn-row,#info-card .ic-links{gap:7px!important}
+/* ── 통일 닫기 버튼 (prayer/web/trail/diocese/missa 헤더) ── */
+#prayer-close,#prayer-detail-close,#diocese-close,
+#web-view .module-close,
+#trail-view .module-close{
+  width:36px!important;height:36px!important;min-width:36px!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.14)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  color:rgba(212,170,106,.9)!important;
+  font-size:20px!important;font-weight:900!important;
+  cursor:pointer!important;flex-shrink:0!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  line-height:1!important;padding:0!important;
+  font-family:sans-serif!important;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s!important;
+}
+#prayer-close:active,#diocese-close:active,
+#web-view .module-close:active,
+#trail-view .module-close:active{
+  background:rgba(255,255,255,.28)!important;
+}
+
+/* ── diocese-bar: 표시 ── */
+#diocese-bar{
+  display:flex!important;
+  min-height:calc(56px + env(safe-area-inset-top,0px))!important;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px!important;
+  background:linear-gradient(135deg,#1f2a44,#2f4167)!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  flex-shrink:0!important;
+  z-index:1!important;
+}
+
+/* ── info-card 하단 닫기 행 ── */
+.ic-close-row{
+  display:flex;align-items:center;justify-content:center;
+  padding:10px 14px 14px;
+  border-top:1px solid #f0ebe3;
+  margin-top:4px;
+}
+.ic-x-bottom{
+  width:100%;height:42px;
+  background:#f5ede0;
+  border:1px solid #e0d0bc;
+  border-radius:12px;
+  font-size:18px;font-weight:700;
+  color:#8a6a40;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;
+  font-family:inherit;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .12s;
+}
+.ic-x-bottom:active{background:#eddfc9;}
+.ic-x-bottom::before{content:'×';font-size:22px;line-height:1;}
+
 /* ── 커버 위아래 10% 여백 ── */
 #cover{
   padding-top:calc(10vh + env(safe-area-inset-top,0px))!important;
@@ -1367,8 +1426,9 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 <div id="exit-dlg"><div class="exit-box"><h3>앱을 종료할까요?</h3><p>성지순례 앱을 종료합니다.</p><div class="exit-btns"><button class="exit-cancel" onclick="closeExitDlg()">취소</button><button class="exit-ok" onclick="doExit()">종료</button></div></div>
 </div>
 <div id="diocese-view">
-  <div id="diocese-bar" style="display:none!important;">
+  <div id="diocese-bar">
     <span id="diocese-bar-title">✝ 한국 천주교 교구 지도</span>
+    <button id="diocese-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div id="diocese-loading">
     <div class="missa-spinner"></div>
@@ -1386,6 +1446,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
       </div>
     </div>
     <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">🙏 굿뉴스기도문</a>
+    <button id="prayer-close" onclick="closePrayerView()" aria-label="닫기">×</button>
   </div>
   <div id="prayer-tabs"></div>
   <div id="prayer-search-bar">
@@ -1412,6 +1473,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
         <div class="pr-font-divider"></div>
         <button class="pr-font-btn pr-lg" onclick="prAdjustFont(1)">가</button>
       </div>
+      <button id="prayer-detail-close" style="margin-left:8px;" onclick="prCloseDetail()" aria-label="목록으로">×</button>
     </div>
     <div id="prayer-detail-body">
       <div class="pr-content-card" id="prayer-detail-content"></div>
@@ -1526,7 +1588,7 @@ function handleBack() {} // 하위호환용 stub
               onclick="event.stopPropagation();clearRoute('end')"
               style="display:none">×</button></div></div><div style="display:flex;align-items:center;padding-left:10px;"><button class="rs-swap-btn" onclick="swapRoute()">⇅</button></div></div><button id="rs-search-btn" onclick="doSearchRoute()">
         🔍 경로 검색
-      </button></div><div id="rs-bottom" style="padding:10px 14px 14px;"><div id="rs-result" style="display:none;"><div class="rs-result"><div class="rs-stats"><div class="rs-stat"><div class="rs-stat-lbl">🛣 도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div><div class="rs-stat"><div class="rs-stat-lbl">🚗 소요시간</div><div class="rs-stat-val"><span id="rs-time">—</span></div></div></div><div class="rs-note" id="rs-note"></div><div class="route-btns"><button class="btn-kakao-route" onclick="doKakaoRoute()">🗺 카카오내비</button><button class="btn-route-reset" onclick="resetRoute()">↩ 다시선택</button></div></div></div><div class="rs-hint" id="rs-hint">출발·도착을 탭하거나<br>지도에서 마커를 직접 탭하세요</div></div></div><div id="info-card"><div class="ic-header"><div class="ic-name" id="ic-name"></div><button class="ic-close-btn" onclick="closeInfoCard()">×</button></div><div class="ic-body"><div class="ic-meta"><span class="ic-sub" id="ic-sub"></span><span class="ic-type-badge" id="ic-type"></span></div><div class="ic-addr-row"><div class="ic-addr-left"><div class="ic-addr-lbl">주소</div><div class="ic-addr-val" id="ic-addr"></div></div><div class="ic-dist-col" id="ic-dist-col"><div class="ic-dist-lbl">내위치에서 거리</div><div class="ic-dist-box" id="ic-dist"></div></div></div><div class="ic-btn-row"><a class="ic-tel-btn" id="ic-tel-link" href="#" style="display:none"><span class="ic-tel-icon">📞</span><span class="ic-tel" id="ic-tel"></span></a><button class="ic-route-btn" onclick="openInAppRoute()">길찾기</button></div><div class="ic-links" id="ic-links-row" style="display:none;padding:7px 14px 0;"><a class="ic-link-btn ic-hp-btn" id="ic-hp" href="#" target="_blank" style="display:none">🌐 홈페이지</a><button class="ic-link-btn ic-guide-btn" id="ic-guide" style="display:none">✝ 성지 상세페이지</button></div><div style="padding:7px 14px 0;"><button class="btn-kakao-nav" id="ic-kakao-nav" onclick="openKakaoNav()">🗺️ 카카오내비</button></div></div></div><div id="srch-modal"><div class="sm-inner"><div class="sm-hd"><span class="sm-title" id="sm-title">성지 검색</span><button class="sm-x" onclick="closeSearchModal()">×</button></div><div class="sm-filter" id="sm-filter-bar"></div><div class="sm-srch"><div class="sm-si"><span>🔍</span><input type="text" id="sm-inp" placeholder="이름 또는 장소 입력" onkeyup="if(event.key==='Enter'){_blurAll();}"
+      </button></div><div id="rs-bottom" style="padding:10px 14px 14px;"><div id="rs-result" style="display:none;"><div class="rs-result"><div class="rs-stats"><div class="rs-stat"><div class="rs-stat-lbl">🛣 도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div><div class="rs-stat"><div class="rs-stat-lbl">🚗 소요시간</div><div class="rs-stat-val"><span id="rs-time">—</span></div></div></div><div class="rs-note" id="rs-note"></div><div class="route-btns"><button class="btn-kakao-route" onclick="doKakaoRoute()">🗺 카카오내비</button><button class="btn-route-reset" onclick="resetRoute()">↩ 다시선택</button></div></div></div><div class="rs-hint" id="rs-hint">출발·도착을 탭하거나<br>지도에서 마커를 직접 탭하세요</div></div></div><div id="info-card"><div class="ic-header"><div class="ic-name" id="ic-name"></div><button class="ic-close-btn" onclick="closeInfoCard()">×</button></div><div class="ic-body"><div class="ic-meta"><span class="ic-sub" id="ic-sub"></span><span class="ic-type-badge" id="ic-type"></span></div><div class="ic-addr-row"><div class="ic-addr-left"><div class="ic-addr-lbl">주소</div><div class="ic-addr-val" id="ic-addr"></div></div><div class="ic-dist-col" id="ic-dist-col"><div class="ic-dist-lbl">내위치에서 거리</div><div class="ic-dist-box" id="ic-dist"></div></div></div><div class="ic-btn-row"><a class="ic-tel-btn" id="ic-tel-link" href="#" style="display:none"><span class="ic-tel-icon">📞</span><span class="ic-tel" id="ic-tel"></span></a><button class="ic-route-btn" onclick="openInAppRoute()">길찾기</button></div><div class="ic-links" id="ic-links-row" style="display:none;padding:7px 14px 0;"><a class="ic-link-btn ic-hp-btn" id="ic-hp" href="#" target="_blank" style="display:none">🌐 홈페이지</a><button class="ic-link-btn ic-guide-btn" id="ic-guide" style="display:none">✝ 성지 상세페이지</button></div><div style="padding:7px 14px 0;"><button class="btn-kakao-nav" id="ic-kakao-nav" onclick="openKakaoNav()">🗺️ 카카오내비</button></div><div class="ic-close-row"><button class="ic-x-bottom" onclick="closeInfoCard()" aria-label="닫기">닫기</button></div></div></div><div id="srch-modal"><div class="sm-inner"><div class="sm-hd"><span class="sm-title" id="sm-title">성지 검색</span><button class="sm-x" onclick="closeSearchModal()">×</button></div><div class="sm-filter" id="sm-filter-bar"></div><div class="sm-srch"><div class="sm-si"><span>🔍</span><input type="text" id="sm-inp" placeholder="이름 또는 장소 입력" onkeyup="if(event.key==='Enter'){_blurAll();}"
             oninput="onSmInp(this.value)"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div></div><div style="display:flex;border-bottom:1px solid #eee;flex-shrink:0;background:#f8f9fc;" id="sm-tab-bar"><button class="sm-tab active" id="sm-tab-cat" onclick="smSwitchTab(&#39;cat&#39;)">📋 성지/성당/피정</button><button class="sm-tab" id="sm-tab-place" onclick="smSwitchTab(&#39;place&#39;)">🔍 일반장소</button></div><div class="sm-body" id="sm-body"></div><div class="sm-body" id="sm-body-place" style="display:none;"></div></div></div></div>
 <script>
@@ -3876,6 +3938,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">가톨릭 신앙과 정보를 한곳에서 만나보세요</div>
       </div>
     </div>
+    <button class="module-close" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div class="web-body">
     <div class="web-cats" id="web-cats"></div>
@@ -3891,6 +3954,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">신앙의 길을 따라 순례를 시작하세요</div>
       </div>
     </div>
+    <button class="module-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button>
   </div>
   <div class="trail-body">
     <div class="trail-tabs">
