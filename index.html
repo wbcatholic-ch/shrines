@@ -1576,12 +1576,15 @@ function openMissa(){
   try{ if(typeof closeInfoCard==='function') closeInfoCard(); }catch(ex){}
   try{ if(typeof closeAllTabs==='function') closeAllTabs(); }catch(ex){}
   if(view) view.classList.add('open');
-  /* 패널 열고 외부 브라우저로 이동 */
+  /* history state 1개 추가 → 뒤로가기 1회에 popstate 발동 → closeExtOrModule → closeMissa → goToCover */
+  try{ var h=location.href.split('#')[0]; history.pushState({_p:1},'',h); }catch(e){}
+  /* 외부 브라우저로 이동 */
   try{ window.open(url,'_blank','noopener'); }catch(e){}
 }
 function closeMissa(){
   const view=$('missa-view');
   if(view) view.classList.remove('open');
+  if(typeof goToCover==='function') goToCover();
 }
 function missaLoaded(){
   // 매일미사 외부 iframe 제거: 남겨둔 호환용 빈 함수
