@@ -18,12 +18,14 @@
   /* ── 리셋 & 기본 ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --blue:   #1D4ED8;
-    --blue-l: #EFF6FF;
-    --blue-b: #BFDBFE;
+    --blue:   #0e1535;
+    --blue-l: #f0f2f8;
+    --blue-b: #c8cfe8;
     --green:  #2A8040;
     --green-l:#F0FDF4;
     --green-b:#BBF7D0;
+    --gold:   #d4aa6a;
+    --gold-l: #fdf6e8;
     --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0;
     --gray-400:#94A3B8; --gray-500:#64748B; --gray-700:#374151;
     --gray-900:#0F172A;
@@ -49,11 +51,11 @@
     align-items: center;
     gap: 12px;
     position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 16px rgba(29,78,216,.25);
+    box-shadow: 0 2px 16px rgba(14,21,53,.35);
   }
   #back-btn {
-    display: none; background: rgba(255,255,255,.18); border: none;
-    color: #fff; border-radius: 10px; width: 36px; height: 36px;
+    display: flex; background: rgba(255,255,255,.12); border: none;
+    color: var(--gold); border-radius: 10px; width: 36px; height: 36px;
     font-size: 18px; cursor: pointer; flex-shrink: 0;
     align-items: center; justify-content: center;
   }
@@ -83,7 +85,7 @@
     padding: 5px 14px; font-size: 13px; background: #fff; color: var(--gray-500);
     cursor: pointer; font-weight: 500; font-family: inherit; transition: all .15s;
   }
-  .filter-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 700; }
+  .filter-btn.active { background: var(--blue); color: var(--gold); border-color: var(--blue); font-weight: 700; }
 
   /* ── 게시글 목록 ── */
   #post-list { padding: 4px 14px; }
@@ -177,7 +179,7 @@
     padding: 11px 14px; font-size: 14px; font-family: inherit; outline: none;
     background: #fff; transition: border-color .15s;
   }
-  input[type=text]:focus, input[type=number]:focus, textarea:focus { border-color: var(--blue); }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus { border-color: var(--gold); }
   textarea { resize: vertical; line-height: 1.75; }
   .char-count { text-align: right; font-size: 11px; color: var(--gray-400); margin-top: 4px; }
   .secret-box {
@@ -213,7 +215,7 @@
   .loading-box { text-align: center; padding: 60px 0; color: var(--gray-400); font-size: 14px; }
   .spinner {
     width: 28px; height: 28px; border: 3px solid var(--gray-200);
-    border-top-color: var(--blue); border-radius: 50%;
+    border-top-color: var(--gold); border-radius: 50%;
     animation: spin .7s linear infinite; margin: 0 auto 12px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -263,10 +265,10 @@
 
 <!-- 헤더 -->
 <div id="header">
-  <button id="back-btn" onclick="goList()">←</button>
+  <button id="back-btn" onclick="handleQaBack()">←</button>
   <div id="header-texts">
     <div class="title" id="header-title">문의 · 건의</div>
-    <div class="sub">가톨릭 앱 문의 · 수정 · 개선건의</div>
+    <div class="sub">보편 교회 가톨릭 앱</div>
   </div>
   <button id="write-btn" onclick="goWrite()">✏️ 글쓰기</button>
 </div>
@@ -659,6 +661,24 @@ function escHtml(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
 }
+
+/* ═══════════════════ 뒤로가기 처리 ═══════════════════ */
+function handleQaBack(){
+  var state = window.history.state;
+  // 상세/작성 뷰에서는 목록으로
+  var active = document.querySelector('.view.active');
+  if(active && active.id !== 'list-view'){ goList(); return; }
+  // 목록에서는 앱으로 복귀
+  if(document.referrer && document.referrer.indexOf(location.hostname)>=0){
+    history.back();
+  } else {
+    location.href='index.html';
+  }
+}
+// back-btn: 목록에서도 앱 복귀용으로 항상 표시
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('back-btn').classList.add('show');
+});
 
 /* ═══════════════════ 초기화 ═══════════════════ */
 buildFilterBar();
