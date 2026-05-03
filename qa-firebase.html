@@ -54,19 +54,19 @@
     box-shadow: 0 2px 16px rgba(14,21,53,.35);
   }
   #close-btn {
-    display: flex; background: rgba(255,255,255,.12); border: none;
-    color: var(--gold); border-radius: 50%; width: 36px; height: 36px;
-    font-size: 22px; font-weight: 900; cursor: pointer; flex-shrink: 0;
-    align-items: center; justify-content: center;
-    -webkit-tap-highlight-color: transparent;
+    display: flex; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+    color: rgba(212,170,106,.9); border-radius: 50%; width: 36px; height: 36px;
+    font-size: 20px; font-weight: 900; cursor: pointer; flex-shrink: 0;
+    align-items: center; justify-content: center; line-height: 1; padding: 0;
+    font-family: sans-serif; -webkit-tap-highlight-color: transparent;
   }
   #header-texts .title { font-size: 17px; font-weight: 700; }
   #header-texts .sub   { font-size: 11px; opacity: .72; margin-top: 2px; }
   #write-btn {
     margin-left: auto; background: rgba(255,255,255,.18);
     border: 1px solid rgba(255,255,255,.35); color: #fff;
-    border-radius: 20px; padding: 6px 15px;
-    font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    border-radius: 20px; padding: 9px 20px;
+    font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap;
     font-family: inherit;
   }
 
@@ -286,10 +286,6 @@
 
 <!-- 글쓰기 뷰 -->
 <div id="write-view" class="view">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 4px;">
-    <span style="font-size:15px;font-weight:800;color:#1F2937;">글 작성</span>
-    <button onclick="goList()" aria-label="닫기" style="width:32px;height:32px;border-radius:50%;border:1px solid #DDE3EE;background:#f1f5f9;color:#334155;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:sans-serif;">×</button>
-  </div>
   <div class="field-group">
     <label class="field-label">분류</label>
     <div class="cat-row" id="cat-row"></div>
@@ -396,6 +392,12 @@ function showView(id) {
 
   document.getElementById('write-btn').style.display = isList ? '' : 'none';
   document.getElementById('success-view').style.display = 'none';
+
+  /* 글쓰기 뷰일 때 X는 목록으로, 나머지는 앱으로 복귀 */
+  var closeBtn = document.getElementById('close-btn');
+  if(closeBtn){
+    closeBtn.onclick = isWrite ? function(){ goList(); } : function(){ handleQaBack(); };
+  }
 
   const titles = { 'list-view':'문의 · 건의', 'detail-view-wrap':'상세보기', 'write-view':'글 작성' };
   document.getElementById('header-title').textContent = titles[id] || '문의 · 건의';
