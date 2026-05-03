@@ -36,7 +36,7 @@
 
 <style>:root{--navy:#0e1535;--navy2:#1a2456;--navy3:#243070;--gold:#d4aa6a;--gold2:#b8965a;--cream:#f5f0e8;--ink:#1F2937;--border:#dde3f2;--shrine:#c0392b;--pilgrim:#1f2a44!important;--martyr:#1b7a3e;--parish-bg:#2f4f6d;--parish-active:#466b92;--parish-accent:#e7f1fb;--retreat-bg:#4f46e5;--retreat-active:#6366f1;--retreat-accent:#eef2ff;--addr-color:#6B7280;--dist-parish:#466b92;--dist-retreat:#4f46e5;--tab-h:72px!important;--sb:env(safe-area-inset-bottom,0);--st:env(safe-area-inset-top,0);--stone:#f3eee5;--stone-2:#ebe3d7;--paper:#fffdf9;--panel:#fffaf2;--line-soft:#e7ddcf;--shadow-soft:0 12px 30px rgba(14,21,53,.10);--shadow-card:0 16px 34px rgba(17,24,39,.11);--ui-ink:#141b2d;--ui-ink-soft:#4d5a75;--ui-line:#e6dfd3;--ui-panel:#ffffff;--ui-bg:#f7f4ee;--ui-blue:#3563ff;--ui-indigo:#6d4df4;--ui-rose:#d94f70;--ui-teal:#118a7e;--ui-amber:#f59e0b;--bg-unified:#f5f0e8;--pink-start:#E8397A;--pink-end:#f0609a;--header-h:calc(52px + env(safe-area-inset-top,0));--module-tab-h:48px;--mod-header-h:calc(56px + env(safe-area-inset-top,0px));--mod-tabbar-h:52px;--tab-btn-h:40px;--oai-shrine-header:#1f2a44!important;--oai-parish-header:#4f6f90;--oai-retreat-header:#7fb39a;--oai-gold:#d4aa6a;--oai-gold-border:#c49a57;--oai-btn:#eef1f4;--oai-btn-border:#cfd6dd;--oai-btn-text:#334155;--oai-ivory:#e9deca;--oai-ivory-border:#d6c6a8;--app-font-scale:1;--oai-std-scale:var(--app-font-scale,1);--oai-std-header-h:72px;--oai-std-title-fs:calc(20px * var(--app-font-scale,1));--oai-std-sub-fs:calc(11px * var(--app-font-scale,1));--oai-std-tab-h:38px!important;--oai-std-btn-h:34px!important;--oai-std-btn-fs:calc(14px * var(--app-font-scale,1))!important;--oai-std-radius:14px;--oai-std-gap:8px;--app-fs-title:calc(16px * var(--app-font-scale,1));--app-fs-sub:calc(12px * var(--app-font-scale,1));--app-fs-body:calc(16px * var(--app-font-scale,1));--shrine-main:#1f2a44!important;--shrine-main-2:#2d3a5f!important;--shrine-soft:#edf1fb!important;--shrine-soft-2:#f5f7fc!important;--church-main:#4f6f90;--church-main-2:#3f5d7b;--church-soft:#e8eff6;--church-soft-2:#f4f7fb;--retreat-main:#7fb49a;--retreat-main-2:#6aa186;--retreat-soft:#e8f3ec;--retreat-soft-2:#f5faf7;--bg-color:#F7F0E5;--text-main:#3E362E;--text-sub:#7A7065;--card-bg:#FFFFFF;--color-1:#E07A5F;--color-2:#F2CC8F;--color-3:#81B29A;--color-4:#6B8E23;--color-5:#9FA0C3;--color-6:#5F797B;--color-7:#F4A261;--color-8:#B5838D;--ui-surface:#fbfaf7;--ui-card:#ffffff;--ui-line-strong:#d9cfbf;--ui-text:#1f2937;--ui-sub:#7b8794}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;background:var(--navy)!important;font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none;overscroll-behavior-x:none!important;overflow-x:hidden!important}
+html,body{width:100%;height:100%;background:var(--bg-color,#F7F0E5)!important;font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none;overscroll-behavior-x:none!important;overflow-x:hidden!important}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:rgba(26,36,86,.15);border-radius:2px}
 #cover{position:fixed!important;inset:0!important;z-index:9999!important;background:#f4efe4!important;display:flex;flex-direction:column;align-items:center;justify-content:flex-start!important;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)!important;overflow:hidden!important;overflow-y:auto;background-color:var(--bg-color)!important;color:var(--text-main);font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;transition:none;padding-top:calc(10vh + env(safe-area-inset-top,0px))!important;padding-bottom:calc(10vh + env(safe-area-inset-bottom,0px))!important}
@@ -1311,7 +1311,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 #info-card .ic-name,#info-card .ic-addr-val{font-size:16px!important;line-height:1.45!important}
 #info-card .ic-link-btn,#info-card .ic-route-btn,#info-card .ic-tel-btn,#info-card .btn-kakao-nav{font-size:16px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;box-shadow:none!important}
 #info-card .ic-btn-row,#info-card .ic-links{gap:7px!important}
-/* ── iOS Safari 안내 팝업 ── */
+/* iOS Safari popup */
 #ios-safari-popup{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px}
 #ios-safari-popup.show{display:flex}
 .ios-popup-box{background:#fff;border-radius:24px;padding:28px 22px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.36)}
@@ -1324,26 +1324,22 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 .ios-popup-step:last-child{margin-bottom:0}
 .ios-popup-step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#0e1535;color:#d4aa6a;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .ios-popup-close{width:100%;height:50px;background:linear-gradient(135deg,#0e1535,#1f2a44);color:#d4aa6a;border:none;border-radius:14px;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer}
-/* ── 공통 X 닫기 버튼 ── */
-.oai-view-close{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;line-height:1;-webkit-tap-highlight-color:transparent}
+.oai-view-close{position:static;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;line-height:1;-webkit-tap-highlight-color:transparent;margin-left:auto}
 .oai-view-close:active{background:rgba(255,255,255,.28)}
-/* 매일미사 X: bar가 flex이므로 absolute 아닌 flex 아이템 */
-#missa-close.oai-view-close{position:static;margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(212,170,106,.9)}
-/* diocese X */
-#diocese-close-btn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;z-index:10;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
-#diocese-close-btn:active{background:rgba(255,255,255,.28)}
-
+#missa-close.oai-view-close{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:rgba(212,170,106,.9)}
+#diocese-close-btn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;z-index:20;width:40px;height:40px;border-radius:50%;background:rgba(14,21,53,.82);border:2px solid rgba(212,170,106,.5);color:#d4aa6a;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+#diocese-close-btn:active{background:rgba(14,21,53,.95)}
+</style>
 <body>
-<!-- iOS Safari 설치 안내 팝업 -->
 <div id="ios-safari-popup">
   <div class="ios-popup-box">
     <div class="ios-popup-icon">🧭</div>
     <div class="ios-popup-title">사파리(Safari)로 열어주세요</div>
     <div class="ios-popup-desc">아이폰에서 홈 화면에 앱을 설치하려면<br><b>Safari 브라우저</b>에서만 가능합니다.</div>
     <div class="ios-popup-steps">
-      <div class="ios-popup-step"><div class="ios-popup-step-num">1</div><div>주소창의 주소를 <b>복사</b>하거나,<br>아래 버튼을 누르세요</div></div>
-      <div class="ios-popup-step"><div class="ios-popup-step-num">2</div><div><b>Safari</b> 앱을 실행하고<br>주소를 붙여넣어 접속하세요</div></div>
-      <div class="ios-popup-step"><div class="ios-popup-step-num">3</div><div>하단 <b>공유 버튼(□↑)</b> → <b>홈 화면에 추가</b></div></div>
+      <div class="ios-popup-step"><div class="ios-popup-step-num">1</div><div>주소창 주소를 <b>복사</b>하거나 직접 입력하세요</div></div>
+      <div class="ios-popup-step"><div class="ios-popup-step-num">2</div><div><b>Safari</b> 앱에서 해당 주소로 접속하세요</div></div>
+      <div class="ios-popup-step"><div class="ios-popup-step-num">3</div><div>하단 <b>공유(□↑)</b> → <b>홈 화면에 추가</b></div></div>
     </div>
     <button class="ios-popup-close" onclick="document.getElementById('ios-safari-popup').classList.remove('show')">확인</button>
   </div>
@@ -1351,7 +1347,7 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 <div id="missa-view">
   <div id="missa-bar">
     <span id="missa-bar-title">✝ 매일미사</span>
-    <button id="missa-close" class="oai-view-close" onclick="closeMissa();">✕</button>
+    <button id="missa-close" class="oai-view-close" onclick="closeMissa()">✕</button>
   </div>
   <div id="missa-external-panel">
     <div class="missa-external-card">
@@ -1365,10 +1361,10 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
 <div id="exit-dlg"><div class="exit-box"><h3>앱을 종료할까요?</h3><p>성지순례 앱을 종료합니다.</p><div class="exit-btns"><button class="exit-cancel" onclick="closeExitDlg()">취소</button><button class="exit-ok" onclick="doExit()">종료</button></div></div>
 </div>
 <div id="diocese-view">
+  <button id="diocese-close-btn" onclick="if(typeof closeDioceseView==='function')closeDioceseView();else{document.getElementById('diocese-view').classList.remove('open');if(typeof goToCover==='function')goToCover();}" aria-label="닫기">✕</button>
   <div id="diocese-bar" style="display:none!important;">
     <span id="diocese-bar-title">✝ 한국 천주교 교구 지도</span>
   </div>
-  <button id="diocese-close-btn" onclick="if(typeof closeDioceseView==='function')closeDioceseView();else{document.getElementById('diocese-view').classList.remove('open');if(typeof goToCover==='function')goToCover();}" aria-label="닫기">✕</button>
   <div id="diocese-loading">
     <div class="missa-spinner"></div>
     <div class="missa-loading-txt">교구 지도를 불러오는 중…</div>
@@ -1384,8 +1380,8 @@ html.retreat-mode #srch-modal #sm-tab-bar .sm-tab.active{background:#ffffff!impo
         <div id="prayer-bar-sub">CATHOLIC PRAYERS</div>
       </div>
     </div>
+    <button id="prayer-close" class="oai-view-close" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:rgba(212,170,106,.9);" onclick="if(typeof closePrayerView==='function')closePrayerView();else{document.getElementById('prayer-view').classList.remove('open');if(typeof goToCover==='function')goToCover();}" aria-label="닫기">✕</button>
     <a id="goodnews-prayer-btn" href="https://maria.catholic.or.kr/mobile/prayer/" target="_blank" rel="noopener" aria-label="굿뉴스 기도문 바로가기">🙏 굿뉴스기도문</a>
-    <button id="prayer-close" class="oai-view-close" style="position:static;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(212,170,106,.9);" onclick="if(typeof closePrayerView==='function')closePrayerView();else{document.getElementById('prayer-view').classList.remove('open');if(typeof goToCover==='function')goToCover();}" aria-label="닫기">✕</button>
   </div>
   <div id="prayer-tabs"></div>
   <div id="prayer-search-bar">
@@ -3856,7 +3852,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">가톨릭 신앙과 정보를 한곳에서 만나보세요</div>
       </div>
     </div>
-    <button class="module-close oai-view-close" style="position:static;" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button>
+    <button class="oai-view-close" onclick="document.getElementById('web-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button>
   </div>
   <div class="web-body">
     <div class="web-cats" id="web-cats"></div>
@@ -3872,7 +3868,7 @@ function _fmtTime(s){
         <div class="module-bar-sub">신앙의 길을 따라 순례를 시작하세요</div>
       </div>
     </div>
-    <button class="module-close oai-view-close" style="position:static;" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button>
+    <button class="oai-view-close" onclick="document.getElementById('trail-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button>
   </div>
   <div class="trail-body">
     <div class="trail-tabs">
@@ -5025,7 +5021,7 @@ window.initPrayerView = function(){
 })();
 </script>
 
-<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div><button class="module-close oai-view-close" style="position:static;" onclick="document.getElementById('qna-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
+<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div><button class="oai-view-close" onclick="document.getElementById('qna-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">✕</button></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
 
 <script id="patches">
 /*
@@ -6006,56 +6002,32 @@ window.initPrayerView = function(){
 </script>
 
 <script>
-/* ── iOS Safari 안내 팝업 + 설치 버튼 로직 ── */
+/* iOS Safari 안내 팝업 + 설치 안내 */
 (function(){
-  'use strict';
   var ua = navigator.userAgent;
   var isIOS = /iphone|ipad|ipod/i.test(ua);
-  var isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-
-  if(!isIOS || isStandalone) return; // iOS가 아니거나 이미 설치된 경우 종료
-
+  var isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode:standalone)').matches;
+  if(!isIOS || isStandalone) return;
   var isSafari = /safari/i.test(ua) && !/crios|fxios|opios|chrome|chromium|edgios|gsa|kakaotalk|naver|line|instagram|fb_iab|fbios/i.test(ua);
-
-  // 사파리인데 아직 설치 안 된 경우: 홈화면 추가 안내 버튼 표시
-  if(isSafari){
-    // PWA install 버튼을 iOS 안내용으로 변환
-    function showIOSInstallBtn(){
-      var btn = document.getElementById('pwa-install-btn');
-      if(!btn) return;
-      btn.style.display = 'flex';
-      btn.textContent = '';
-      btn.innerHTML = '📲 홈 화면에 추가하기';
-      btn.onclick = function(){
-        document.getElementById('ios-safari-install-guide') && document.getElementById('ios-safari-install-guide').classList.add('show');
-        showIOSInstallGuide();
-      };
-    }
-    function showIOSInstallGuide(){
-      // 사파리 전용 가이드 팝업
-      var popup = document.getElementById('ios-safari-popup');
-      if(popup){
-        // 팝업 내용을 사파리용으로 교체
-        popup.querySelector('.ios-popup-title').textContent = '홈 화면에 앱 추가하기';
-        popup.querySelector('.ios-popup-desc').innerHTML = '아래 단계를 따라 <b>홈 화면에 추가</b>하면<br>앱처럼 사용할 수 있습니다.';
-        popup.querySelector('.ios-popup-steps').innerHTML =
-          '<div class="ios-popup-step"><div class="ios-popup-step-num">1</div><div>하단 <b>공유 버튼</b> (□↑) 을 누르세요</div></div>' +
-          '<div class="ios-popup-step"><div class="ios-popup-step-num">2</div><div>스크롤해서 <b>홈 화면에 추가</b>를 선택하세요</div></div>' +
-          '<div class="ios-popup-step"><div class="ios-popup-step-num">3</div><div>오른쪽 위 <b>추가</b> 버튼을 누르면 완료!</div></div>';
-        popup.classList.add('show');
-      }
-    }
-    window.addEventListener('load', function(){
-      setTimeout(showIOSInstallBtn, 800);
-    });
-    return;
-  }
-
-  // 사파리가 아닌 iOS 브라우저(크롬, 카카오 등): 사파리 이동 팝업 표시
   window.addEventListener('load', function(){
     setTimeout(function(){
       var popup = document.getElementById('ios-safari-popup');
-      if(popup) popup.classList.add('show');
+      if(!popup) return;
+      if(isSafari){
+        // 사파리: 홈화면 추가 안내
+        popup.querySelector('.ios-popup-title').textContent = '홈 화면에 앱 추가하기';
+        popup.querySelector('.ios-popup-desc').innerHTML = '아래 단계대로 하면 <b>앱처럼</b> 사용할 수 있어요.';
+        popup.querySelector('.ios-popup-steps').innerHTML =
+          '<div class="ios-popup-step"><div class="ios-popup-step-num">1</div><div>하단 <b>공유 버튼(□↑)</b>을 누르세요</div></div>'+
+          '<div class="ios-popup-step"><div class="ios-popup-step-num">2</div><div>스크롤 후 <b>홈 화면에 추가</b> 선택</div></div>'+
+          '<div class="ios-popup-step"><div class="ios-popup-step-num">3</div><div>오른쪽 위 <b>추가</b> 버튼을 눌러 완료!</div></div>';
+        // 설치 버튼도 표시
+        var btn = document.getElementById('pwa-install-btn');
+        if(btn){ btn.style.display='flex'; btn.onclick=function(){ popup.classList.add('show'); }; }
+      } else {
+        // 비사파리 iOS: 사파리로 이동 안내
+        popup.classList.add('show');
+      }
     }, 1200);
   });
 })();
