@@ -214,13 +214,6 @@ header{width:100%!important;max-width:none!important;min-height:70px!important;h
 body > header{display:none!important;}
 @media(display-mode:standalone){body > header{display:none!important;}}
 
-
-
-/* OAI 20260504-final: 부모 앱 헤더를 사용하므로 iframe 내부 헤더는 항상 숨김 */
-body > header{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;padding:0!important;overflow:hidden!important;}
-#main{top:0!important;}
-#card .c-x{display:flex!important;align-items:center!important;justify-content:center!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
-
 </style>
 <script id="oai-no-cache-runtime-20260501">
 (function(){
@@ -1468,7 +1461,6 @@ function showCard(el){
     card.style.bottom=onBottom?'auto':'50px';
   }
   card.classList.add('on');
-  try{card.dataset.openedAt=String(Date.now());}catch(e){}
 }
 function toggleDetail(){
   detOpen=!detOpen;
@@ -1687,30 +1679,6 @@ window.addEventListener('pageshow',function(){
     else { try{ sessionStorage.setItem('oai_diocese_standalone_return',JSON.stringify(state)); }catch(e){} try{ var w=window.open(url,'_blank','noopener'); if(w) return; }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
   };
   document.addEventListener('click',function(e){ var t=e.target&&e.target.closest?e.target.closest('[data-dio-url]'):null; if(!t) return; e.preventDefault(); e.stopPropagation(); window.openDioceseUrl(t.getAttribute('data-dio-url'),t.getAttribute('data-dio-source')||'link'); },true);
-})();
-</script>
-
-
-<script id="oai-diocese-card-close-anywhere-20260504">
-(function(){
-  'use strict';
-  if(window.__OAI_DIOCESE_CARD_CLOSE_ANYWHERE_20260504__) return;
-  window.__OAI_DIOCESE_CARD_CLOSE_ANYWHERE_20260504__=true;
-  function card(){return document.getElementById('card');}
-  function closeCardNow(){var c=card(); if(!c) return; try{hideCard();}catch(_){c.classList.remove('on');}}
-  function closeIfOutside(e){
-    var c=card(); if(!c||!c.classList.contains('on')) return;
-    var t=e.target; if(!t) return;
-    if(t.closest && (t.closest('#card') || t.closest('.dp') || t.closest('[data-dio-url]'))) return;
-    var openedAt=Number(c.dataset.openedAt||0);
-    if(openedAt && Date.now()-openedAt<120) return;
-    closeCardNow();
-  }
-  /* click이 생성되지 않는 모바일 탭/지도 터치도 잡기 위해 pointerdown을 우선 사용 */
-  document.addEventListener('pointerdown',closeIfOutside,true);
-  document.addEventListener('click',closeIfOutside,true);
-  document.addEventListener('touchstart',closeIfOutside,{capture:true,passive:true});
-  document.addEventListener('touchend',closeIfOutside,{capture:true,passive:true});
 })();
 </script>
 
