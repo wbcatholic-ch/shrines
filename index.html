@@ -443,10 +443,9 @@ html.retreat-mode .region-item .nearby-num{background:#4f46e5!important}
 .sheet.exit-right{transform:translateX(100%)!important}
 #diocese-view{display:none;position:fixed;inset:0;z-index:10000!important;background:#fff;flex-direction:column}
 #diocese-view.open{display:flex}
-#diocese-bar{background:linear-gradient(135deg,#1f2a44,#2f4167);padding:env(safe-area-inset-top,0) 14px 0;display:flex;align-items:center;justify-content:space-between;min-height:calc(52px + env(safe-area-inset-top,0));flex-shrink:0;border-bottom:2px solid var(--gold)}
+#diocese-bar{border-bottom:2px solid var(--gold)}
 #diocese-bar-title{font-size:16px;font-weight:700;color:var(--gold);letter-spacing:.05em}
-#diocese-close{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:14px;background:rgba(15,21,53,.72);border:1px solid rgba(255,255,255,.28);border-radius:50%;color:rgba(212,170,106,.9);font-size:20px;font-weight:900;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2100;flex-shrink:0}
-#diocese-loading{position:absolute;inset:0;top:calc(52px + env(safe-area-inset-top,0));display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#F8F6F2;z-index:1;pointer-events:none;padding-top:60px}
+#diocese-loading{position:absolute;inset:0;top:calc(var(--oai-std-header-h, 52px) + env(safe-area-inset-top,0));display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#F8F6F2;z-index:1;pointer-events:none;padding-top:60px}
 #diocese-frame{flex:1;width:100%;border:none;background:#fff}
 #prayer-view{display:none;position:fixed;inset:0;z-index:20000!important;flex-direction:column;background:#EDE8E0;font-family:'Noto Sans KR',sans-serif}
 #prayer-view.open{display:flex;left:0!important;right:0!important;width:100vw!important;position:fixed!important;top:0!important;bottom:0!important;transform:none!important}
@@ -543,7 +542,7 @@ html.oai-font-global #region-body .region-item .nearby-addr{font-size:calc(12px 
 /* 관구교구 iframe 내부에 주입될 수 없을 때를 대비한 부모 쪽 기본값 */
 #diocese-view{--app-font-scale:1}
 #web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;display:flex!important;align-items:stretch!important;justify-content:flex-start!important;overflow:hidden!important;z-index:1800!important;flex-direction:column!important}
-#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#web-view .web-body,#trail-view .trail-body,#qna-view .qna-body{width:100%!important;max-width:none!important}
+#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar,#web-view .web-body,#trail-view .trail-body,#qna-view .qna-body{width:100%!important;max-width:none!important}
 #web-view .web-body,#trail-view .trail-body,#qna-view .qna-body{flex:1 1 auto!important;min-height:0!important;height:auto!important;overflow:hidden!important}
 #web-view .web-list,#trail-view #trail-list,#qna-view .qna-list{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important}
 #trail-view .trail-panel{flex:1 1 auto!important;min-height:0!important}
@@ -660,7 +659,7 @@ html.oai-font-global .filter-btn,html.oai-font-global .region-search-btn,html.oa
 html.oai-font-global .ic-addr-lbl,html.oai-font-global .ic-dist-lbl{font-size:calc(11px * var(--app-font-scale,1))!important}
 html.oai-font-global .web-card-badge,html.oai-font-global .web-card-url{font-size:calc(13px * var(--app-font-scale,1))!important}
 #web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open,#diocese-view.open,#prayer-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important}
-#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;box-sizing:border-box!important;flex-shrink:0!important}
+#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;box-sizing:border-box!important;flex-shrink:0!important}
 #prayer-tabs,#web-view .web-cats,#trail-view .trail-tabs,#qna-view .qna-tabs{min-height:calc(var(--oai-std-tab-h) + 16px)!important;height:calc(var(--oai-std-tab-h) + 16px)!important;padding:8px 14px!important;box-sizing:border-box!important;gap:8px!important;align-items:center!important;flex-shrink:0!important}
 #prayer-tabs .pr-tab,#web-view .web-cat-btn,#trail-view .trail-tab,#qna-view .qna-tab{height:var(--oai-std-tab-h)!important;min-height:var(--oai-std-tab-h)!important;border-radius:14px!important;font-size:var(--oai-std-btn-fs)!important;font-weight:800!important;display:flex!important;align-items:center!important;justify-content:center!important}
 #prayer-search-bar{min-height:calc(var(--oai-std-btn-h) + 12px)!important;padding:6px 14px!important;box-sizing:border-box!important}
@@ -841,7 +840,7 @@ html.retreat-mode .ic-type-badge{background:#E8F3EC!important;color:#3F7E5B!impo
 html.retreat-mode .sheet-hd,html.retreat-mode .srch-bar,html.retreat-mode .filter-bar,html.retreat-mode .region-wrap,html.retreat-mode .sm-hd,html.retreat-mode .sm-filter{background:linear-gradient(135deg,var(--retreat-main-2),var(--retreat-main))!important}
 html.retreat-mode .filter-btn,html.retreat-mode .sm-fb{background:rgba(255,255,255,.12)!important;color:rgba(255,255,255,.92)!important;border-color:rgba(255,255,255,.28)!important}
 html.retreat-mode .nearby-type,html.retreat-mode .li-badge,html.retreat-mode .ic-type-badge{background:#E8F3EC!important;color:#3F7E5B!important}
-#prayer-bar,#web-view .module-bar,#trail-view .module-bar{min-height:70px!important;height:70px!important;padding:0 16px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important}
+#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#diocese-view .module-bar{min-height:70px!important;height:70px!important;padding:0 16px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important}
 #prayer-bar-brand,#web-view .module-bar-main,#trail-view .module-bar-main{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important}
 #prayer-bar-ico,#web-view .module-bar-ico,#trail-view .module-bar-ico{width:42px!important;height:42px!important;min-width:42px!important;flex:0 0 42px!important;margin:0!important;padding:0!important;background:transparent!important;border:none!important;box-shadow:none!important;border-radius:0!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:32px!important;line-height:1!important;font-weight:900!important;text-shadow:0 2px 4px rgba(0,0,0,.34),0 0 10px rgba(255,255,255,.20)!important;overflow:visible!important;position:relative!important}
 #prayer-bar-ico::before,#prayer-bar-ico::after,#web-view .module-bar-ico::before,#web-view .module-bar-ico::after,#trail-view .module-bar-ico::before,#trail-view .module-bar-ico::after{content:none!important;display:none!important;background:none!important;box-shadow:none!important;border:none!important}
@@ -1397,10 +1396,16 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 <div id="exit-dlg"><div class="exit-box"><h3>앱을 종료할까요?</h3><p>성지순례 앱을 종료합니다.</p><div class="exit-btns"><button class="exit-cancel" onclick="closeExitDlg()">취소</button><button class="exit-ok" onclick="doExit()">종료</button></div></div>
 </div>
 <div id="diocese-view">
-  <div id="diocese-bar" style="display:none!important;">
-    <span id="diocese-bar-title">✝ 한국 천주교 교구 지도</span>
+  <div id="diocese-bar" class="module-bar" style="background:linear-gradient(135deg,#1f2a44,#2f4167)!important;">
+    <div class="module-bar-main">
+      <div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">✝</div>
+      <div class="module-bar-txt">
+        <div class="module-bar-title">한국 천주교 교구 지도</div>
+        <div class="module-bar-sub">관구별 교구 현황</div>
+      </div>
+    </div>
+    <button class="module-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();else document.getElementById('diocese-view').classList.remove('open');" aria-label="닫기">×</button>
   </div>
-  <button id="diocese-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();else document.getElementById('diocese-view').classList.remove('open');" aria-label="닫기">×</button>
   <div id="diocese-loading">
     <div class="missa-spinner"></div>
     <div class="missa-loading-txt">교구 지도를 불러오는 중…</div>
@@ -1570,12 +1575,8 @@ function openMissa(){
   const mm=String(today.getMonth()+1).padStart(2,'0');
   const dd=String(today.getDate()).padStart(2,'0');
   const url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
-  const view=$('missa-view');
   try{ localStorage.setItem('oai_last_missa_url', url); }catch(e){}
-  try{ if(typeof closeInfoCard==='function') closeInfoCard(); }catch(ex){}
-  try{ if(typeof closeAllTabs==='function') closeAllTabs(); }catch(ex){}
-  if(view) view.classList.add('open');
-  /* 외부 브라우저로 이동 */
+  /* 외부 브라우저로 이동 - view 열지 않음 */
   try{ window.open(url,'_blank','noopener'); }catch(e){}
 }
 function closeMissa(){
@@ -1625,6 +1626,15 @@ function closeDioceseView(){
   var frame=document.getElementById('diocese-frame');
   if(view) view.classList.remove('open');
   if(frame){ try{ frame.removeAttribute('srcdoc'); }catch(e){} frame.src='about:blank'; }
+  /* 성지찾기 탭+지도 화면으로 복귀 */
+  try{
+    document.documentElement.classList.add('app-active');
+    var cover=document.getElementById('cover');
+    if(cover){ cover.style.display='none'; cover.style.opacity='0'; }
+    var app=document.getElementById('app');
+    if(app) app.style.display='';
+    if(typeof toggleTab==='function') toggleTab('list');
+  }catch(e){}
 }
 function dioceseLoaded(){
   var loading=document.getElementById('diocese-loading');
@@ -4444,6 +4454,7 @@ function _fmtTime(s){
     requestAnimationFrame(function(){ keepWebActiveCatVisible(nextCat, 'smooth'); });
     setTimeout(function(){ keepWebActiveCatVisible(nextCat); }, 80);
   }
+  window.setWebCat = setWebCat;
 
   function renderWebList(){
     const wrap = ig$('web-list');
@@ -5906,7 +5917,10 @@ window.initPrayerView = function(){
       var cur=tabs.findIndex(function(b){return b.classList.contains('on');});
       if(cur<0) cur=0;
       var next = dx<0 ? (cur+1)%tabs.length : (cur-1+tabs.length)%tabs.length;
-      tabs[next].click();
+      var nextCat = tabs[next].dataset.webCat || tabs[next].id.replace('web-cat_','');
+      /* click() 대신 직접 카테고리 전환 - smooth scroll 방지로 버벅임 제거 */
+      if(typeof setWebCat==='function') setWebCat(nextCat);
+      else tabs[next].click();
       flash($('web-list'), dx<0?'left':'right');
     }, {passive:true});
   }
