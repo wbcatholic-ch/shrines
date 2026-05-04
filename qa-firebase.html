@@ -55,20 +55,20 @@
   }
   #close-btn {
     display: flex; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
-    color: rgba(212,170,106,.9); border-radius: 50%; width: 36px; height: 36px;
-    font-size: 20px; font-weight: 900; cursor: pointer; flex-shrink: 0;
+    color: rgba(212,170,106,.95); border-radius: 50%; width: 36px; height: 36px;
+    min-width: 36px; font-size: 22px; font-weight: 900; cursor: pointer; flex-shrink: 0;
     align-items: center; justify-content: center; line-height: 1; padding: 0;
     font-family: sans-serif; -webkit-tap-highlight-color: transparent;
   }
-  #header-texts .title { font-size: 17px; font-weight: 700; }
-  #header-texts .sub   { font-size: 11px; opacity: .72; margin-top: 2px; }
+  #header-texts .title { font-size: 20px; font-weight: 800; line-height: 1.25; letter-spacing: -.02em; }
+  #header-texts .sub   { font-size: 11px; opacity: .72; margin-top: 3px; font-weight: 600; }
   #header-texts { flex: 1; min-width: 0; overflow: hidden; }
   #write-btn {
     margin-left: auto; background: rgba(255,255,255,.18);
     border: 1px solid rgba(255,255,255,.35); color: #fff;
-    border-radius: 20px; padding: 9px 20px;
-    font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap;
-    font-family: inherit;
+    border-radius: 20px; padding: 8px 16px;
+    font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap;
+    font-family: inherit; flex-shrink: 0;
   }
 
   /* ── 뷰 전환 ── */
@@ -259,6 +259,12 @@
     #write-view { padding-top: 12px; }
     textarea { min-height: 96px; }
   }
+
+
+  /* OAI 20260504: 문의·건의 헤더를 앱 공통 모듈 헤더와 동일한 크기로 표준화 */
+  #header{min-height:70px; padding:0 16px;}
+  #close-btn{display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;}
+  @media(max-width:380px){#write-btn{padding:8px 12px;font-size:13px;}#header-texts .title{font-size:18px;}}
 
 </style>
 </head>
@@ -656,7 +662,7 @@ async function submitPost() {
     document.getElementById('success-view').style.display = 'block';
     document.getElementById('list-view').style.display = 'none';
     document.getElementById('header-title').textContent = '접수 완료';
-    document.getElementById('back-btn').classList.add('show');
+    var backBtn=document.getElementById('back-btn'); if(backBtn) backBtn.classList.add('show');
   } catch(e) {
     errEl.textContent = '저장 실패: ' + e.message; errEl.style.display = 'block';
   }

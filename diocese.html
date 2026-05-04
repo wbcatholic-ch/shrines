@@ -192,6 +192,15 @@ header{flex-shrink:0;background:var(--d);border-bottom:none;z-index:30;
   #card{width:178px;top:6px;right:6px;}
   #gw-bar{flex-direction:row;flex-wrap:wrap;}
 }
+
+/* OAI 20260504: 앱 안에서 부모 공통 헤더와 중복되는 내부 교구 헤더 숨김 */
+body > header{display:none!important;}
+body{background:var(--bg)!important;}
+.tab-bar{border-top:none!important;}
+@media(display-mode:standalone){
+  header{display:none!important;}
+}
+
 </style>
 <script id="oai-no-cache-runtime-20260501">
 (function(){
