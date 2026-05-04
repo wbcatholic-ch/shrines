@@ -254,6 +254,13 @@ header{width:100%!important;max-width:none!important;min-height:70px!important;h
   }catch(e){}
 })();
 </script>
+
+<style id="oai-diocese-tab-standard-20260504">
+/* 관구교구 헤더 아래 탭 버튼 표준화 */
+.tab-bar{height:55px!important;padding:8px 10px!important;gap:8px!important;background:#FFFBF2!important;border-top:0!important;border-bottom:1px solid #DDD5C8!important;align-items:center!important;}
+.tab{height:40px!important;border-radius:12px!important;font-size:15px!important;font-weight:800!important;background:#F8FAFC!important;color:#475569!important;border:1.5px solid #CBD5E1!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+.tab.on{background:#1F2A44!important;color:#fff!important;border-color:#1F2A44!important;box-shadow:0 3px 10px rgba(31,42,68,.22)!important;}
+</style>
 </head>
 <body>
 <header>
@@ -1672,6 +1679,15 @@ window.addEventListener('pageshow',function(){
     state=state||{}; var tab=state.tab||'gwangu'; var btn=document.querySelector('.tab[data-tab="'+tab+'"]'); if(btn) btn.click();
     if(state.searchValue && document.getElementById('si')){ document.getElementById('si').value=state.searchValue; if(typeof doSearch==='function') doSearch(); }
     setTimeout(function(){ var lv=document.getElementById('list-view'); if(lv) lv.scrollTop=Number(state.listScroll||0); var sv=document.getElementById('search-view'); if(sv) sv.scrollTop=Number(state.searchScroll||0); },80);
+  };
+
+  window.resetDioceseFirstPage = function(){
+    try{ sessionStorage.removeItem('listScroll'); }catch(e){}
+    var si=document.getElementById('si'); if(si) si.value='';
+    var sres=document.getElementById('sres'); if(sres) sres.innerHTML='<div class="se">교구명, 지역명, 홈페이지 주소로 검색하세요</div>';
+    var lv=document.getElementById('list-view'); if(lv) lv.scrollTop=0;
+    var sv=document.getElementById('search-view'); if(sv) sv.scrollTop=0;
+    var btn=document.querySelector('.tab[data-tab="gwangu"]'); if(btn) btn.click();
   };
   window.openDioceseUrl = function(url, source){
     if(!url) return; var state=window.getDioceseReturnState(source||'link');

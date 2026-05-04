@@ -483,8 +483,8 @@ html.retreat-mode .region-item .nearby-num{background:#4f46e5!important}
 #prayer-detail{position:absolute;inset:0;top:0;z-index:10;background:#EDE8E0;transform:translateX(100%);transition:transform .27s cubic-bezier(.25,.46,.45,.94);overflow-y:auto;display:flex;flex-direction:column;right:0!important;width:100vw!important;max-width:100vw!important}
 #prayer-detail.show{transform:none!important;display:flex!important;visibility:visible!important;pointer-events:auto!important}
 #prayer-detail-hd{position:sticky;top:0;background:#FFFBF2;border-bottom:1px solid #ddd5c8;display:flex;align-items:center;padding:10px 13px;min-height:60px;z-index:11;gap:9px}
-.pr-back{background:none;border:none;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#555577;cursor:pointer;font-size:14px}
-#prayer-detail-ttl{flex:1!important;font-size:var(--oai-std-title-fs)!important;font-weight:800!important;color:#1a1a2e;text-align:center;line-height:1.25!important;word-break:keep-all;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.pr-back{background:none;border:none;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#555577!important;cursor:pointer;font-size:14px}
+#prayer-detail-ttl{flex:1!important;font-size:var(--oai-std-title-fs)!important;font-weight:800!important;color:#1a1a2e!important;text-align:center;line-height:1.25!important;word-break:keep-all;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 #prayer-detail-body{padding:16px 14px 36px;flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
 .pr-content-card{background:#FFFBF2;border:1px solid #ddd5c8;border-radius:13px;padding:24px 18px;font-family:inherit;font-size:var(--pr-body-fs,16px);line-height:2.1;color:#111;font-weight:500;box-shadow:0 1px 4px rgba(80,60,30,.07)}
 .pr-content-card p{margin-bottom:16px;word-break:keep-all}
@@ -629,7 +629,7 @@ html.app-active #qna-cover-btn{display:none!important}
 #web-view .web-list,
 #trail-list{padding-top:12px!important}
 /* 6) 주요기도문 상세 헤더도 같은 규격 */
-#prayer-detail-hd{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px!important;display:flex!important;align-items:center!important;gap:10px!important;box-sizing:border-box!important}
+#prayer-detail-hd{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px!important;display:flex!important;align-items:center!important;gap:10px!important;box-sizing:border-box!important;background:#FFFBF2!important;background-image:none!important;border-bottom:1px solid #ddd5c8!important;color:#1a1a2e!important;box-shadow:none!important;}
 #prayer-detail-hd .pr-back{width:42px!important;height:42px!important;border-radius:var(--oai-std-radius)!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important}
 /* 7) 폴드 화면에서 웹사이트/순례길 폭 강제 전체화면 */
 #web-view .module-bar,
@@ -639,7 +639,7 @@ html.app-active #qna-cover-btn{display:none!important}
 html.oai-font-global body,html.oai-font-global button,html.oai-font-global input,html.oai-font-global textarea,html.oai-font-global select{font-family:'Noto Sans KR',sans-serif!important}
 html.oai-font-global .nearby-name,html.oai-font-global .region-item .nearby-name,html.oai-font-global #region-body .nearby-name,html.oai-font-global .li-name,html.oai-font-global #region-body .li-name,html.oai-font-global .sm-name,html.oai-font-global .sm-place-name{font-size:calc(16px * var(--app-font-scale,1))!important;line-height:1.32!important;font-weight:700!important}
 html.oai-font-global .nearby-addr,html.oai-font-global .region-item .nearby-addr,html.oai-font-global #region-body .nearby-addr,html.oai-font-global .li-sub,html.oai-font-global #region-body .li-sub,html.oai-font-global .sm-sub,html.oai-font-global .sm-place-addr{font-size:calc(12px * var(--app-font-scale,1))!important;line-height:1.35!important}
-html.oai-font-global .sheet-title,html.oai-font-global .module-bar-title,html.oai-font-global #prayer-bar-ttl,html.oai-font-global #prayer-detail-ttl{font-size:var(--oai-std-title-fs)!important;line-height:1.25!important}
+html.oai-font-global .sheet-title,html.oai-font-global .module-bar-title,html.oai-font-global #prayer-bar-ttl{font-size:var(--oai-std-title-fs)!important;line-height:1.25!important}
 html.oai-font-global .module-bar-sub,html.oai-font-global #prayer-bar-sub{font-size:var(--oai-std-sub-fs)!important}
 html.oai-font-global .filter-btn,html.oai-font-global .region-search-btn,html.oai-font-global .sm-fb,html.oai-font-global .sm-tab,html.oai-font-global .web-cat-btn,html.oai-font-global .trail-tab,html.oai-font-global #prayer-tabs .pr-tab,html.oai-font-global #prayer-search-inp,html.oai-font-global #prayer-view .pr-font-btn{font-size:var(--oai-std-btn-fs)!important}
 html.oai-font-global .ic-addr-lbl,html.oai-font-global .ic-dist-lbl{font-size:calc(11px * var(--app-font-scale,1))!important}
@@ -896,7 +896,7 @@ html.oai-font-global #cover .cover-subtitle{font-size:14px!important}
 html.oai-font-global #cover .cover-icon-wrap,html.oai-font-global #cover .cover-emoji{font-size:26px!important}
 #cover-font-controls .pr-font-btn,#cover-font-controls button{width:42px!important;height:40px!important;min-height:40px!important;border:0!important;border-radius:0!important;background:#fff!important;color:#1f2a44!important;font-family:inherit!important;font-size:16px!important;font-weight:900!important;line-height:1!important;box-shadow:none!important;cursor:pointer!important}
 #cover-font-controls .pr-font-divider{width:1px!important;height:20px!important;background:#ddd5c8!important;flex:0 0 1px!important;margin:0 2px!important}
-html.oai-font-global #prayer-bar-ttl,html.oai-font-global #prayer-detail-ttl,html.oai-font-global .module-bar-title{font-size:20px!important;line-height:1.24!important}
+html.oai-font-global #prayer-bar-ttl,html.oai-font-global .module-bar-title{font-size:20px!important;line-height:1.24!important}
 html.oai-font-global .lv-rg,html.oai-font-global .lv-det,html.oai-font-global .lv-op,html.oai-font-global .c-gw,html.oai-font-global .c-rg,html.oai-font-global .c-lbl,html.oai-font-global .dd,html.oai-font-global .sg{font-size:calc(12px * var(--app-font-scale,1))!important;line-height:1.45!important}
 @media (max-height:720px){#cover{padding-top:calc(env(safe-area-inset-top,0px) + 12px)!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)!important;}#cover .cover-header{padding-top:14px!important;padding-bottom:12px!important;}#cover .cover-grid{gap:9px!important;padding-bottom:12px!important;}#cover .cover-card{min-height:86px!important;padding:8px 7px!important;gap:6px!important;}#cover .cover-icon-wrap{width:38px!important;height:38px!important;min-width:38px!important;font-size:24px!important;}#cover .cover-emoji{font-size:24px!important;}}
 /* 기존 커버 1개만 보정: 카테고리 onclick은 건드리지 않음 */
@@ -1486,14 +1486,12 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 #qna-view.module-view.open,
 #diocese-view.open{left:0!important;right:0!important;top:0!important;bottom:0!important;width:100vw!important;max-width:none!important;min-width:0!important;height:100dvh!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;overflow:hidden!important;box-sizing:border-box!important;}
 #prayer-bar,
-#prayer-detail-hd,
 #web-view .module-bar,
 #trail-view .module-bar,
 #qna-view .module-bar,
 #diocese-view .module-bar,
 #diocese-module-bar{background:#1f2a44!important;background-image:none!important;background-color:#1f2a44!important;width:100%!important;max-width:none!important;min-width:0!important;min-height:70px!important;height:70px!important;padding:0 16px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;box-sizing:border-box!important;border-bottom:0!important;box-shadow:none!important;overflow:hidden!important;}
 #prayer-bar::before,#prayer-bar::after,
-#prayer-detail-hd::before,#prayer-detail-hd::after,
 #web-view .module-bar::before,#web-view .module-bar::after,
 #trail-view .module-bar::before,#trail-view .module-bar::after,
 #qna-view .module-bar::before,#qna-view .module-bar::after,
@@ -1535,7 +1533,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 #qna-view .module-close,
 #diocese-view .module-close{width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;border-radius:50%!important;background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.22)!important;color:rgba(212,170,106,.95)!important;font-size:20px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:none!important;margin-left:8px!important;}
 #goodnews-prayer-btn{height:36px!important;min-width:auto!important;padding:0 12px!important;border-radius:12px!important;background:#d4aa6a!important;background-image:none!important;color:#1f2a44!important;box-shadow:none!important;font-size:13px!important;font-weight:900!important;}
-@media(min-width:600px){#prayer-bar,#prayer-detail-hd,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar,#diocese-module-bar{left:0!important;right:0!important;width:100vw!important;border-radius:0!important;}}
+@media(min-width:600px){#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar,#diocese-module-bar{left:0!important;right:0!important;width:100vw!important;border-radius:0!important;}}
 
 
 /* ✅ 20260504: 순례길 활성 탭 색상 남색 통일 */
@@ -1750,14 +1748,19 @@ function missaLoaded(){
   // 매일미사 외부 iframe 제거: 남겨둔 호환용 빈 함수
 }
 
-function openPrayerBook(){
+function openPrayerBook(opts){
   const view=$('prayer-view');
   if(!view) return;
   const cv=$('cover');
   if(cv){ cv.style.opacity='0'; cv.style.display='none'; }
   document.documentElement.classList.add('app-active');
   view.classList.add('open');
-  setTimeout(function(){ if(typeof window.initPrayerView==='function') try{window.initPrayerView();}catch(e){} }, 50);
+  setTimeout(function(){
+    if(typeof window.initPrayerView==='function') try{window.initPrayerView();}catch(e){}
+    if(!(opts&&opts.restore) && typeof showPrayerListOnly==='function') try{showPrayerListOnly();}catch(e){}
+    var list=document.getElementById('prayer-list-view'); if(list) list.scrollTop=0;
+    var tabs=document.getElementById('prayer-tabs'); if(tabs) tabs.scrollLeft=0;
+  }, 50);
 }
 function closePrayerView(){
   const view=$('prayer-view');
@@ -1775,12 +1778,19 @@ function openDioceseView(opts){
   var frame=document.getElementById('diocese-frame');
   var loading=document.getElementById('diocese-loading');
   if(!view||!frame) return;
+  var restore = !!(opts && opts.restore);
   var needsLoad = (!frame.src || frame.src==='about:blank' || !frame._loaded);
   view.classList.add('open');
   if(loading) loading.style.display = needsLoad ? 'flex' : 'none';
   if(needsLoad){
-    frame.onload=function(){ if(loading) loading.style.display='none'; frame._loaded=true; if(typeof dioceseLoaded==='function') dioceseLoaded(); };
-    frame.src='diocese.html?v=20260504-user1';
+    frame.onload=function(){
+      if(loading) loading.style.display='none'; frame._loaded=true;
+      if(!restore) try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){}
+      if(typeof dioceseLoaded==='function') dioceseLoaded();
+    };
+    frame.src='diocese.html?v=20260504-user2';
+  }else if(!restore){
+    try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){}
   }
 }
 function closeDioceseView(){
