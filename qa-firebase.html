@@ -312,6 +312,31 @@
 #close-btn{width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;border-radius:50%!important;background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.22)!important;color:rgba(212,170,106,.95)!important;font-size:20px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:none!important;}
 #write-btn{height:36px!important;min-height:36px!important;padding:0 14px!important;border-radius:999px!important;background:rgba(255,255,255,.16)!important;background-image:none!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;line-height:1!important;}
 @media(min-width:600px){#header{border-radius:0!important;width:100%!important;max-width:none!important;}}
+
+
+/* OAI 20260504-6: 글쓰기 버튼을 헤더에서 우측 하단 고정 버튼으로 이동 */
+#write-btn{
+  position:fixed!important;
+  right:18px!important;
+  bottom:calc(22px + env(safe-area-inset-bottom,0px))!important;
+  z-index:300!important;
+  height:52px!important;
+  min-height:52px!important;
+  padding:0 18px!important;
+  border-radius:999px!important;
+  background:#1f2a44!important;
+  background-image:none!important;
+  border:1px solid rgba(212,170,106,.55)!important;
+  color:#fff!important;
+  font-family:'Noto Sans KR',sans-serif!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  box-shadow:0 10px 24px rgba(15,23,42,.24)!important;
+}
+#write-btn:active{transform:scale(.97)!important;}
+@media(min-width:720px){#write-btn{right:calc((100vw - 680px)/2 + 18px)!important;}}
+
 </style>
 </head>
 <body>

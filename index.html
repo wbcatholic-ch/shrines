@@ -11,7 +11,7 @@
   }
 })();
 </script>
-<script src="parishes.js?v=20260502-cache1"></script>
+<script src="parishes.js?v=20260504-user1"></script>
 
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, max-age=0, must-revalidate">
@@ -24,8 +24,8 @@
 <meta name="application-name" content="가톨릭 앱">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0e1535">
-<link rel="manifest" href="manifest.json?v=20260502-cache1">
-<link rel="apple-touch-icon" href="icon-192x192.png?v=20260502-cache1">
+<link rel="manifest" href="manifest.json?v=20260504-user1">
+<link rel="apple-touch-icon" href="icon-192x192.png?v=20260504-user1">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="가톨릭 앱 - 가톨릭 신앙의 여정을 함께 합니다">
 <title>가톨릭 앱</title>
@@ -1769,7 +1769,7 @@ function openDioceseView(opts){
   if(loading) loading.style.display = needsLoad ? 'flex' : 'none';
   if(needsLoad){
     frame.onload=function(){ if(loading) loading.style.display='none'; frame._loaded=true; if(typeof dioceseLoaded==='function') dioceseLoaded(); };
-    frame.src='diocese.html';
+    frame.src='diocese.html?v=20260504-user1';
   }
 }
 function closeDioceseView(){
@@ -5780,7 +5780,7 @@ window.initPrayerView = function(){
 })();
 
 (function(){
-  var QA_URL = 'qa-firebase.html';
+  var QA_URL = 'qa-firebase.html?v=20260504-user1';
   // 커버 버튼 교체
   function bindQnaButton(){
     var btn = document.getElementById('qna-cover-btn');
@@ -5793,13 +5793,13 @@ window.initPrayerView = function(){
 })();
 
 (function(){
-  var QA_URL='qa-firebase.html';
+  var QA_URL='qa-firebase.html?v=20260504-user1';
   window.openQnaView=function(){ location.href=QA_URL; };
   window.QNA_FORM_URL=QA_URL;
   window.goQaFirebase=function(){ location.href=QA_URL; };
 })();
 
-// no-cache mode: service worker registration disabled; existing caches are cleared by oai-no-cache-runtime-20260501.
+// user-cache mode: keep app cache stable; refresh changed files through versioned URLs.
 
 // ── PWA 설치 버튼 로직 ──
 (function(){
@@ -6199,7 +6199,7 @@ window.initPrayerView = function(){
     if(!cover) return;
     var btn=$('qna-cover-btn');
     if(!btn){btn=document.createElement('button');btn.id='qna-cover-btn';btn.type='button';btn.setAttribute('aria-label','문의·건의');btn.textContent='💬 문의·건의';cover.appendChild(btn);}
-    btn.onclick=function(ev){if(ev) ev.preventDefault();if(typeof window.openQnaView === 'function') window.openQnaView();else location.href='qa-firebase.html';};
+    btn.onclick=function(ev){if(ev) ev.preventDefault();if(typeof window.openQnaView === 'function') window.openQnaView();else location.href='qa-firebase.html?v=20260504-user1';};
   }
   function removeMissaPopupState(){var mv=$('missa-view');if(mv) mv.classList.remove('open');}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){restoreQnaButton();removeMissaPopupState();});
