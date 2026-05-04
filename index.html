@@ -2361,9 +2361,10 @@ function _handleBack(){
 let _exitReady=false, _exitTimer=null;
 function _showBackToast(){
   if(_exitReady){
-  _exitReady=false;
-  clearTimeout(_exitTimer);
-  doExit(); return;
+    _exitReady=false;
+    clearTimeout(_exitTimer);
+    doExit();
+    return true; // 두 번째 뒤로가기: popstate 트랩을 다시 심지 않도록 알림
   }
   _exitReady=true;
   const old=$('_bt');
@@ -2374,20 +2375,34 @@ function _showBackToast(){
   t.style.cssText='position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+32px);left:50%;transform:translateX(-50%);background:rgba(14,21,53,.92);color:#fff;padding:10px 22px;border-radius:22px;font-size:13px;font-weight:600;z-index:99999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.3);';
   document.body.appendChild(t);
   _exitTimer=setTimeout(()=>{_exitReady=false;if(t.parentNode)t.remove();},2500);
+  return false; // 첫 번째 뒤로가기: 토스트만 표시
 }
 
 function attemptAppExit(){
   window._appExiting = true;
   // 토스트 즉시 제거
   const bt=$('_bt'); if(bt) bt.remove();
-  // 외부링크 방문 기록을 따라가지 않도록 history.go/history.back fallback은 사용하지 않는다.
   try{ sessionStorage.removeItem('catholic_core_return_v1'); }catch(e){}
   try{ sessionStorage.removeItem('catholic_integrated_return_v2'); }catch(e){}
-  try{ if(navigator.app && typeof navigator.app.exitApp === 'function') navigator.app.exitApp(); }catch(e){}
+  try{ sessionStorage.removeItem('oai_force_cover_after_reload'); }catch(e){}
+
+  // Cordova/WebView 계열에서는 네이티브 종료를 우선 시도한다.
+  try{ if(navigator.app && typeof navigator.app.exitApp === 'function'){ navigator.app.exitApp(); return; } }catch(e){}
+
+  // 일반 브라우저/PWA에서는 window.close가 막히는 경우가 많으므로
+  // 현재 뒤로가기 트랩을 해제한 뒤 Android 시스템 뒤로가기 흐름에 맡긴다.
   try{ window.open('', '_self'); window.close(); }catch(e){}
   try{ document.documentElement.classList.add('app-exiting'); }catch(e){}
+  setTimeout(function(){
+    try{ history.back(); }catch(e){}
+  }, 40);
 }
-function closeExitDlg(){$('exit-dlg').classList.remove('open');}
+function closeExitDlg(){
+  _exitReady=false;
+  clearTimeout(_exitTimer);
+  const bt=$('_bt'); if(bt) bt.remove();
+  $('exit-dlg').classList.remove('open');
+}
 function doExit(){
   closeExitDlg();
   attemptAppExit();
@@ -5559,8 +5574,9 @@ window.initPrayerView = function(){
 
     /* 커버: 토스트 → 두 번째에 종료. go(1) 재복원 없이 바로 트랩만 다시 심어 2번으로 끝낸다. */
     if(!appActive()){
-      if(typeof window._showBackToast==='function') window._showBackToast();
-      try{ history.pushState({_p:1}, '', _href); }catch(e){}
+      var exiting = false;
+      if(typeof window._showBackToast==='function') exiting = window._showBackToast() === true;
+      if(!exiting){ try{ history.pushState({_p:1}, '', _href); }catch(e){} }
       return;
     }
 
