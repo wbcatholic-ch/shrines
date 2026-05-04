@@ -1635,7 +1635,35 @@ function dioceseLoaded(){
     if(doc.__oaiCloseInjected) return;
     doc.__oaiCloseInjected = true;
     var s=doc.createElement('script');
-    s.textContent='(function(){'+'function _oaiCloseCard(){'+'var sels=[".info-card",".diocese-info-card","#diocese-info","#info-panel",".lv-info-card"];'+'for(var i=0;i<sels.length;i++){var cards=document.querySelectorAll(sels[i]);for(var j=0;j<cards.length;j++){var el=cards[j];var st=window.getComputedStyle(el);if(st.display!=="none"&&st.visibility!=="hidden"&&el.offsetHeight>0){el.style.display="none";el.classList.remove("open","show","active","on","visible");}}}'+'try{if(window._map&&window._map.closeOverlay)window._map.closeOverlay();}catch(e){}'+'try{if(window.map&&window.map.closeOverlay)window.map.closeOverlay();}catch(e){}'+'try{if(window.closeInfoCard)window.closeInfoCard();}catch(e){}'+'}'+'function _oaiIsCard(el){if(!el)return false;return !!(el.closest&&el.closest(".info-card,.diocese-info-card,#diocese-info,#info-panel,.lv-info-card"));}'+'document.addEventListener("click",function(e){if(!_oaiIsCard(e.target))_oaiCloseCard();},true);'+'document.addEventListener("touchend",function(e){if(!_oaiIsCard(e.target))_oaiCloseCard();},true);'+'})();';
+    s.textContent = `(function(){
+  function _oaiCloseCard(){
+    var sels=[".info-card",".diocese-info-card","#diocese-info","#info-panel",".lv-info-card","[class*=\\"info-card\\"]","[class*=\\"info_window\\"]","[class*=\\"infowindow\\"]","[class*=\\"popup\\"]"];
+    for(var i=0;i<sels.length;i++){
+      var cards=document.querySelectorAll(sels[i]);
+      for(var j=0;j<cards.length;j++){
+        var el=cards[j];
+        var st=window.getComputedStyle(el);
+        if(st.display!=="none"&&st.visibility!=="hidden"&&el.offsetHeight>0){
+          el.style.display="none";
+          el.classList.remove("open","show","active","on","visible");
+        }
+      }
+    }
+    try{ if(window._map&&window._map.closeOverlay) window._map.closeOverlay(); }catch(e){}
+    try{ if(window.map&&window.map.closeOverlay) window.map.closeOverlay(); }catch(e){}
+    try{ if(window.closeInfoCard) window.closeInfoCard(); }catch(e){}
+  }
+  function _oaiIsCard(el){
+    if(!el) return false;
+    return !!(el.closest&&el.closest(".info-card,.diocese-info-card,#diocese-info,#info-panel,.lv-info-card,[class*=\\"info-card\\"],[class*=\\"info_window\\"],[class*=\\"infowindow\\"],[class*=\\"popup\\"]"));
+  }
+  document.addEventListener("click",function(e){
+    if(!_oaiIsCard(e.target)) _oaiCloseCard();
+  },true);
+  document.addEventListener("touchend",function(e){
+    if(!_oaiIsCard(e.target)) _oaiCloseCard();
+  },true);
+})();`;
     (doc.head||doc.body).appendChild(s);
   }catch(ex){}
 }
