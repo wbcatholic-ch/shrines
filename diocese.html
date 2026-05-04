@@ -214,6 +214,13 @@ header{width:100%!important;max-width:none!important;min-height:70px!important;h
 body > header{display:none!important;}
 @media(display-mode:standalone){body > header{display:none!important;}}
 
+
+
+/* OAI 20260504-final: 부모 앱 헤더를 사용하므로 iframe 내부 헤더는 항상 숨김 */
+body > header{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;padding:0!important;overflow:hidden!important;}
+#main{top:0!important;}
+#card .c-x{display:flex!important;align-items:center!important;justify-content:center!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
+
 </style>
 <script id="oai-no-cache-runtime-20260501">
 (function(){
