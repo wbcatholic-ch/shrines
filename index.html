@@ -6305,11 +6305,11 @@ window.initPrayerView = function(){
   }
   function installRefresh(){
     var cover=$('cover'), ind=$('cv-pull-modern'); if(!cover||!ind||cover.__oaiFinalUnifiedRefresh) return; cover.__oaiFinalUnifiedRefresh=true;
-    var sx=0, sy=0, active=false, ready=false, refreshing=false, TH=96, MAX=150;
+    var sx=0, sy=0, active=false, ready=false, refreshing=false, TH=74, MAX=112, HOLD=420;
     function isCoverVisible(){return !!(cover && !document.documentElement.classList.contains('app-active') && getComputedStyle(cover).display!=='none');}
-    function setScale(dy){var v=Math.max(.72,Math.min(1.18,.72+(Math.min(Math.max(dy,0),MAX)/MAX)*.46)); ind.style.setProperty('--pull-scale', String(v));}
+    function setScale(dy){var y=Math.min(Math.max(dy,0),MAX);var v=Math.max(.78,Math.min(1.08,.78+(y/MAX)*.30));ind.style.setProperty('--pull-scale',String(v));ind.style.setProperty('transform','translate(-50%,'+(Math.round(y*.34)-8)+'px) scale('+v+')','important');}
     function show(state,dy){setScale(dy||0);ind.classList.add('show');ind.classList.toggle('ready',state==='ready');ind.classList.toggle('refreshing',state==='refreshing');}
-    function hide(){ind.classList.remove('show','ready','refreshing');ind.style.setProperty('--pull-scale','.72');}
+    function hide(){ind.classList.remove('show','ready','refreshing');ind.style.setProperty('--pull-scale','.78');ind.style.setProperty('transform','translate(-50%,-8px) scale(.78)','important');}
     cover.addEventListener('touchstart',function(e){
       if(refreshing||!isCoverVisible()||cover.scrollTop>0||!e.touches||!e.touches[0]) return;
       sx=e.touches[0].clientX; sy=e.touches[0].clientY; active=true; ready=false; hide();
@@ -6326,7 +6326,7 @@ window.initPrayerView = function(){
       if(!active) return; active=false;
       if(ready){
         ready=false; refreshing=true; show('refreshing',MAX);
-        try{navigator.vibrate&&navigator.vibrate(80);}catch(ex){}
+        try{navigator.vibrate&&navigator.vibrate(12);}catch(ex){}
         markFreshReload();
         setTimeout(function(){
           try{
@@ -6335,7 +6335,7 @@ window.initPrayerView = function(){
           /* 새로고침 후 터치/클릭이 잠기는 문제 방지: 반드시 상태 해제 */
           try{ hide(); }catch(ex){}
           active=false; ready=false; refreshing=false;
-        },260);
+        },HOLD);
       }else{ready=false;hide();}
     },{passive:true,capture:true});
     cover.addEventListener('touchcancel',function(){active=false;ready=false;hide();},{passive:true,capture:true});
@@ -6680,9 +6680,51 @@ html.oai-missa-return-stabilize #missa-view.open{
 </style>
 
 
-<!-- OAI 20260505: cover refresh preserved, non-cover pull resets current screen only -->
-<style id="oai-noncover-pull-reset-20260505">
-/* 기도문 검색창 식별만 살짝 강화 */
+<!-- OAI 20260505: cover-only pull refresh GitHub-like visual tuning -->
+<style id="oai-cover-pull-github-like-20260505">
+/* 커버 전용 당겨서 새로고침: 기능은 유지, 표시만 GitHub/브라우저식 원형 스피너 느낌으로 정리 */
+#cv-pull-modern{
+  top:calc(30px + env(safe-area-inset-top,0px))!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  background:#ffffff!important;
+  border:1px solid #d0d7de!important;
+  box-shadow:0 8px 18px rgba(27,31,36,.14)!important;
+  color:#57606a!important;
+  transition:opacity .12s ease, transform .10s linear!important;
+}
+#cv-pull-modern .cv-pull-ring{
+  width:44px!important;
+  height:44px!important;
+}
+#cv-pull-modern .cv-pull-icon{
+  width:25px!important;
+  height:25px!important;
+  color:#57606a!important;
+  stroke:currentColor!important;
+  transition:transform .16s ease,color .16s ease!important;
+}
+#cv-pull-modern.ready .cv-pull-icon{
+  color:#0969da!important;
+}
+#cv-pull-modern.refreshing .cv-pull-icon{
+  color:#0969da!important;
+  animation:cv-pull-spin .72s linear infinite!important;
+}
+#cv-pull-modern.ready{
+  box-shadow:0 10px 24px rgba(9,105,218,.20)!important;
+}
+html.app-active #cv-pull-modern{
+  opacity:0!important;
+  display:none!important;
+}
+</style>
+
+<!-- OAI 20260505: prayer search field visibility only -->
+<style id="oai-prayer-search-visibility-20260505">
+/* 기도문 검색창 식별만 살짝 강화: 기능/구조 변경 없음 */
 #prayer-search-inp{
   background:#e4ddd2!important;
   border-color:#c9bda9!important;
@@ -6691,188 +6733,7 @@ html.oai-missa-return-stabilize #missa-view.open{
 #prayer-search-inp::placeholder{
   color:#8f8578!important;
 }
-
-/* 커버의 기존 표시기 디자인을 그대로 재사용하되, 앱 내부에서도 동일 위치/크기로 보이게 유지 */
-html.app-active #cv-pull-modern.oai-inner-pull{
-  opacity:1!important;
-  display:flex!important;
-  pointer-events:none!important;
-  z-index:30000!important;
-}
-#cv-pull-modern.oai-inner-pull .cv-pull-icon{
-  color:#e3342f!important;
-}
 </style>
-
-<script id="oai-noncover-pull-reset-20260505">
-(function(){
-  'use strict';
-  if(window.__OAI_NONCOVER_PULL_RESET_20260505__) return;
-  window.__OAI_NONCOVER_PULL_RESET_20260505__ = true;
-
-  var TH = 96;       // 기존 커버/문의·건의 계열과 같은 기준
-  var MAX = 150;
-  var sx = 0, sy = 0;
-  var active = false, ready = false, locked = false;
-  var target = null;
-
-  function $(id){ return document.getElementById(id); }
-  function isOpen(id){ var el=$(id); return !!(el && el.classList.contains('open')); }
-  function appActive(){ return document.documentElement.classList.contains('app-active'); }
-  function indicator(){ return $('cv-pull-modern'); }
-
-  function currentScrollable(){
-    try{
-      if(isOpen('prayer-view')){
-        if($('prayer-detail') && $('prayer-detail').classList.contains('show')) return $('prayer-detail-body') || $('prayer-detail');
-        return $('prayer-list-view') || $('pr-list-ul');
-      }
-      if(isOpen('web-view')) return $('web-list') || document.querySelector('#web-view .web-list');
-      if(isOpen('trail-view')){
-        var onPanel=document.querySelector('#trail-view .trail-panel.on');
-        return $('trail-list') || onPanel || document.querySelector('#trail-view .trail-body');
-      }
-      if(isOpen('qna-view')) return $('qna-list') || document.querySelector('#qna-view .qna-body');
-      if(isOpen('diocese-view')) return document.querySelector('#diocese-view .diocese-body') || $('diocese-view');
-      if(isOpen('missa-view')) return $('missa-view');
-      var at = window._activeTab;
-      if(at){
-        return document.querySelector('#sheet-'+at+' .sheet-body') || $('sheet-'+at);
-      }
-      return document.querySelector('.sheet.open .sheet-body') || document.querySelector('.sheet.open');
-    }catch(e){ return null; }
-  }
-
-  function atTop(el){
-    if(!el) return false;
-    try{ return (el.scrollTop || 0) <= 1; }catch(e){ return false; }
-  }
-
-  function scaleFor(dy){
-    return Math.max(.72, Math.min(1.18, .72 + (Math.min(Math.max(dy,0),MAX)/MAX)*.46));
-  }
-  function showPull(state, dy){
-    var ind=indicator(); if(!ind) return;
-    ind.classList.add('oai-inner-pull','show');
-    ind.classList.toggle('ready', state === 'ready');
-    ind.classList.toggle('refreshing', state === 'refreshing');
-    ind.style.setProperty('--pull-scale', String(scaleFor(dy||0)));
-  }
-  function hidePull(){
-    var ind=indicator(); if(!ind) return;
-    ind.classList.remove('oai-inner-pull','show','ready','refreshing');
-    ind.style.setProperty('--pull-scale','.72');
-  }
-  function vibrate(){
-    try{ if(navigator.vibrate) navigator.vibrate(80); }catch(e){}
-  }
-  function scrollTop(el){
-    if(!el) return;
-    try{ el.style.scrollBehavior='auto'; el.scrollTop=0; el.scrollLeft=0; el.style.scrollBehavior=''; }catch(e){}
-  }
-
-  window.oaiResetCurrentScreenOnly = function(){
-    try{
-      /* 기도문: 본문이면 목록으로, 검색어 해제, 현재 탭 첫 위치 */
-      if(isOpen('prayer-view')){
-        var detail=$('prayer-detail');
-        if(detail) detail.classList.remove('show');
-        var inp=$('prayer-search-inp');
-        if(inp && inp.value){ inp.value=''; try{ inp.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){} }
-        scrollTop($('prayer-list-view'));
-        scrollTop($('pr-list-ul'));
-        return;
-      }
-
-      /* 웹사이트: 현재 탭 유지, 리스트만 첫 위치 */
-      if(isOpen('web-view')){
-        scrollTop($('web-list'));
-        var body=document.querySelector('#web-view .web-body'); if(body) scrollTop(body);
-        return;
-      }
-
-      /* 순례길: 열린 하단카드 닫고 현재 목록/패널 첫 위치 */
-      if(isOpen('trail-view')){
-        var sh=document.querySelector('#trail-view .trail-sheet.open'); if(sh) sh.classList.remove('open');
-        scrollTop($('trail-list'));
-        var panel=document.querySelector('#trail-view .trail-panel.on'); if(panel) scrollTop(panel);
-        return;
-      }
-
-      /* 문의·건의: 현재 화면 첫 위치 */
-      if(isOpen('qna-view')){
-        scrollTop($('qna-list'));
-        var qb=document.querySelector('#qna-view .qna-body'); if(qb) scrollTop(qb);
-        return;
-      }
-
-      /* 관구·교구도: 현재 화면에서 카드/모달만 닫고 첫 위치 */
-      if(isOpen('diocese-view')){
-        try{ var f=$('diocese-frame'); if(f && f.contentWindow) f.contentWindow.postMessage({type:'oai-diocese-reset-current'}, '*'); }catch(e){}
-        scrollTop($('diocese-view'));
-        return;
-      }
-
-      /* 매일미사: 팝업형 뷰 첫 위치 */
-      if(isOpen('missa-view')){
-        scrollTop($('missa-view'));
-        return;
-      }
-
-      /* 성지/성당/피정: 경로·검색·인포카드 정리, 현재 탭 리스트 첫 위치 */
-      var rs=$('sheet-route'); if(rs) rs.classList.remove('open');
-      var sm=$('srch-modal'); if(sm) sm.classList.remove('open');
-      var ic=$('info-card'); if(ic) ic.classList.remove('open');
-      try{ if(typeof window.resetRoute === 'function') window.resetRoute(); }catch(e){}
-      var at=window._activeTab;
-      if(at){ scrollTop(document.querySelector('#sheet-'+at+' .sheet-body')); scrollTop($('sheet-'+at)); }
-      document.querySelectorAll('.sheet.open .sheet-body').forEach(scrollTop);
-    }catch(e){}
-  };
-
-  function start(e){
-    if(!appActive()) return;                 // 커버는 기존 전용 핸들러 그대로 둠
-    if(!e.touches || !e.touches[0]) return;
-    target=currentScrollable();
-    if(!target || !atTop(target)) return;
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
-    active=true; ready=false; locked=false;
-    hidePull();
-  }
-  function move(e){
-    if(!active || !e.touches || !e.touches[0]) return;
-    var dx=e.touches[0].clientX-sx;
-    var dy=e.touches[0].clientY-sy;
-    if(dy < 0){ active=false; ready=false; hidePull(); return; }
-    if(Math.abs(dx) > Math.abs(dy)*1.2){ locked=true; return; }
-    if(locked || dy < 6) return;
-    if(e.cancelable) e.preventDefault();
-    ready = dy >= TH;
-    showPull(ready ? 'ready' : 'show', dy);
-  }
-  function end(){
-    if(!active) return;
-    active=false;
-    if(ready){
-      ready=false;
-      showPull('refreshing', MAX);
-      vibrate();
-      setTimeout(function(){
-        try{ window.oaiResetCurrentScreenOnly(); }catch(e){}
-        hidePull();
-      }, 220);
-    }else{
-      ready=false;
-      hidePull();
-    }
-  }
-
-  document.addEventListener('touchstart', start, {passive:true, capture:true});
-  document.addEventListener('touchmove', move, {passive:false, capture:true});
-  document.addEventListener('touchend', end, {passive:true, capture:true});
-  document.addEventListener('touchcancel', function(){active=false;ready=false;locked=false;hidePull();}, {passive:true, capture:true});
-})();
-</script>
 
 </body>
 </html>
