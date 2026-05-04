@@ -6341,22 +6341,32 @@ window.initPrayerView = function(){
 })();
 </script>
 
-<style id="oai-retreat-darkgreen-tab-wrap-20260504">
-/* 피정의 집: 활성화 버튼색은 유지하고, 상부 탭을 감싸는 배경만 조금 더 어두운 단색 녹색으로 조정 */
-html.retreat-mode #tabbar,
-html.retreat-mode .filter-bar,
-html.retreat-mode .region-wrap,
-html.retreat-mode #srch-modal #sm-tab-bar,
-html.retreat-mode #srch-modal .sm-filter{
-  background:#4f7f67!important;
+
+
+
+<style id="oai-retreat-unified-clean-20260504">
+/* 피정의집 색상 최종 통일: 상단 탭바는 흰색, 활성 탭은 녹색, 검색/필터 영역은 단색 녹색, 활성 필터는 금색 */
+html.retreat-mode{--retreat-bg:#3F7E5B!important;--retreat-active:#3F7E5B!important;--retreat-accent:#E8F3EC!important;--dist-retreat:#3F7E5B!important;}
+html.retreat-mode #tabbar{
+  background:#ffffff!important;
   background-image:none!important;
+  border-bottom:1px solid #E5E7EB!important;
+  box-shadow:0 8px 20px rgba(15,23,42,.08)!important;
 }
-</style>
-
-
-<style id="oai-retreat-green-gold-only-20260504-final">
-/* 피정의집: 상부 탭 배경은 어두운 녹색 단색, 활성 필터는 금색 */
-html.retreat-mode #tabbar,
+html.retreat-mode #tabbar .tab-btn{
+  background:#ffffff!important;
+  background-image:none!important;
+  color:#0F766E!important;
+  border:1.5px solid #DDE3EE!important;
+  box-shadow:none!important;
+}
+html.retreat-mode #tabbar .tab-btn.active{
+  background:#3F7E5B!important;
+  background-image:none!important;
+  color:#ffffff!important;
+  border-color:#C49A57!important;
+  box-shadow:none!important;
+}
 html.retreat-mode .sheet-hd,
 html.retreat-mode .srch-bar,
 html.retreat-mode .filter-bar,
@@ -6368,72 +6378,52 @@ html.retreat-mode #srch-modal #sm-tab-bar,
 html.retreat-mode #srch-modal .sm-filter{
   background:#3F7E5B!important;
   background-image:none!important;
+  border-bottom:1px solid rgba(255,255,255,.22)!important;
+}
+html.retreat-mode .sheet-title{color:#D4AA6A!important;}
+html.retreat-mode .srch-inner{
+  background:#F8FAFC!important;
+  background-image:none!important;
+  border:1.5px solid #E5E7EB!important;
+}
+html.retreat-mode .srch-inner input{color:#1F2937!important;}
+html.retreat-mode .srch-inner input::placeholder{color:#94A3B8!important;}
+html.retreat-mode .filter-btn,
+html.retreat-mode .sm-fb{
+  background:rgba(255,255,255,.14)!important;
+  background-image:none!important;
+  color:rgba(255,255,255,.94)!important;
+  border:1.5px solid rgba(255,255,255,.32)!important;
 }
 html.retreat-mode .filter-btn.active,
 html.retreat-mode .sm-fb.on,
 html.retreat-mode #srch-modal .sm-fb.on{
   background:#D4AA6A!important;
+  background-image:none!important;
   color:#1F2937!important;
   border-color:#C49A57!important;
   font-weight:900!important;
 }
-html.retreat-mode #tabbar .tab-btn.active{
+html.retreat-mode .nearby-num,
+html.retreat-mode .sm-role{background:#3F7E5B!important;color:#ffffff!important;}
+html.retreat-mode .nearby-type,
+html.retreat-mode .li-badge,
+html.retreat-mode .ic-type-badge{background:#E8F3EC!important;color:#3F7E5B!important;}
+html.retreat-mode .nearby-dist,
+html.retreat-mode .region-list-hd,
+html.retreat-mode .dio-hd{color:#3F7E5B!important;}
+html.retreat-mode .nearby-name,
+html.retreat-mode .li-name,
+html.retreat-mode .region-item .li-name,
+html.retreat-mode .sm-name,
+html.retreat-mode .sm-place-name{color:#111827!important;}
+html.retreat-mode #sm-tab-bar .sm-tab:not(.active){background:#ffffff!important;color:#0F766E!important;border-color:#DDE3EE!important;}
+html.retreat-mode #sm-tab-bar .sm-tab.active{
   background:#3F7E5B!important;
-  color:#fff!important;
+  background-image:none!important;
+  color:#ffffff!important;
   border-color:#C49A57!important;
-}
-</style>
-
-
-<style id="oai-retreat-white-user-20260504-final">
-/* ✅ 피정의집 전체 상부 화이트 통일 */
-html.retreat-mode .sheet-hd,
-html.retreat-mode .srch-bar,
-html.retreat-mode .filter-bar,
-html.retreat-mode .region-wrap {
-  background: #ffffff !important;
-  background-image: none !important;
-  border-bottom: 1px solid #E5E7EB !important;
-}
-
-/* ✅ 검색창 내부 (아이보리 느낌 유지) */
-html.retreat-mode .srch-inner {
-  background: #F8FAFC !important;
-  border: 1.5px solid #E5E7EB !important;
-}
-
-/* ✅ 탭 버튼 기본 */
-html.retreat-mode .tab-btn {
-  background: #ffffff !important;
-  color: #6B7280 !important;
-  border: 1px solid #E5E7EB !important;
-}
-
-/* ✅ 활성 탭 (금색) */
-html.retreat-mode .tab-btn.active,
-html.retreat-mode #tabbar .tab-btn.active {
-  background: #d4aa6a !important;
-  color: #111827 !important;
-  border-color: #c49a57 !important;
-}
-
-/* ✅ 타이틀 색 */
-html.retreat-mode .sheet-title {
-  color: #111827 !important;
-}
-
-/* ✅ 필터 버튼 */
-html.retreat-mode .filter-btn {
-  background: #F1F5F9 !important;
-  color: #475569 !important;
-  border: 1px solid #E2E8F0 !important;
-}
-
-/* ✅ 필터 활성 */
-html.retreat-mode .filter-btn.active {
-  background: #d4aa6a !important;
-  color: #111827 !important;
-  border-color: #c49a57 !important;
+  box-shadow:none!important;
 }
 </style>
 
