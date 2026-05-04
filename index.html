@@ -542,7 +542,7 @@ html.oai-font-global #region-body .li-sub,
 html.oai-font-global #region-body .region-item .nearby-addr{font-size:calc(12px * var(--app-font-scale))!important}
 /* 관구교구 iframe 내부에 주입될 수 없을 때를 대비한 부모 쪽 기본값 */
 #diocese-view{--app-font-scale:1}
-#web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;display:flex!important;align-items:stretch!important;justify-content:flex-start!important;overflow:hidden!important;z-index:1800!important;flex-direction:column!important}
+#web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:var(--oai-app-vh,100dvh)!important;max-width:none!important;max-height:none!important;display:flex!important;align-items:stretch!important;justify-content:flex-start!important;overflow:hidden!important;z-index:1800!important;flex-direction:column!important}
 #web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#web-view .web-body,#trail-view .trail-body,#qna-view .qna-body{width:100%!important;max-width:none!important}
 #web-view .web-body,#trail-view .trail-body,#qna-view .qna-body{flex:1 1 auto!important;min-height:0!important;height:auto!important;overflow:hidden!important}
 #web-view .web-list,#trail-view #trail-list,#qna-view .qna-list{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important}
@@ -589,7 +589,7 @@ html.app-active #qna-cover-btn{display:none!important}
 #prayer-view.open,
 #web-view.module-view.open,
 #trail-view.module-view.open,
-#diocese-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important}
+#diocese-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:var(--oai-app-vh,100dvh)!important;max-width:none!important;max-height:none!important;overflow:hidden!important}
 #web-view.module-view.open,
 #trail-view.module-view.open{display:flex!important;flex-direction:column!important;align-items:stretch!important}
 /* 2) 헤더 통일 → 하단 패치에서 처리 */
@@ -648,7 +648,7 @@ html.oai-font-global #prayer-view .pr-font-btn.pr-sm{font-size:12px!important}
 html.oai-font-global #prayer-view .pr-font-btn.pr-lg{font-size:20px!important}
 html.oai-font-global .ic-addr-lbl,html.oai-font-global .ic-dist-lbl{font-size:calc(11px * var(--app-font-scale,1))!important}
 html.oai-font-global .web-card-badge,html.oai-font-global .web-card-url{font-size:calc(13px * var(--app-font-scale,1))!important}
-#web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open,#diocese-view.open,#prayer-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+#web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open,#diocese-view.open,#prayer-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:var(--oai-app-vh,100dvh)!important;max-width:none!important;max-height:none!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
 #prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;box-sizing:border-box!important;flex-shrink:0!important}
 #prayer-tabs,#web-view .web-cats,#trail-view .trail-tabs,#qna-view .qna-tabs{min-height:calc(var(--oai-std-tab-h) + 16px)!important;height:calc(var(--oai-std-tab-h) + 16px)!important;padding:8px 14px!important;box-sizing:border-box!important;gap:8px!important;align-items:center!important;flex-shrink:0!important}
 #prayer-tabs .pr-tab,#web-view .web-cat-btn,#trail-view .trail-tab,#qna-view .qna-tab{height:var(--oai-std-tab-h)!important;min-height:var(--oai-std-tab-h)!important;border-radius:14px!important;font-size:var(--oai-std-btn-fs)!important;font-weight:800!important;display:flex!important;align-items:center!important;justify-content:center!important}
@@ -1241,16 +1241,17 @@ html.app-active #cover #qna-cover-btn,html.app-active #cover-bottom-note{display
 html.retreat-mode .region-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;width:100%!important}
 html.retreat-mode .region-row .srch-inner{width:100%!important;min-width:0!important;height:42px!important;box-sizing:border-box!important}
 html.retreat-mode .region-search-btn{width:74px!important;min-width:74px!important;max-width:74px!important;height:42px!important;padding:0 6px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:normal!important;word-break:keep-all!important;line-height:1.08!important;font-size:11px!important;letter-spacing:-.04em!important;border-radius:21px!important}
-/* 피정 리스트 카드: 오른쪽 배지/거리 때문에 본문 박스가 밀리지 않게 고정 */
+/* 피정 리스트 카드: 오른쪽 배지와 거리/시간을 각각 한 줄로 고정 */
 html.retreat-mode .nearby-item,
 html.retreat-mode .list-item,
-html.retreat-mode .region-item{width:100%!important;min-width:0!important;box-sizing:border-box!important;align-items:flex-start!important}
+html.retreat-mode .region-item{width:100%!important;min-width:0!important;box-sizing:border-box!important;align-items:center!important}
 html.retreat-mode .nearby-info,
 html.retreat-mode .li-info{flex:1 1 auto!important;min-width:0!important}
-html.retreat-mode .nearby-meta{width:74px!important;min-width:74px!important;max-width:74px!important;flex:0 0 74px!important}
-html.retreat-mode .nearby-type,
-html.retreat-mode .nearby-dist,
-html.retreat-mode .li-badge{font-size:10.5px!important;line-height:1.12!important;white-space:normal!important;text-align:center!important;padding:3px 5px!important;max-width:74px!important;box-sizing:border-box!important}
+html.retreat-mode .nearby-meta{width:112px!important;min-width:112px!important;max-width:112px!important;flex:0 0 112px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:5px!important;margin-top:0!important;overflow:visible!important}
+html.retreat-mode .nearby-type{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:112px!important;min-width:82px!important;font-size:11px!important;line-height:1!important;white-space:nowrap!important;text-align:center!important;padding:5px 10px!important;box-sizing:border-box!important;word-break:keep-all!important;overflow:visible!important;text-overflow:clip!important}
+html.retreat-mode .nearby-dist{display:flex!important;align-items:baseline!important;justify-content:center!important;width:112px!important;max-width:112px!important;font-size:13px!important;line-height:1.1!important;white-space:nowrap!important;text-align:center!important;padding:0!important;box-sizing:border-box!important;word-break:keep-all!important;overflow:visible!important;gap:3px!important}
+html.retreat-mode .nearby-dist span{font-size:10px!important;line-height:1.1!important;white-space:nowrap!important;margin-left:3px!important;display:inline!important;word-break:keep-all!important}
+html.retreat-mode .li-badge{font-size:11px!important;line-height:1!important;white-space:nowrap!important;text-align:center!important;padding:5px 10px!important;max-width:112px!important;box-sizing:border-box!important;word-break:keep-all!important}
 @keyframes cv-pull-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 /* 커버 이모지 중복 방지: 실제 span 한 개만 표시 */
 #cc-2 .cover-emoji::before,
@@ -1490,7 +1491,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 #web-view.module-view.open,
 #trail-view.module-view.open,
 #qna-view.module-view.open,
-#diocese-view.open{left:0!important;right:0!important;top:0!important;bottom:0!important;width:100vw!important;max-width:none!important;min-width:0!important;height:100dvh!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;overflow:hidden!important;box-sizing:border-box!important;}
+#diocese-view.open{left:0!important;right:0!important;top:0!important;bottom:0!important;width:100vw!important;max-width:none!important;min-width:0!important;height:var(--oai-app-vh,100dvh)!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;overflow:hidden!important;box-sizing:border-box!important;}
 #prayer-bar,
 #web-view .module-bar,
 #trail-view .module-bar,
@@ -1979,15 +1980,15 @@ function normalizeCatholicExternalUrl(url){
   try{
     var u = new URL(url);
     var host = u.hostname.toLowerCase();
+    var keepHttpHosts = {'www.caincheon.or.kr':true,'caincheon.or.kr':true};
     var canonicalHosts={
       'cbck.or.kr':'www.cbck.or.kr',
       'catholic.or.kr':'www.catholic.or.kr',
-      'ucatholic.or.kr':'www.ucatholic.or.kr',
-      'wjcatholic.or.kr':'www.wjcatholic.or.kr',
-      'cathms.kr':'www.cathms.kr',
-      'jcatholic.or.kr':'www.jcatholic.or.kr'
+      'wjcatholic.or.kr':'www.wjcatholic.or.kr'
     };
     if(canonicalHosts[host]) u.hostname=canonicalHosts[host];
+    host = u.hostname.toLowerCase();
+    if(keepHttpHosts[host] && u.protocol === 'http:') return u.toString();
     u.protocol='https:';
     if((u.hostname==='www.cbck.or.kr'||u.hostname==='cbck.or.kr') && u.pathname==='/') u.pathname='/';
     return u.toString();
@@ -1999,14 +2000,14 @@ function openCoreExternalUrl(url, extra){
   saveCoreReturnState(extra);
   // 외부링크는 앱/현재창을 덮지 않고 무조건 새창으로 연다.
   try{
-    const w = window.open(url, '_blank', 'noopener,noreferrer');
+    const w = window.open(url, '_blank', 'noopener');
     if(w) return;
   }catch(e){}
   try{
     const a = document.createElement('a');
     a.href = url;
     a.target = '_blank';
-    a.rel = 'noopener noreferrer';
+    a.rel = 'noopener';
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
@@ -2267,6 +2268,21 @@ let _dp = null; // PWA install prompt
   });
 })();
 (function(){
+  function setStableAppVh(force){
+    try{
+      var root=document.documentElement;
+      if(!force && root.classList.contains('kb-open')) return;
+      var h=Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
+      if(h>0) root.style.setProperty('--oai-app-vh', h+'px');
+    }catch(e){}
+  }
+  window.__oaiSetStableAppVh=setStableAppVh;
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setStableAppVh(true);},{once:true});
+  else setStableAppVh(true);
+  window.addEventListener('load',function(){setStableAppVh(true);},{once:true});
+  window.addEventListener('orientationchange',function(){setTimeout(function(){setStableAppVh(true);},280);});
+})();
+(function(){
   function measureSA(){
   const b=document.createElement('div');
   b.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);pointer-events:none;visibility:hidden;';
@@ -2391,12 +2407,16 @@ function attemptAppExit(){
   window._appExiting = true;
   // 토스트 즉시 제거
   const bt=$('_bt'); if(bt) bt.remove();
-  // about:blank로 보내지 않는다. 가능한 환경에서는 앱/창을 닫고, 아니면 실제 이전 화면으로만 빠진다.
+  // 외부링크 복귀용 저장값은 종료 시점에 더 이상 따라가지 않도록 지운다.
+  try{ sessionStorage.removeItem('catholic_core_return_v1'); }catch(e){}
+  try{ sessionStorage.removeItem('catholic_integrated_return_v2'); }catch(e){}
+  try{ sessionStorage.removeItem('_noAutoNearby_flag'); }catch(e){}
+  try{ sessionStorage.removeItem('_prayerReturn'); }catch(e){}
+  // 가능한 환경에서는 네이티브 앱/창 닫기를 먼저 시도한다.
   try{ if(navigator.app && typeof navigator.app.exitApp === 'function') navigator.app.exitApp(); }catch(e){}
   try{ window.open('', '_self'); window.close(); }catch(e){}
-  setTimeout(()=>{
-    try{ history.go(-2); }catch(e){ try{ history.back(); }catch(_){} }
-  }, 80);
+  // 이전 버전의 강제 히스토리 이동 fallback은 외부링크 방문 기록을 따라가는 원인이어서 제거한다.
+  setTimeout(()=>{ window._appExiting = false; }, 700);
 }
 function closeExitDlg(){$('exit-dlg').classList.remove('open');}
 function doExit(){
@@ -3387,7 +3407,7 @@ function _renderNearbyDone(prelim,results,getIdx,getColor,getLabel,phase){
     const lbl=getLabel(o.x.p);
     const km=o.r.km.toFixed(1);
     const isEst=(phase==='est');
-    const distTxt=isEst?`~${km}km`:`🚗${km}km`;
+    const distTxt=isEst?`~${km}km`:`🚗 ${km}km`;
     const dur=(!isEst&&o.r.dur)?`<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(o.r.dur)}</span>`:'';
     return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.p.name}</div><div class="nearby-addr">${o.x.p.addr.substring(0,26)}${o.x.p.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${lbl}</div><div class="nearby-dist" style="color:${isEst?'#aaa':''}">${distTxt}${dur}</div></div></div>`;
   }).join('');
@@ -3576,7 +3596,7 @@ function _showRegionResults(q,lat,lng,doc){
         if(rgl) rgl.innerHTML=sorted.map((o,i)=>{
           const idx=items.indexOf(o.x.s);const c=_getModeMarkerColor(o.x.s);const lbl=_getModeTypeLabel(o.x.s);
           const km=o.r.km.toFixed(1);const dur=o.r.dur?`<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(o.r.dur)}</span>`:'';
-          return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.s.name}</div><div class="nearby-addr">${o.x.s.addr.substring(0,26)}${o.x.s.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${lbl}</div><div class="nearby-dist">🚗${km}km${dur}</div></div></div>`;
+          return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.s.name}</div><div class="nearby-addr">${o.x.s.addr.substring(0,26)}${o.x.s.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${lbl}</div><div class="nearby-dist">🚗 ${km}km${dur}</div></div></div>`;
         }).join('');
       }
     });
@@ -4102,15 +4122,15 @@ function _fetchDist(lat,lng,iLat,iLng,distId){
   const route=data.routes?.[0];
   if(route&&route.result_code===0){
    const km=(route.summary.distance/1000).toFixed(1);
-   const el=$(distId);if(el)el.innerHTML=`🚗${km}km<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(route.summary.duration)}</span>`;
+   const el=$(distId);if(el)el.innerHTML=`🚗 ${km}km<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(route.summary.duration)}</span>`;
   }
  }).catch(()=>{});
 }
 function _nearbyHtml(idx,i,name,addr,c,tLabel,distId,estKm){
- return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div><div class="nearby-dist" id="${distId}">🚗${estKm}km</div></div></div>`;
+ return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div><div class="nearby-dist" id="${distId}">🚗 ${estKm}km</div></div></div>`;
 }
 function _regionHtml(idx,i,name,addr,c,tLabel,distId,estKm){
- return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div>${distId?`<div class="nearby-dist" id="${distId}">🚗${estKm}km</div>`:''}</div></div>`;
+ return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div>${distId?`<div class="nearby-dist" id="${distId}">🚗 ${estKm}km</div>`:''}</div></div>`;
 }
 function _show(el,d){if(el)el.style.display=d||'flex';}
 function _hide(el){if(el)el.style.display='none';}
@@ -4224,7 +4244,7 @@ function _fmtTime(s){
     <div class="module-bar-main">
       <div class="module-bar-ico">🌐</div>
       <div class="module-bar-txt">
-        <div class="module-bar-title">주요 가톨릭 웹사이트 <span class="module-count" id="web-count">28개</span></div>
+        <div class="module-bar-title">가톨릭 주요 웹사이트 <span class="module-count" id="web-count">28개</span></div>
         <div class="module-bar-sub">가톨릭 신앙과 정보를 한곳에서 만나보세요</div>
       </div>
     </div>
@@ -4286,7 +4306,7 @@ function _fmtTime(s){
   {cat:"중앙기구", ico:"🏛️", name:"한국천주교주교회의 (CBCK)",
    op:"한국천주교주교회의", url:"https://www.cbck.or.kr/",
    desc:"한국 천주교 공식 문헌·교리·전례·교회법·발표 자료 제공"},
-  {cat:"중앙기구", ico:"⛪", name:"한국 천주교 순교자 현양",
+  {cat:"중앙기구", ico:"⛪", name:"시복시성 주교특별위원회",
    op:"한국천주교주교회의", url:"https://cbck.or.kr/koreanmartyrs/",
    desc:"한국 순교자·성지·교회사 관련 자료 제공"},
 
@@ -4337,7 +4357,7 @@ function _fmtTime(s){
 
   /* 출판/교육 */
   {cat:"출판·교육", ico:"📚", name:"가톨릭출판사",
-   op:"가톨릭출판사", url:"https://www.catholicbook.kr/",
+   op:"가톨릭출판사", url:"https://catholicbookplus.kr/shop",
    desc:"교리·영성·교육용 도서 및 신앙서적 제공"},
   {cat:"출판·교육", ico:"🕊️", name:"성바오로딸",
    op:"성바오로딸수도회", url:"https://www.pauline.or.kr/",
@@ -4348,13 +4368,13 @@ function _fmtTime(s){
    op:"천주교 서울대교구", url:"https://aos.catholic.or.kr/",
    desc:"교구 공지·교육·사목 자료·기관 정보 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"인천교구",
-   op:"천주교 인천교구", url:"https://www.caincheon.or.kr/",
+   op:"천주교 인천교구", url:"http://www.caincheon.or.kr/",
    desc:"교구 공지·사목 자료·기관 정보 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"수원교구",
-   op:"천주교 수원교구", url:"https://www.casuwon.or.kr/",
+   op:"천주교 수원교구", url:"https://www.casuwon.or.kr/diocese/intro",
    desc:"교구 소식·교육·행사·사목 자료 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"의정부교구",
-   op:"천주교 의정부교구", url:"https://www.ucatholic.or.kr/",
+   op:"천주교 의정부교구", url:"https://ucatholic.or.kr/",
    desc:"교구 공지·본당 안내·사목 자료 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"춘천교구",
    op:"천주교 춘천교구", url:"https://www.cccatholic.or.kr/",
@@ -4363,7 +4383,7 @@ function _fmtTime(s){
    op:"천주교 원주교구", url:"https://www.wjcatholic.or.kr/",
    desc:"교구 소식·교육 자료·공지 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"대전교구",
-   op:"천주교 대전교구", url:"https://www.djcatholic.or.kr/home/",
+   op:"천주교 대전교구", url:"https://www.djcatholic.or.kr/",
    desc:"교구 행사·교육·공지·사목 자료 제공"},
   /* 교구 - 대구관구 */
   {cat:"교구", ico:"⛪", prov:"대구관구", name:"대구대교구",
@@ -4379,14 +4399,14 @@ function _fmtTime(s){
    op:"천주교 부산교구", url:"https://www.catholicbusan.or.kr/",
    desc:"교구 소식·행사·교육 자료 제공"},
   {cat:"교구", ico:"⛪", prov:"대구관구", name:"마산교구",
-   op:"천주교 마산교구", url:"https://www.cathms.kr/",
+   op:"천주교 마산교구", url:"https://cathms.kr/",
    desc:"교구 공지·기관 정보·교육 자료 제공"},
   /* 교구 - 광주관구 */
   {cat:"교구", ico:"⛪", prov:"광주관구", name:"광주대교구",
    op:"천주교 광주대교구", url:"https://www.gjcatholic.or.kr/",
    desc:"교구 공지·사목 자료·기관 안내 제공"},
   {cat:"교구", ico:"⛪", prov:"광주관구", name:"전주교구",
-   op:"천주교 전주교구", url:"https://www.jcatholic.or.kr/",
+   op:"천주교 전주교구", url:"https://jcatholic.or.kr/index.php",
    desc:"교구 행사·공지·사목 자료 제공"},
   {cat:"교구", ico:"⛪", prov:"광주관구", name:"제주교구",
    op:"천주교 제주교구", url:"https://www.diocesejeju.or.kr/",
@@ -4396,9 +4416,9 @@ function _fmtTime(s){
   {n:"천주교 서울 순례길",       op:"서울대교구",            t:"d", r:"서울시",                   lat:37.5644,lng:127.0104, ico:"✝️", url:"https://martyrs.or.kr/_web/mpilgrims/about.html"},
   {n:"성지순례길 '디딤길'",      op:"수원교구",              t:"d", r:"경기 수원시",               lat:37.2832,lng:127.0170, ico:"🙏", url:"https://www.casuwon.or.kr/holyland/pilgrimage"},
   {n:"원주교구 순례길 '님의 길'",   op:"원주교구",              t:"d", r:"강원 원주·횡성, 충북 제천", lat:37.3420,lng:127.9200, ico:"🌿", url:"https://sunraegil.seoji.net/course/all"},
-  {n:"한티가는길",               op:"대구대교구",            t:"d", r:"경북 칠곡 (가실성당~한티순교성지)",  lat:36.0168,lng:128.6299, ico:"⛰️", url:"https://hantigil.or.kr/index"},
+  {n:"한티가는길",               op:"대구대교구",            t:"d", r:"경북 칠곡 (가실성당~한티순교성지)",  lat:36.0168,lng:128.6299, ico:"⛰️", url:"https://www.hantigil.or.kr/"},
   {n:"광주대교구 순례길",        op:"광주대교구",            t:"d", r:"전남 나주·영광",             lat:35.0369,lng:126.7152, ico:"🕊️", url:"https://www.gjcatholic.or.kr/holyland/pilgrimage/noan_naju"},
-  {n:"천주교 제주교구 순례길",       op:"제주교구",              t:"d", r:"제주",                      lat:33.4463,lng:126.3027, ico:"🌊", url:"http://santoviaggio.com/"},
+  {n:"천주교 제주교구 순례길",       op:"제주교구",              t:"d", r:"제주",                      lat:33.4463,lng:126.3027, ico:"🌊", url:"https://santoviaggio.com/"},
   {n:"사제와 함께하는 도보순례", op:"안동교구",              t:"d", r:"경북 문경·상주",             lat:36.8001,lng:128.2113, ico:"👣", url:"https://www.acatholic.or.kr/sub4/sub2.asp"},
   {n:"전주교구 교우촌 도보순례",   op:"전주교구",              t:"d", r:"전북 전주·완주",             lat:35.8031,lng:127.1677, ico:"🌾", url:"https://www.jcatholic.or.kr/theme/main/pages/pilgrimage01.html"},
   {n:"보령 갈매못 성지순례길",   op:"보령시",                t:"l", r:"충남 보령",                 lat:36.4280,lng:126.5075, ico:"🌅", url:"https://www.brcn.go.kr/tour/sub02_02_02.do"},
@@ -4472,12 +4492,13 @@ function _fmtTime(s){
       payload.cat = payload.cat || webState.curCat || '⭐ 즐겨찾기';
     }
     saveReturnState(payload);
+    try{ if(typeof window.__oaiSetStableAppVh==='function') window.__oaiSetStableAppVh(true); }catch(e){}
     try{
-      const w = window.open(url, '_blank', 'noopener,noreferrer');
+      const w = window.open(url, '_blank', 'noopener');
       if(w) return;
     }catch(e){}
     try{
-      const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(),300);
+      const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(),300);
     }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); }
   }
 
@@ -4574,7 +4595,7 @@ function _fmtTime(s){
           list.scrollTop = Number(state.scroll||0);
           list.style.scrollBehavior = '';
         }
-        document.documentElement.classList.remove('oai-returning');
+        setTimeout(function(){ document.documentElement.classList.remove('oai-returning'); }, 360);
       });
       return;
     }
