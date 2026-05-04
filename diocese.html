@@ -206,6 +206,14 @@ header{width:100%!important;max-width:none!important;min-height:70px!important;h
 .hd-sub{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif!important;font-size:11px!important;font-weight:600!important;line-height:1.25!important;margin-top:3px!important;color:rgba(255,255,255,.72)!important;opacity:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
 @media(display-mode:standalone){header{height:70px!important;min-height:70px!important;padding-top:0!important;}}
 @media(min-width:600px){header{border-radius:0!important;width:100%!important;max-width:none!important;}}
+
+
+/* OAI 20260504-6: 부모 앱 헤더와 중복되는 iframe 내부 교구 헤더 숨김
+   - 상위 index.html의 관구·교구 헤더만 사용
+   - 내부 탭/지도/목록 구조는 그대로 유지 */
+body > header{display:none!important;}
+@media(display-mode:standalone){body > header{display:none!important;}}
+
 </style>
 <script id="oai-no-cache-runtime-20260501">
 (function(){

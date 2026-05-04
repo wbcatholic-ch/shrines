@@ -1139,8 +1139,8 @@ html.app-active #pwa-install-btn{display:none!important}
 #prayer-list-view,#pr-list-ul,#web-list{touch-action:pan-y!important;overscroll-behavior-x:none!important;transform:none!important}
 @keyframes oaiSwipeSoftFlash{0%{opacity:1}100%{opacity:1}}
 .oai-swipe-left,.oai-swipe-right{animation:none!important;transform:none!important;position:relative!important;overflow:hidden!important;filter:none!important;will-change:auto!important}
-/* OAI tab transition unification: pr-tab & web-cat-btn same speed/easing */
-#prayer-tabs .pr-tab,#web-view .web-cat-btn{transition:background .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease!important}
+/* OAI 20260504: 웹사이트 탭 색상 반응을 주요기도문처럼 즉시 반영 */
+#prayer-tabs .pr-tab,#web-view .web-cat-btn{transition:none!important;animation:none!important}
 /* ① 앱(standalone/app-active)에서는 설치 버튼 완전 숨김 */
 html.app-active #pwa-install-btn{display:none!important}
 @media (display-mode: standalone) { #pwa-install-btn { display:none!important; } }
@@ -4619,7 +4619,9 @@ function _fmtTime(s){
     // 모든 웹사이트 카테고리 버튼 클릭은 이전 스크롤/검색/복귀 상태를 리셋
     resetWebTransientState();
     const nextCat = cat || '⭐ 즐겨찾기';
+    // 주요기도문(prSwitchCat)처럼 먼저 활성색을 즉시 바꾸고, 같은 타이밍에 탭을 가운데로 이동
     applyWebCatState(nextCat);
+    keepWebActiveCatVisible(nextCat, 'smooth');
     renderWebList();
     const list = ig$('web-list');
     if(list){
@@ -4627,9 +4629,8 @@ function _fmtTime(s){
       list.scrollTop = 0;
       list.style.scrollBehavior = '';
     }
-    // 활성 탭은 어떤 위치에서 눌러도 화면 안에 반드시 보이게 유지
-    requestAnimationFrame(function(){ keepWebActiveCatVisible(nextCat, 'smooth'); });
-    setTimeout(function(){ keepWebActiveCatVisible(nextCat); }, 80);
+    // 렌더 후에도 활성 탭만 다시 확인하되, 진행 중인 부드러운 이동을 끊지 않음
+    requestAnimationFrame(function(){ applyWebCatState(nextCat); });
   }
   window.setWebCat = setWebCat;
 
