@@ -1230,8 +1230,7 @@ html.app-active #cover #qna-cover-btn,html.app-active #cover-bottom-note{display
 #oai-cover-exit-toast.show{opacity:1!important;transform:translateX(-50%) translateY(0)!important}
 /* 커버의 피정의 집 찾기: 카드 가로폭은 다른 카드와 동일, 긴 글자만 두 줄 처리 */
 #cc-5.cover-card{width:100%!important;min-width:0!important;box-sizing:border-box!important}
-#cc-5 .oai-retreat-cover-label{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;white-space:normal!important;text-align:center!important;line-height:1.08!important;font-size:13px!important;letter-spacing:-.04em!important;word-break:keep-all!important}
-#cc-5 .oai-retreat-cover-label span{display:block!important;line-height:1.08!important}
+#cc-5 .oai-retreat-cover-label{display:block!important;white-space:nowrap!important;text-align:center!important;line-height:1.08!important;font-size:13px!important;letter-spacing:-.04em!important;word-break:keep-all!important}
 /* 피정의집찾기 화면: 가로 박스는 통일, 긴 글자는 박스를 늘리지 않고 내부에서 줄바꿈/축소 */
 html.retreat-mode .region-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;width:100%!important}
 html.retreat-mode .region-row .srch-inner{width:100%!important;min-width:0!important;height:42px!important;box-sizing:border-box!important}
@@ -1552,7 +1551,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
       <div class="module-bar-ico">✝</div>
       <div class="module-bar-txt">
         <div class="module-bar-title">관구·교구 지도</div>
-        <div class="module-bar-sub">한국 천주교 관구 및 교구</div>
+        <div class="module-bar-sub">한국천주교 3개관구.16개교구</div>
       </div>
     </div>
     <button class="module-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();" aria-label="닫기">×</button>
@@ -1644,7 +1643,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
         </button>
         <button id="cc-5" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof startApp === 'function') startApp('retreat'); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🌿</span></div>
-            <span class="cover-name oai-retreat-cover-label"><span>피정의 집</span><span>찾기</span></span>
+            <span class="cover-name oai-retreat-cover-label">피정의집찾기</span>
         </button>
         <button id="cc-6" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openTrailView === 'function') openTrailView(); })">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">🥾</span></div>
@@ -2775,8 +2774,8 @@ function openInAppRoute(){
   _setRouteLabel('start', spName);
   _setRouteLabel('end', item.name);
   if(_mode==='shrine'){
-   if(idx>=0&&_markers[idx]) _markers[idx].marker.setImage(_mkrImgRoute('#0000ff','도'));
-   if(_rS.idx>=0&&_markers[_rS.idx]) _markers[_rS.idx].marker.setImage(_mkrImgRoute('#ff0000','출'));
+   if(idx>=0&&_markers[idx]){ _markers[idx].marker.setImage(_mkrImgRoute('#0000ff','도')); _setRouteMarkerZ(idx,'end'); }
+   if(_rS.idx>=0&&_markers[_rS.idx]){ _markers[_rS.idx].marker.setImage(_mkrImgRoute('#ff0000','출')); _setRouteMarkerZ(_rS.idx,'start'); }
   }
   _refreshRouteTmpMarkers();
   _enterRouteMode();
@@ -2840,6 +2839,19 @@ function _mkrImgRoute(color,label){
   return new _MI(_svgUrl(svg),new _SZ(36,46),{offset:new _PT(18,44)});
 }
 
+
+function _setRouteMarkerZ(idx, role){
+  try{
+    if(idx>=0 && _markers && _markers[idx] && _markers[idx].marker){
+      _markers[idx].marker.setZIndex(role==='start'?340:330);
+    }
+    if(idx>=0 && _retreatMarkers){
+      const r=_retreatMarkers.find(o=>o && o.index===idx);
+      if(r && r.marker) r.marker.setZIndex(role==='start'?340:330);
+    }
+  }catch(e){}
+}
+
 function _clearRouteTmpMarkers(){
   if(_startTmpMkr){ _startTmpMkr.setMap(null); _startTmpMkr=null; }
   if(_endTmpMkr){ _endTmpMkr.setMap(null); _endTmpMkr=null; }
@@ -2859,7 +2871,7 @@ function _refreshRouteTmpMarkers(){
     _startTmpMkr = new _MM({
       position:new _LL(_rS.lat,_rS.lng),
       image:_mkrImgRoute('#ff0000','출'),
-      zIndex:15
+      zIndex:340
     });
     _startTmpMkr.setMap(_map);
   }
@@ -3590,8 +3602,8 @@ function swapRoute(){
   _setRouteLabel('end',sl.includes('선택하세요')?'':sl);
   const tmp=_rS; _rS=_rE; _rE=tmp;
   if(_mode==='shrine'){
-   if(_rS&&_rS.idx>=0&&_markers[_rS.idx]) _markers[_rS.idx].marker.setImage(_mkrImgRoute('#ff0000','출'));
-   if(_rE&&_rE.idx>=0&&_markers[_rE.idx]) _markers[_rE.idx].marker.setImage(_mkrImgRoute(_typeColor(_markers[_rE.idx].shrine.type),'도'));
+   if(_rS&&_rS.idx>=0&&_markers[_rS.idx]){ _markers[_rS.idx].marker.setImage(_mkrImgRoute('#ff0000','출')); _setRouteMarkerZ(_rS.idx,'start'); }
+   if(_rE&&_rE.idx>=0&&_markers[_rE.idx]){ _markers[_rE.idx].marker.setImage(_mkrImgRoute(_typeColor(_markers[_rE.idx].shrine.type),'도')); _setRouteMarkerZ(_rE.idx,'end'); }
   }
   _refreshRouteTmpMarkers();
   if(_rS&&_rE) _updateSearchBtn();
@@ -3662,7 +3674,7 @@ function _selectRouteItem(idx){
   }
   if(!_rS){
   _rS={idx,name:s.name,lat:s.lat,lng:s.lng};
-  if(_mode==='shrine') _markers[idx]?.marker.setImage(_mkrImgRoute('#1b7a3e','출'));
+  if(_mode==='shrine'){ _markers[idx]?.marker.setImage(_mkrImgRoute('#ff0000','출')); _setRouteMarkerZ(idx,'start'); }
   _setRouteLabel('start',s.name);
   _refreshRouteTmpMarkers();
   $('route-guide').textContent=`도착 ${_getRouteGuideTarget()}를 탭하세요`;
@@ -3670,7 +3682,7 @@ function _selectRouteItem(idx){
   if(!_activeTab) openTab('route');
   } else {
   _rE={idx,name:s.name,lat:s.lat,lng:s.lng};
-  if(_mode==='shrine') _markers[idx]?.marker.setImage(_mkrImgRoute(_typeColor(s.type),'도'));
+  if(_mode==='shrine'){ _markers[idx]?.marker.setImage(_mkrImgRoute(_typeColor(s.type),'도')); _setRouteMarkerZ(idx,'end'); }
   _setRouteLabel('end',s.name);
   _refreshRouteTmpMarkers();
   $('route-guide').classList.remove('on');
@@ -3986,7 +3998,7 @@ function selectFromModal(idx){
   if(_mode==='shrine'&&_rS&&_rS.idx>=0&&_markers[_rS.idx]) _markers[_rS.idx].marker.setImage(_mkrImg(_typeColor(_markers[_rS.idx].shrine.type),false));
   _clearRouteTmpMarkers();
   _rS={idx,name:s.name,lat:s.lat,lng:s.lng};
-  if(_mode==='shrine') _markers[idx]?.marker.setImage(_mkrImgRoute(_typeColor(s.type),'출'));
+  if(_mode==='shrine'){ _markers[idx]?.marker.setImage(_mkrImgRoute(_typeColor(s.type),'출')); _setRouteMarkerZ(idx,'start'); }
   _setRouteLabel('start',s.name);
   _refreshRouteTmpMarkers();
   _enterRouteMode();
@@ -3998,7 +4010,7 @@ function selectFromModal(idx){
   } else {
   if(_mode==='shrine'&&_rE&&_rE.idx>=0&&_markers[_rE.idx]) _markers[_rE.idx].marker.setImage(_mkrImg(_typeColor(_markers[_rE.idx].shrine.type),false));
   _rE={idx,name:s.name,lat:s.lat,lng:s.lng};
-  if(_mode==='shrine') _markers[idx]?.marker.setImage(_mkrImgRoute(_typeColor(s.type),'도'));
+  if(_mode==='shrine'){ _markers[idx]?.marker.setImage(_mkrImgRoute(_typeColor(s.type),'도')); _setRouteMarkerZ(idx,'end'); }
   _setRouteLabel('end',s.name);
   _refreshRouteTmpMarkers();
   $('route-guide').classList.remove('on');
