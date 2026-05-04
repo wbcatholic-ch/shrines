@@ -639,11 +639,8 @@ async function submitPost() {
 
   try {
     await COL.add(data);
-    showView('list-view');
-    document.getElementById('success-view').style.display = 'block';
-    document.getElementById('list-view').style.display = 'none';
-    document.getElementById('header-title').textContent = '접수 완료';
-    var backBtn=document.getElementById('back-btn'); if(backBtn) backBtn.classList.add('show');
+    // 글 작성 완료 후에는 별도 완료 화면이나 커버로 가지 않고 목록으로 복귀
+    goList();
   } catch(e) {
     errEl.textContent = '저장 실패: ' + e.message; errEl.style.display = 'block';
   }
