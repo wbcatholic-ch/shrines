@@ -2022,6 +2022,8 @@ function normalizeCatholicExternalUrl(url){
   url = String(url || '').trim();
   if(!url) return '';
 
+  // 데이터 원주소 보존이 원칙이다.
+  // 여기서는 단축 URL 해제, 스킴 오타, 경로 이중 슬래시처럼 명백한 오류만 정리한다.
   try{
     if(typeof _decUrl === 'function') url = _decUrl(url);
   }catch(e){}
@@ -2035,58 +2037,36 @@ function normalizeCatholicExternalUrl(url){
 
   try{
     var u = new URL(url);
-    var host = u.hostname.toLowerCase().replace(/^www\./,'');
-
-    // OAI 20260504: 관구·교구에서 정상 작동하는 주소 형식과 통일
-    // - 의정부교구 공식 메인 도메인은 https 접속 시 모바일 크롬에서 인증서 경고가 발생하므로
-    //   관구·교구 파일과 같은 http://ucatholic.or.kr/ 로 보존한다.
-    // - 인천교구도 관구·교구 파일과 같은 http://www.caincheon.or.kr/ 로 통일한다.
-    if(host === 'ucatholic.or.kr'){
-      u.protocol = 'http:';
-      u.hostname = 'ucatholic.or.kr';
-      if(!u.pathname || u.pathname === '/') u.pathname = '/';
-      return u.toString();
-    }
-    if(host === 'caincheon.or.kr'){
-      u.protocol = 'http:';
-      u.hostname = 'www.caincheon.or.kr';
-      if(!u.pathname || u.pathname === '/') u.pathname = '/';
-      return u.toString();
-    }
-
-    if(host === 'wjcatholic.or.kr'){
-      u.protocol = 'https:';
-      u.hostname = 'www.wjcatholic.or.kr';
-      return u.toString();
-    }
-    if(host === 'cathms.kr'){
-      u.protocol = 'https:';
-      u.hostname = 'cathms.kr';
-      return u.toString();
-    }
+    // https://domain//path 처럼 데이터에 들어간 경로 이중 슬래시만 정리한다.
+    // 도메인, www, http/https는 바꾸지 않는다.
+    u.pathname = u.pathname.replace(/\/{2,}/g, '/');
     return u.toString();
-  }catch(e){ return url; }
+  }catch(e){
+    return url;
+  }
 }
 function openCoreExternalUrl(url, extra){
   url = normalizeCatholicExternalUrl(url);
   if(!url) return;
   saveCoreReturnState(extra);
-  // 외부링크는 앱/현재창을 덮지 않고 무조건 새창으로 연다.
-  try{
-    const w = window.open(url, '_blank');
-    if(w) return;
-  }catch(e){}
+  // 외부링크는 앱/현재창을 덮지 않고 새창으로 연다.
+  // 모바일 PWA에서는 a[target=_blank]가 window.open보다 안정적이라 먼저 사용한다.
   try{
     const a = document.createElement('a');
     a.href = url;
     a.target = '_blank';
+    a.rel = 'noopener';
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     setTimeout(()=>{ try{ a.remove(); }catch(e){} }, 300);
-  }catch(e){
-    alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
-  }
+    return;
+  }catch(e){}
+  try{
+    const w = window.open(url, '_blank', 'noopener');
+    if(w) return;
+  }catch(e){}
+  alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
 }
 
 function clearRouteNoFocus(){
@@ -4565,18 +4545,19 @@ function _fmtTime(s){
     // 열리지 않는 경우가 있어 noopener + a[target=_blank] 폴백까지 동일하게 적용한다.
     function openNewTabSameAsDiocese(u){
       try{
-        const w = window.open(u, '_blank', 'noopener');
-        if(w) return true;
-      }catch(e){}
-      try{
         const a = document.createElement('a');
         a.href = u;
         a.target = '_blank';
         a.rel = 'noopener';
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
         setTimeout(function(){ try{ a.remove(); }catch(e){} }, 300);
         return true;
+      }catch(e){}
+      try{
+        const w = window.open(u, '_blank', 'noopener');
+        if(w) return true;
       }catch(e){}
       return false;
     }
