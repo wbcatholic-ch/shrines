@@ -5814,23 +5814,16 @@ window.initPrayerView = function(){
 })();
 
 (function(){
-  var QA_URL = 'qa-firebase.html?v=20260504-user1';
-  // 커버 버튼 교체
-  function bindQnaButton(){
-    var btn = document.getElementById('qna-cover-btn');
-    if(btn){ btn.onclick = function(){ location.href = QA_URL; }; }
-  }
-  // qna-view 탭 클릭 시 이동
-  window.openQnaView = function(){ location.href = QA_URL; };
-  window.QNA_FORM_URL = QA_URL;
-  document.addEventListener('DOMContentLoaded', bindQnaButton);
-})();
-
-(function(){
   var QA_URL='qa-firebase.html?v=20260504-user1';
+  function bindQnaButton(){
+    var btn=document.getElementById('qna-cover-btn');
+    if(btn){ btn.onclick=function(){ location.href=QA_URL; }; }
+  }
   window.openQnaView=function(){ location.href=QA_URL; };
   window.QNA_FORM_URL=QA_URL;
   window.goQaFirebase=function(){ location.href=QA_URL; };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindQnaButton,{once:true});
+  else bindQnaButton();
 })();
 
 // user-cache mode: keep app cache stable; refresh changed files through versioned URLs.
@@ -6293,37 +6286,25 @@ window.initPrayerView = function(){
 })();
 (function(){
   'use strict';
-  if(window.__OAI_FINAL_EMOJI_RETREAT_REFRESH_20260502_9__) return;
-  window.__OAI_FINAL_EMOJI_RETREAT_REFRESH_20260502_9__=true;
-  function $(id){return document.getElementById(id);} 
-  function setCoverEmojis(){
-    var pairs={'cc-2':'📖','cc-3':'🙏'};
-    Object.keys(pairs).forEach(function(id){var btn=$(id); if(!btn) return; var wrap=btn.querySelector('.cover-icon-wrap'); if(!wrap) return; wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+pairs[id]+'</span>';});
-  }
-  function fixRetreatTabLabel(){var lbl=$('tab-list-lbl'); if(lbl && document.documentElement.classList.contains('retreat-mode')) lbl.textContent='피정의집 찾기';}
-  function boot(){setCoverEmojis();fixRetreatTabLabel();}
-  var oldStart=window.startApp;
-  if(typeof oldStart==='function'){window.startApp=function(){var r=oldStart.apply(this,arguments);setTimeout(boot,0);setTimeout(fixRetreatTabLabel,80);return r;};}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  window.addEventListener('load',function(){boot();setTimeout(boot,250);setTimeout(boot,900);},{once:true});
-})();
-(function(){
-  'use strict';
-  if(window.__OAI_FINAL_EMOJI_TABS_BACK_20260502_12__) return;
-  window.__OAI_FINAL_EMOJI_TABS_BACK_20260502_12__=true;
+  if(window.__OAI_FINAL_EMOJI_TABS_BACK_20260504_SIMPLIFIED__) return;
+  window.__OAI_FINAL_EMOJI_TABS_BACK_20260504_SIMPLIFIED__=true;
   function $(id){return document.getElementById(id);}
   function normalizeCoverIcon(id, emoji){
     var b=$(id); if(!b) return;
     var wrap=b.querySelector('.cover-icon-wrap'); if(!wrap) return;
     var sp=wrap.querySelector('.cover-emoji');
-    if(!sp){sp=document.createElement('span');sp.className='cover-emoji';sp.setAttribute('aria-hidden','true');wrap.innerHTML='';wrap.appendChild(sp);}
+    if(!sp){sp=document.createElement('span');sp.className='cover-emoji';sp.setAttribute('aria-hidden','true');wrap.innerHTML='';wrap.appendChild(sp);} 
     sp.textContent=emoji;
     Array.prototype.slice.call(wrap.children).forEach(function(ch){if(ch!==sp) ch.remove();});
+  }
+  function fixRetreatTabLabel(){
+    var lbl=$('tab-list-lbl');
+    if(lbl && document.documentElement.classList.contains('retreat-mode')) lbl.textContent='피정의집 찾기';
   }
   function normalizeAll(){
     normalizeCoverIcon('cc-2','📖');
     normalizeCoverIcon('cc-3','🙏');
-    /* 탭 텍스트는 한 줄 유지: 기존 줄바꿈/강제 3열 패치 무력화 */
+    fixRetreatTabLabel();
     document.querySelectorAll('#tabbar .tab-btn').forEach(function(btn){
       btn.style.whiteSpace='nowrap';
       btn.style.minWidth='0';
@@ -6353,6 +6334,7 @@ window.initPrayerView = function(){
     window.startApp=function(){
       var r=oldStart.apply(this,arguments);
       setTimeout(normalizeAll,0);
+      setTimeout(fixRetreatTabLabel,80);
       return r;
     };
   }
