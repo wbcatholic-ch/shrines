@@ -1835,24 +1835,62 @@ function hideCoverAndRun(callback) {
 function markExternalReturnStabilize(kind){
   try{ sessionStorage.setItem('oai_external_return_stabilize', kind || 'external'); }catch(e){}
 }
-function applyExternalReturnStabilize(){
-  var kind='';
-  try{ kind=sessionStorage.getItem('oai_external_return_stabilize') || ''; sessionStorage.removeItem('oai_external_return_stabilize'); }catch(e){}
+function oaiResetExternalPopupResidue(){
+  // 외부사이트의 팝업/모달을 닫지 않고 돌아올 때 남는 스크롤락·포커스·뷰포트 흔들림만 정리한다.
+  try{ if(document.activeElement && typeof document.activeElement.blur==='function') document.activeElement.blur(); }catch(e){}
+  try{
+    document.documentElement.style.scrollBehavior='auto';
+    document.body.style.scrollBehavior='auto';
+    document.body.style.overflow='';
+    document.body.style.position='';
+    document.body.style.top='';
+    document.body.style.left='';
+    document.body.style.right='';
+    document.body.style.width='';
+    document.body.style.transform='';
+    document.body.style.willChange='auto';
+  }catch(e){}
+  try{ document.body.getBoundingClientRect(); }catch(e){}
+  try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+  setTimeout(function(){
+    try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+    try{ document.body.getBoundingClientRect(); }catch(e){}
+  }, 80);
+  setTimeout(function(){
+    try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+  }, 260);
+}
+function applyExternalReturnStabilize(forceKind){
+  var kind=forceKind||'';
+  try{
+    if(!kind){
+      kind=sessionStorage.getItem('oai_external_return_stabilize') || '';
+      sessionStorage.removeItem('oai_external_return_stabilize');
+    }
+  }catch(e){}
   if(!kind) return;
   try{
     document.documentElement.classList.add('oai-external-return-stabilize');
     if(kind==='missa') document.documentElement.classList.add('oai-missa-return-stabilize');
+    oaiResetExternalPopupResidue();
     if(!document.documentElement.classList.contains('app-active')) window.scrollTo(0,0);
     var cv=document.getElementById('cover');
     if(cv && !document.documentElement.classList.contains('app-active')) cv.scrollTop=0;
   }catch(e){}
   setTimeout(function(){
     try{ document.documentElement.classList.remove('oai-external-return-stabilize','oai-missa-return-stabilize'); }catch(e){}
-  }, 1100);
+    try{ document.documentElement.style.scrollBehavior=''; document.body.style.scrollBehavior=''; }catch(e){}
+  }, 1200);
 }
-window.addEventListener('pageshow', applyExternalReturnStabilize, true);
+window.addEventListener('pageshow', function(){ applyExternalReturnStabilize(); }, true);
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState==='visible') applyExternalReturnStabilize();
+}, true);
+window.addEventListener('focus', function(){
+  try{
+    var kind=sessionStorage.getItem('oai_external_return_stabilize') || '';
+    if(kind) applyExternalReturnStabilize();
+  }catch(e){}
 }, true);
 
 /* ── 뒤로가기 핸들러는 principle-back-controller-20260424 에서 통합 관리 ── */
