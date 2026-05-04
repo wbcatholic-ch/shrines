@@ -238,7 +238,7 @@ html.retreat-mode .sm-tab.active{color:#ffffff!important;border-bottom-color:var
 .module-bar.trail{background:#0e1535!important}
 .module-bar.web{background:linear-gradient(135deg,#0e1a3a 0%,#1a2d5a 100%)!important}
 .module-bar-main{display:flex;align-items:center;gap:12px;min-width:0}
-.module-bar-ico{width:42px;height:42px;border-radius:16px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(255,255,255,.18)}
+.module-bar-ico{width:42px;height:42px;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none}
 .module-bar-ico svg{width:22px;height:22px;display:block}
 .module-bar-txt{min-width:0}
 .module-bar-title{font-size:var(--fs-header,22px);font-weight:800;line-height:1.25;letter-spacing:-.2px}
@@ -644,8 +644,8 @@ html.oai-font-global .module-bar-sub,html.oai-font-global #prayer-bar-sub{font-s
 html.oai-font-global .filter-btn,html.oai-font-global .region-search-btn,html.oai-font-global .sm-fb,html.oai-font-global .sm-tab,html.oai-font-global .web-cat-btn,html.oai-font-global .trail-tab,html.oai-font-global #prayer-tabs .pr-tab,html.oai-font-global #prayer-search-inp,html.oai-font-global #prayer-view .pr-font-btn{font-size:var(--oai-std-btn-fs)!important}
 html.oai-font-global .ic-addr-lbl,html.oai-font-global .ic-dist-lbl{font-size:calc(11px * var(--app-font-scale,1))!important}
 html.oai-font-global .web-card-badge,html.oai-font-global .web-card-url{font-size:calc(13px * var(--app-font-scale,1))!important}
-#web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open,#diocese-view.open,#prayer-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important}
-#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;box-sizing:border-box!important;flex-shrink:0!important}
+#web-view.module-view.open,#trail-view.module-view.open,#qna-view.module-view.open,#diocese-view.open,#prayer-view.open{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar{min-height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;height:calc(var(--oai-std-header-h) + env(safe-area-inset-top,0px))!important;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;box-sizing:border-box!important;flex-shrink:0!important}
 #prayer-tabs,#web-view .web-cats,#trail-view .trail-tabs,#qna-view .qna-tabs{min-height:calc(var(--oai-std-tab-h) + 16px)!important;height:calc(var(--oai-std-tab-h) + 16px)!important;padding:8px 14px!important;box-sizing:border-box!important;gap:8px!important;align-items:center!important;flex-shrink:0!important}
 #prayer-tabs .pr-tab,#web-view .web-cat-btn,#trail-view .trail-tab,#qna-view .qna-tab{height:var(--oai-std-tab-h)!important;min-height:var(--oai-std-tab-h)!important;border-radius:14px!important;font-size:var(--oai-std-btn-fs)!important;font-weight:800!important;display:flex!important;align-items:center!important;justify-content:center!important}
 #prayer-search-bar{min-height:calc(var(--oai-std-btn-h) + 12px)!important;padding:6px 14px!important;box-sizing:border-box!important}
@@ -823,15 +823,15 @@ html.retreat-mode .sheet-hd,html.retreat-mode .srch-bar,html.retreat-mode .filte
 html.retreat-mode .filter-btn,html.retreat-mode .sm-fb{background:rgba(255,255,255,.12)!important;color:rgba(255,255,255,.92)!important;border-color:rgba(255,255,255,.28)!important}
 html.retreat-mode .nearby-type,html.retreat-mode .li-badge,html.retreat-mode .ic-type-badge{background:#E8F3EC!important;color:#3F7E5B!important}
 /* ===== 헤더 아이콘 통일: 둥근 사각형 반투명 박스 ===== */
-#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar{min-height:70px!important;height:70px!important;padding:0 16px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important}
-#prayer-bar .module-bar-main,#web-view .module-bar-main,#trail-view .module-bar-main{display:flex!important;align-items:center!important;gap:14px!important;min-width:0!important;flex:1!important}
-#prayer-bar .module-bar-ico,#web-view .module-bar-ico,#trail-view .module-bar-ico,#qna-view .module-bar-ico{width:44px!important;height:44px!important;min-width:44px!important;flex:0 0 44px!important;border-radius:14px!important;background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:none!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:22px!important;line-height:1!important;font-weight:900!important;text-shadow:none!important;overflow:hidden!important;position:static!important}
+#prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar{min-height:70px!important;height:70px!important;padding:0 16px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important}
+#prayer-bar .module-bar-main,#web-view .module-bar-main,#trail-view .module-bar-main,#diocese-view .module-bar-main{display:flex!important;align-items:center!important;gap:14px!important;min-width:0!important;flex:1!important}
+#prayer-bar .module-bar-ico,#web-view .module-bar-ico,#trail-view .module-bar-ico,#qna-view .module-bar-ico,#diocese-view .module-bar-ico{width:44px!important;height:44px!important;min-width:44px!important;flex:0 0 44px!important;border-radius:0!important;background:transparent!important;border:none!important;box-shadow:none!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:28px!important;line-height:1!important;font-weight:900!important;text-shadow:none!important;overflow:hidden!important;position:static!important}
 #prayer-bar .module-bar-ico::before,#prayer-bar .module-bar-ico::after,#web-view .module-bar-ico::before,#web-view .module-bar-ico::after,#trail-view .module-bar-ico::before,#trail-view .module-bar-ico::after{content:none!important;display:none!important}
 #prayer-bar .module-bar-ico svg,#web-view .module-bar-ico svg,#trail-view .module-bar-ico svg{display:none!important}
-#prayer-bar .module-bar-txt,#web-view .module-bar-txt,#trail-view .module-bar-txt{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important}
-#prayer-bar-ttl,#prayer-bar .module-bar-title,#web-view .module-bar-title,#trail-view .module-bar-title{font-size:var(--oai-std-title-fs)!important;font-weight:800!important;line-height:1.25!important;letter-spacing:-.02em!important;color:#fff!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}
-#prayer-bar-sub,#prayer-bar .module-bar-sub,#web-view .module-bar-sub,#trail-view .module-bar-sub{font-size:var(--oai-std-sub-fs)!important;font-weight:600!important;line-height:1.25!important;margin-top:3px!important;opacity:.72!important;color:#fff!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-#prayer-close,#prayer-bar .module-close,#web-view .module-close,#trail-view .module-close{width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;border-radius:50%!important;background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.22)!important;color:rgba(212,170,106,.9)!important;font-size:20px!important;font-weight:900!important;display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;cursor:pointer!important;flex-shrink:0!important}
+#prayer-bar .module-bar-txt,#web-view .module-bar-txt,#trail-view .module-bar-txt,#diocese-view .module-bar-txt{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important}
+#prayer-bar-ttl,#prayer-bar .module-bar-title,#web-view .module-bar-title,#trail-view .module-bar-title,#diocese-view .module-bar-title{font-size:var(--oai-std-title-fs)!important;font-weight:800!important;line-height:1.25!important;letter-spacing:-.02em!important;color:#fff!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}
+#prayer-bar-sub,#prayer-bar .module-bar-sub,#web-view .module-bar-sub,#trail-view .module-bar-sub,#diocese-view .module-bar-sub{font-size:var(--oai-std-sub-fs)!important;font-weight:600!important;line-height:1.25!important;margin-top:3px!important;opacity:.72!important;color:#fff!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#prayer-close,#prayer-bar .module-close,#web-view .module-close,#trail-view .module-close,#diocese-view .module-close{width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;border-radius:50%!important;background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.22)!important;color:rgba(212,170,106,.9)!important;font-size:20px!important;font-weight:900!important;display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;cursor:pointer!important;flex-shrink:0!important}
 html.retreat-mode .filter-btn{background:#fff!important;color:#0F766E!important;border-color:#DDE3EE!important}
 #region-body .nearby-num,#region-body .region-item .nearby-num{background:#2563EB!important}
 #region-body .nearby-type,#region-body .region-item .nearby-type{background:#EFF6FF!important;color:#2563EB!important}
@@ -1369,6 +1369,10 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 }
 
 /* [3] 문의·건의 플로팅 버튼 크기 */
+#diocese-view{background:#fff;flex-direction:column}
+#diocese-view .module-bar{background:linear-gradient(135deg,#1f2a44,#31446c)!important;flex-shrink:0!important}
+#diocese-loading{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px}
+#diocese-view iframe{flex:1 1 auto!important;min-height:0!important}
 #qna-cover-btn{min-height:52px!important;padding:0 22px!important;font-size:15px!important;font-weight:900!important;gap:9px!important;border-radius:999px!important}
 </style>
 <div id="missa-view">
@@ -1380,10 +1384,16 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 <div id="exit-dlg"><div class="exit-box"><h3>앱을 종료할까요?</h3><p>성지순례 앱을 종료합니다.</p><div class="exit-btns"><button class="exit-cancel" onclick="closeExitDlg()">취소</button><button class="exit-ok" onclick="doExit()">종료</button></div></div>
 </div>
 <div id="diocese-view">
-  <div id="diocese-bar" style="display:none!important;">
-    <span id="diocese-bar-title">✝ 한국 천주교 교구 지도</span>
+  <div class="module-bar" id="diocese-module-bar">
+    <div class="module-bar-main">
+      <div class="module-bar-ico">✝</div>
+      <div class="module-bar-txt">
+        <div class="module-bar-title">관구·교구 지도</div>
+        <div class="module-bar-sub">한국 천주교 관구 및 교구</div>
+      </div>
+    </div>
+    <button class="module-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();" aria-label="닫기">×</button>
   </div>
-  <button id="diocese-close" onclick="if(typeof closeDioceseView==='function')closeDioceseView();else document.getElementById('diocese-view').classList.remove('open');" aria-label="닫기">×</button>
   <div id="diocese-loading">
     <div class="missa-spinner"></div>
     <div class="missa-loading-txt">교구 지도를 불러오는 중…</div>
@@ -1453,7 +1463,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
       <button type="button" class="pr-font-btn pr-lg" onclick="event.stopPropagation();prAdjustFont(1);">가</button>
     </div>
     <div class="cover-grid">
-        <button id="cc-1" class="cover-card" onclick="hideCoverAndRun(function(){ if(typeof openMissa === 'function') openMissa(); })">
+        <button id="cc-1" class="cover-card" onclick="if(typeof openMissa === 'function') openMissa();">
             <div class="cover-icon-wrap"><span class="cover-emoji" aria-hidden="true">✝️</span></div>
             <span class="cover-name">매일미사</span>
         </button>
@@ -1604,13 +1614,8 @@ function closeDioceseView(){
   var frame=document.getElementById('diocese-frame');
   if(view) view.classList.remove('open');
   if(frame){ try{ frame.removeAttribute('srcdoc'); }catch(e){} frame.src='about:blank'; }
-  /* 성지찾기 탭+지도 화면으로 복귀 */
-  try{
-    document.documentElement.classList.add('app-active');
-    var cover=document.getElementById('cover');
-    if(cover){ cover.style.display='none'; cover.style.opacity='0'; }
-    if(typeof toggleTab==='function') toggleTab('list');
-  }catch(e){}
+  /* 커버로 복귀 */
+  if(typeof goToCover==='function') goToCover();
 }
 function dioceseLoaded(){
   var loading=document.getElementById('diocese-loading');
@@ -5896,7 +5901,9 @@ window.initPrayerView = function(){
       var nextCat = tabs[next].dataset.webCat || tabs[next].id.replace('web-cat_','');
       if(typeof window.setWebCat==='function') window.setWebCat(nextCat);
       else tabs[next].click();
-      flash($('web-list'), dx<0?'left':'right');
+      /* 기도문과 동일하게 overlay 방식 시각 피드백 사용 */
+      if(typeof window.oaiSwipeAction==='function') window.oaiSwipeAction($('web-list'), dx<0?'left':'right');
+      else flash($('web-list'), dx<0?'left':'right');
     }, {passive:true});
   }
 
