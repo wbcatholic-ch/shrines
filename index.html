@@ -1831,6 +1831,30 @@ function hideCoverAndRun(callback) {
   if (callback) requestAnimationFrame(function(){ setTimeout(callback, 0); });
 }
 
+
+function markExternalReturnStabilize(kind){
+  try{ sessionStorage.setItem('oai_external_return_stabilize', kind || 'external'); }catch(e){}
+}
+function applyExternalReturnStabilize(){
+  var kind='';
+  try{ kind=sessionStorage.getItem('oai_external_return_stabilize') || ''; sessionStorage.removeItem('oai_external_return_stabilize'); }catch(e){}
+  if(!kind) return;
+  try{
+    document.documentElement.classList.add('oai-external-return-stabilize');
+    if(kind==='missa') document.documentElement.classList.add('oai-missa-return-stabilize');
+    if(!document.documentElement.classList.contains('app-active')) window.scrollTo(0,0);
+    var cv=document.getElementById('cover');
+    if(cv && !document.documentElement.classList.contains('app-active')) cv.scrollTop=0;
+  }catch(e){}
+  setTimeout(function(){
+    try{ document.documentElement.classList.remove('oai-external-return-stabilize','oai-missa-return-stabilize'); }catch(e){}
+  }, 1100);
+}
+window.addEventListener('pageshow', applyExternalReturnStabilize, true);
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='visible') applyExternalReturnStabilize();
+}, true);
+
 /* ── 뒤로가기 핸들러는 principle-back-controller-20260424 에서 통합 관리 ── */
 function _doBack() {} // 하위호환용 stub
 function handleBack() {} // 하위호환용 stub
@@ -1864,6 +1888,7 @@ function openMissa(){
   const dd=String(today.getDate()).padStart(2,'0');
   const url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
   try{ localStorage.setItem('oai_last_missa_url', url); }catch(e){}
+  try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize('missa'); }catch(e){}
   /* 외부 브라우저로 이동 — view 열지 않음 */
   try{ window.open(url,'_blank','noopener'); }catch(e){}
 }
@@ -4473,6 +4498,7 @@ function _fmtTime(s){
       payload.cat = payload.cat || webState.curCat || '⭐ 즐겨찾기';
     }
     saveReturnState(payload);
+    try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize(payload.module || 'external'); }catch(e){}
     try{
       const w = window.open(url, '_blank');
       if(w) return;
@@ -6267,8 +6293,10 @@ window.initPrayerView = function(){
         setTimeout(function(){
           try{
             if(typeof window.__oaiSoftCoverRefresh === 'function') window.__oaiSoftCoverRefresh();
-            else { hide(); refreshing=false; }
-          }catch(ex){ hide(); refreshing=false; }
+          }catch(ex){}
+          /* 새로고침 후 터치/클릭이 잠기는 문제 방지: 반드시 상태 해제 */
+          try{ hide(); }catch(ex){}
+          active=false; ready=false; refreshing=false;
         },260);
       }else{ready=false;hide();}
     },{passive:true,capture:true});
@@ -6537,5 +6565,54 @@ html.retreat-mode #region-body .nearby-dist span{
 </style>
 
 <!-- OAI 20260504 final: smooth swipe + no-shake restore/reload stabilization -->
+
+<style id="oai-external-return-stabilize-20260505">
+/* 외부사이트 복귀 직후: 안드로이드 웹뷰/Chrome 주소창·하단영역 재계산 흔들림 억제 */
+html.oai-external-return-stabilize,
+html.oai-external-return-stabilize body{
+  overflow-x:hidden!important;
+  scroll-behavior:auto!important;
+  overscroll-behavior-y:none!important;
+}
+html.oai-external-return-stabilize #cover,
+html.oai-external-return-stabilize #app,
+html.oai-external-return-stabilize #missa-view,
+html.oai-external-return-stabilize #web-view,
+html.oai-external-return-stabilize #trail-view,
+html.oai-external-return-stabilize #diocese-view,
+html.oai-external-return-stabilize #prayer-view,
+html.oai-external-return-stabilize .module-view.open{
+  transform:none!important;
+  transition:none!important;
+  animation:none!important;
+  will-change:auto!important;
+  backface-visibility:hidden!important;
+}
+html.oai-external-return-stabilize #cover-bottom-note,
+html.oai-external-return-stabilize #qna-cover-btn,
+html.oai-external-return-stabilize #pwa-install-btn,
+html.oai-external-return-stabilize #cv-pull-modern{
+  transform:none!important;
+  transition:none!important;
+  animation:none!important;
+  will-change:auto!important;
+}
+html.oai-missa-return-stabilize #missa-view,
+html.oai-missa-return-stabilize #missa-view.open{
+  display:none!important;
+  transform:none!important;
+  transition:none!important;
+  animation:none!important;
+}
+@supports (height:100svh){
+  html.oai-external-return-stabilize:not(.app-active),
+  html.oai-external-return-stabilize:not(.app-active) body,
+  html.oai-external-return-stabilize:not(.app-active) #cover{
+    min-height:100svh!important;
+    height:100svh!important;
+  }
+}
+</style>
+
 </body>
 </html>
