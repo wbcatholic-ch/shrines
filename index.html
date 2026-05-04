@@ -6432,5 +6432,112 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 }
 </style>
 
+
+
+<!-- OAI 20260504 final: smooth swipe + no-shake restore/reload stabilization -->
+<style id="oai-smooth-stable-20260504">
+  html,body,#app,#cover{overscroll-behavior-x:none!important;overflow-x:hidden!important;}
+  #cover{transform:none!important;transition:none!important;will-change:auto!important;backface-visibility:hidden!important;}
+  #app,.module-view,.sheet,#prayer-view,#web-view,#trail-view,#diocese-view,#missa-view{backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;}
+  #pr-list-ul,#prayer-list-view,#web-list,#trail-list,.sheet-body{will-change:transform;}
+  @keyframes oaiSwipeSoftLeft20260504{
+    0%{transform:translate3d(0,0,0);opacity:1;}
+    42%{transform:translate3d(-10px,0,0);opacity:.985;}
+    100%{transform:translate3d(0,0,0);opacity:1;}
+  }
+  @keyframes oaiSwipeSoftRight20260504{
+    0%{transform:translate3d(0,0,0);opacity:1;}
+    42%{transform:translate3d(10px,0,0);opacity:.985;}
+    100%{transform:translate3d(0,0,0);opacity:1;}
+  }
+  .oai-swipe-left{animation:oaiSwipeSoftLeft20260504 .24s cubic-bezier(.2,.8,.2,1)!important;transform:none!important;filter:none!important;}
+  .oai-swipe-right{animation:oaiSwipeSoftRight20260504 .24s cubic-bezier(.2,.8,.2,1)!important;transform:none!important;filter:none!important;}
+  #oai-swipe-overlay{display:none!important;}
+  html.oai-restoring-20260504 *,html.oai-reloading-20260504 *{
+    transition:none!important;animation:none!important;scroll-behavior:auto!important;
+  }
+  html.oai-restoring-20260504 #cover,html.oai-reloading-20260504 #cover{
+    transform:none!important;top:0!important;left:0!important;right:0!important;bottom:0!important;
+  }
+</style>
+<script id="oai-smooth-stable-20260504-script">
+(function(){
+  'use strict';
+  if(window.__OAI_SMOOTH_STABLE_20260504__) return;
+  window.__OAI_SMOOTH_STABLE_20260504__ = true;
+
+  try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
+
+  function $(id){return document.getElementById(id);}
+  function freeze(ms){
+    var root=document.documentElement;
+    root.classList.add('oai-restoring-20260504');
+    clearTimeout(root.__oaiRestoreFreezeTimer);
+    root.__oaiRestoreFreezeTimer=setTimeout(function(){root.classList.remove('oai-restoring-20260504');}, ms||180);
+  }
+  function stabilizeCover(){
+    var c=$('cover');
+    if(c){
+      c.style.transform='none';
+      c.style.top='0';
+      c.style.left='0';
+      c.style.right='0';
+      c.style.bottom='0';
+      if(!document.documentElement.classList.contains('app-active')) c.scrollTop=0;
+    }
+    try{ window.scrollTo(0,0); }catch(e){}
+  }
+
+  window.oaiSwipeAction = function(el, dir){
+    el = el || $('web-list') || $('pr-list-ul') || $('prayer-list-view');
+    if(!el) return;
+    try{
+      var cls = dir === 'right' ? 'oai-swipe-right' : 'oai-swipe-left';
+      el.classList.remove('oai-swipe-left','oai-swipe-right');
+      void el.offsetWidth;
+      el.classList.add(cls);
+      clearTimeout(el.__oaiSwipeStableTimer);
+      el.__oaiSwipeStableTimer=setTimeout(function(){
+        try{el.classList.remove('oai-swipe-left','oai-swipe-right');}catch(e){}
+      },260);
+    }catch(e){}
+  };
+
+  function smoothActiveTabIntoView(selector){
+    var active=document.querySelector(selector);
+    if(!active) return;
+    try{ active.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }
+    catch(e){ try{ active.scrollIntoView(false); }catch(x){} }
+  }
+
+  var oldSetWebCat = window.setWebCat;
+  if(typeof oldSetWebCat === 'function' && !oldSetWebCat.__oaiSmoothStableWrapped){
+    window.setWebCat = function(){
+      var r = oldSetWebCat.apply(this, arguments);
+      requestAnimationFrame(function(){ smoothActiveTabIntoView('#web-cats .web-cat-btn.on'); });
+      return r;
+    };
+    window.setWebCat.__oaiSmoothStableWrapped = true;
+  }
+
+  window.addEventListener('pageshow', function(){
+    freeze(220);
+    stabilizeCover();
+    setTimeout(stabilizeCover, 50);
+  });
+  window.addEventListener('focus', function(){
+    freeze(160);
+    stabilizeCover();
+  });
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden){ freeze(160); stabilizeCover(); }
+  });
+  window.addEventListener('beforeunload', function(){
+    document.documentElement.classList.add('oai-reloading-20260504');
+    stabilizeCover();
+  });
+})();
+</script>
+
 </body>
 </html>
