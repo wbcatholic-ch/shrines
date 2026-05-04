@@ -4524,6 +4524,7 @@ function _fmtTime(s){
   function openExternalUrl(url, state){
     url = (typeof normalizeCatholicExternalUrl === 'function') ? normalizeCatholicExternalUrl(url) : String(url||'').trim();
     if(!url) return;
+
     const payload = Object.assign({}, state||{});
     if(payload.module==='trail' && trailState.map && window.kakao && window.kakao.maps){
       try{
@@ -4537,13 +4538,30 @@ function _fmtTime(s){
     }
     saveReturnState(payload);
     try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize(payload.module || 'external'); }catch(e){}
-    try{
-      const w = window.open(url, '_blank');
-      if(w) return;
-    }catch(e){}
-    try{
-      const a=document.createElement('a'); a.href=url; a.target='_blank'; document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(),300);
-    }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); }
+
+    // 관구교구(openDioceseExternal)와 같은 새창 열기 방식으로 통일.
+    // 일부 가톨릭 주요 웹사이트가 PWA/WebView에서 window.open(url,'_blank')만으로는
+    // 열리지 않는 경우가 있어 noopener + a[target=_blank] 폴백까지 동일하게 적용한다.
+    function openNewTabSameAsDiocese(u){
+      try{
+        const w = window.open(u, '_blank', 'noopener');
+        if(w) return true;
+      }catch(e){}
+      try{
+        const a = document.createElement('a');
+        a.href = u;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function(){ try{ a.remove(); }catch(e){} }, 300);
+        return true;
+      }catch(e){}
+      return false;
+    }
+
+    if(openNewTabSameAsDiocese(url)) return;
+    alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
   }
 
   const _origGoToCover = window.goToCover;
