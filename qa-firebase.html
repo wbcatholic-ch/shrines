@@ -13,6 +13,7 @@
 <!-- ★ Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <style>
   /* ── 리셋 & 기본 ── */
@@ -154,6 +155,18 @@
   .admin-pin-row { display: flex; gap: 8px; margin-bottom: 10px; }
   #admin-pin-input { flex: 1; }
   #admin-pin-check { padding: 0 16px; background: #92400E; color: #fff; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-family: inherit; }
+
+  /* ── Firebase 관리자 로그인 ── */
+  .admin-login-panel{background:#FFF8F0;border:1px solid #FED7AA;border-radius:var(--radius);padding:14px;margin-top:10px;}
+  .admin-login-title{font-size:13px;font-weight:800;color:#92400E;margin-bottom:8px;}
+  .admin-login-desc{font-size:12px;color:#78716C;line-height:1.6;margin-bottom:10px;}
+  .admin-login-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .admin-login-btn{border:none;border-radius:10px;padding:10px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
+  .admin-logout-btn{border:1px solid #E5E7EB;border-radius:10px;padding:10px 14px;background:#fff;color:#475569;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .admin-state{font-size:12px;color:#64748B;line-height:1.6;margin-top:8px;word-break:break-all;}
+  .admin-state.ok{color:#166534;font-weight:700;}
+  .admin-state.err{color:#B91C1C;font-weight:700;}
+
   #answer-textarea {
     width: 100%; border: 1px solid #FED7AA; border-radius: 10px;
     padding: 10px 12px; font-size: 13px; line-height: 1.75; resize: vertical;
@@ -311,6 +324,26 @@
 #write-btn:active{transform:scale(.97)!important;}
 @media(min-width:720px){#write-btn{right:calc((100vw - 680px)/2 + 18px)!important;}}
 
+
+/* 문의·건의 본문 글자 크기: 헤더는 그대로 두고, 목록/상세/글작성/완료 영역만 16px로 통일 */
+.view,
+.view *:not(.spinner),
+#success-view,
+#success-view *{
+  font-size:16px!important;
+}
+#write-view input[type=text],
+#write-view input[type=number],
+#write-view textarea,
+#write-view button,
+#write-view .field-label,
+#write-view .cat-opt,
+#write-view .char-count,
+#write-view .notice-txt,
+#write-view .error-msg{
+  font-size:16px!important;
+}
+
 </style>
 </head>
 <body>
@@ -380,13 +413,18 @@ const FIREBASE_CONFIG = {
   appId:             "1:952327785327:web:1576bc6d678ba42f8a369a"
 };
 
-/* ★ 2. 관리자 비밀번호 (상봉님만 아는 숫자/문자) */
-const ADMIN_PASSWORD = "bong0219";
+/* ★ 2. 관리자 계정
+   - HTML에는 비밀번호를 넣지 않습니다.
+   - Firebase Authentication에서 Google 로그인을 켠 뒤, 아래 ADMIN_EMAIL에 관리자 Google 이메일 1개만 입력하세요.
+   - 실제 보호는 Firestore 보안 규칙에서 같은 이메일 또는 UID로 제한해야 합니다. */
+const ADMIN_EMAIL = "관리자_구글_이메일을_여기에_입력하세요";
 
 /* ══════════════════════════════════════════════ */
 
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.firestore();
+const auth = firebase.auth();
+const ADMIN_PROVIDER = new firebase.auth.GoogleAuthProvider();
 const COL = db.collection("qa_posts");
 
 /* ─── 상수 ─── */
@@ -399,6 +437,7 @@ let currentFilter  = "전체";
 let currentPost    = null;
 let selectedCat    = "문의";
 let adminUnlocked  = false;
+let adminUser      = null;
 let unsubscribe    = null;
 
 /* ═══════════════════ 뷰 전환 ═══════════════════ */
@@ -529,22 +568,9 @@ function showDetailView(post) {
         <div class="pending-box">⏳ 답변을 준비 중입니다. 잠시 기다려 주세요.</div>`}
 
       <div class="admin-area">
-        <button id="admin-toggle-btn" onclick="toggleAdminArea()">🔧 관리자 답변 달기</button>
+        <button id="admin-toggle-btn" onclick="toggleAdminArea()">🔧 관리자 답변/삭제</button>
         <div id="admin-form" style="display:none;">
-          <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:10px;">관리자 인증 후 답변 작성</div>
-          <div class="admin-pin-row" id="admin-pin-row">
-            <input type="password" id="admin-pin-input" placeholder="관리자 비밀번호" style="flex:1;">
-            <button id="admin-pin-check" onclick="verifyAdmin()">확인</button>
-          </div>
-          <div id="admin-write-area" style="display:none;">
-            <textarea id="answer-textarea" rows="4" placeholder="답변을 입력하세요…">${escHtml(post.answer || '')}</textarea>
-            <div class="btn-row">
-              <button class="btn-primary" style="font-size:14px;" onclick="submitAnswer()">답변 등록</button>
-              <button class="btn-secondary" onclick="deleteCurrentPost()">글 삭제</button>
-              <button class="btn-secondary" onclick="toggleAdminArea()">취소</button>
-            </div>
-          </div>
-          <div id="admin-error" class="error-msg" style="display:none;margin-top:8px;"></div>
+          ${renderAdminPanel(post)}
         </div>
       </div>
     </div>`;
@@ -553,28 +579,101 @@ function showDetailView(post) {
 }
 
 /* ═══════════════════ 관리자 ═══════════════════ */
+function normalizeAdminEmail() {
+  return (ADMIN_EMAIL || '').trim().toLowerCase();
+}
+function isAdminUser(user) {
+  const email = normalizeAdminEmail();
+  return !!(user && email && user.email && user.email.toLowerCase() === email);
+}
+function renderAdminPanel(post) {
+  const email = normalizeAdminEmail();
+  if (!email || email.indexOf('@') < 0) {
+    return `
+      <div class="admin-login-panel">
+        <div class="admin-login-title">관리자 이메일 설정 필요</div>
+        <div class="admin-login-desc">qa-firebase.html의 ADMIN_EMAIL에 관리자 Google 이메일 1개를 입력해야 답변/삭제가 가능합니다.</div>
+      </div>`;
+  }
+  if (!adminUser) {
+    return `
+      <div class="admin-login-panel">
+        <div class="admin-login-title">Firebase 관리자 로그인</div>
+        <div class="admin-login-desc">HTML 비밀번호 방식은 제거했습니다. 관리자 Google 계정 1개로만 로그인합니다.</div>
+        <div class="admin-login-row">
+          <button class="admin-login-btn" onclick="adminLogin()">Google로 관리자 로그인</button>
+        </div>
+        <div id="admin-error" class="admin-state err" style="display:none;"></div>
+      </div>`;
+  }
+  if (!isAdminUser(adminUser)) {
+    return `
+      <div class="admin-login-panel">
+        <div class="admin-login-title">관리자 계정이 아닙니다</div>
+        <div class="admin-login-desc">현재 로그인: ${escHtml(adminUser.email || '')}</div>
+        <button class="admin-logout-btn" onclick="adminLogout()">로그아웃</button>
+      </div>`;
+  }
+  adminUnlocked = true;
+  return `
+    <div class="admin-login-panel">
+      <div class="admin-login-title">관리자 로그인 완료</div>
+      <div class="admin-state ok">${escHtml(adminUser.email || '')}</div>
+      <textarea id="answer-textarea" rows="4" placeholder="답변을 입력하세요…">${escHtml(post.answer || '')}</textarea>
+      <div class="btn-row">
+        <button class="btn-primary" style="font-size:14px;" onclick="submitAnswer()">답변 등록</button>
+        <button class="btn-secondary" onclick="deleteCurrentPost()">글 삭제</button>
+        <button class="btn-secondary" onclick="adminLogout()">로그아웃</button>
+        <button class="btn-secondary" onclick="toggleAdminArea()">취소</button>
+      </div>
+    </div>`;
+}
 function toggleAdminArea() {
   const form = document.getElementById('admin-form');
+  if (!form) return;
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display !== 'none' && currentPost) form.innerHTML = renderAdminPanel(currentPost);
 }
-function verifyAdmin() {
-  const pw = document.getElementById('admin-pin-input').value;
-  if (pw === ADMIN_PASSWORD) {
-    document.getElementById('admin-pin-row').style.display = 'none';
-    document.getElementById('admin-write-area').style.display = 'block';
-    document.getElementById('admin-error').style.display = 'none';
-    adminUnlocked = true;
-  } else {
-    document.getElementById('admin-error').textContent = '비밀번호가 틀렸습니다.';
-    document.getElementById('admin-error').style.display = 'block';
+async function adminLogin() {
+  const err = document.getElementById('admin-error');
+  try {
+    await auth.signInWithPopup(ADMIN_PROVIDER);
+  } catch (e) {
+    try {
+      await auth.signInWithRedirect(ADMIN_PROVIDER);
+    } catch (e2) {
+      if (err) {
+        err.textContent = '로그인 실패: ' + (e2 && e2.message ? e2.message : e.message);
+        err.style.display = 'block';
+      } else {
+        alert('로그인 실패: ' + (e2 && e2.message ? e2.message : e.message));
+      }
+    }
   }
 }
+async function adminLogout() {
+  try { await auth.signOut(); } catch(e) {}
+  adminUnlocked = false;
+  if (currentPost) showDetailView(currentPost);
+}
+function refreshAdminPanel() {
+  const form = document.getElementById('admin-form');
+  if (form && form.style.display !== 'none' && currentPost) form.innerHTML = renderAdminPanel(currentPost);
+}
+auth.onAuthStateChanged(function(user){
+  adminUser = user || null;
+  adminUnlocked = isAdminUser(adminUser);
+  refreshAdminPanel();
+});
 async function submitAnswer() {
-  if (!adminUnlocked) return;
+  if (!isAdminUser(adminUser) || !currentPost) {
+    alert('관리자 계정으로 로그인해야 합니다.');
+    return;
+  }
   const text = document.getElementById('answer-textarea').value.trim();
   if (!text) return;
   try {
-    await COL.doc(currentPost.id).update({ answer: text, answered: true });
+    await COL.doc(currentPost.id).update({ answer: text, answered: true, answeredAt: firebase.firestore.FieldValue.serverTimestamp() });
     currentPost = { ...currentPost, answer: text, answered: true };
     alert('답변이 등록되었습니다.');
     showDetailView(currentPost);
@@ -584,7 +683,10 @@ async function submitAnswer() {
 }
 
 async function deleteCurrentPost() {
-  if (!adminUnlocked || !currentPost) return;
+  if (!isAdminUser(adminUser) || !currentPost) {
+    alert('관리자 계정으로 로그인해야 합니다.');
+    return;
+  }
   if (!confirm('이 글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.')) return;
   try {
     await COL.doc(currentPost.id).delete();
@@ -639,11 +741,12 @@ async function submitPost() {
 
   try {
     await COL.add(data);
-    showView('list-view');
-    document.getElementById('success-view').style.display = 'block';
-    document.getElementById('list-view').style.display = 'none';
-    document.getElementById('header-title').textContent = '접수 완료';
-    var backBtn=document.getElementById('back-btn'); if(backBtn) backBtn.classList.add('show');
+    resetForm();
+    goList();
+    var listView=document.getElementById('list-view');
+    if(listView) listView.style.display='';
+    var success=document.getElementById('success-view');
+    if(success) success.style.display='none';
   } catch(e) {
     errEl.textContent = '저장 실패: ' + e.message; errEl.style.display = 'block';
   }
