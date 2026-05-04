@@ -1635,44 +1635,19 @@ function dioceseLoaded(){
     if(doc.__oaiCloseInjected) return;
     doc.__oaiCloseInjected = true;
     var s=doc.createElement('script');
-    s.textContent=[
-      '(function(){',
-      '  function _oaiCloseCard(){',
-      '    /* 다양한 셀렉터로 열린 카드 탐색 */
-',
-      '    var sels=['.info-card','.diocese-info-card','#diocese-info','#info-panel','.lv-info-card','[class*="info-card"]','[class*="info_window"]','[class*="infowindow"]','[class*="popup"]'];',
-      '    for(var i=0;i<sels.length;i++){',
-      '      var cards=document.querySelectorAll(sels[i]);',
-      '      for(var j=0;j<cards.length;j++){',
-      '        var el=cards[j];',
-      '        var st=window.getComputedStyle(el);',
-      '        if(st.display!=="none"&&st.visibility!=="hidden"&&el.offsetHeight>0){',
-      '          el.style.display="none";',
-      '          el.classList.remove("open","show","active","on","visible");',
-      '        }',
-      '      }',
-      '    }',
-      '    /* kakao/naver map 전용 닫기 */
-',
-      '    try{ if(window._map&&window._map.closeOverlay) window._map.closeOverlay(); }catch(e){}',
-      '    try{ if(window.map&&window.map.closeOverlay) window.map.closeOverlay(); }catch(e){}',
-      '    try{ if(window.closeInfoCard) window.closeInfoCard(); }catch(e){}',
-      '  }',
-      '  function _oaiIsCard(el){',
-      '    if(!el) return false;',
-      '    return !!(el.closest&&el.closest('.info-card,.diocese-info-card,#diocese-info,#info-panel,.lv-info-card,[class*="info-card"],[class*="info_window"],[class*="infowindow"],[class*="popup"]'));',
-      '  }',
-      '  document.addEventListener("click",function(e){',
-      '    if(!_oaiIsCard(e.target)) _oaiCloseCard();',
-      '  },true);',
-      '  document.addEventListener("touchend",function(e){',
-      '    if(!_oaiIsCard(e.target)) _oaiCloseCard();',
-      '  },true);',
-      '})();'
-    ].join('\n');
-    (doc.head||doc.body).appendChild(s);
-  }catch(ex){}
-}
+   // 기존의 s.textContent=[...].join('\n') 블록 전체를
+s.textContent = '(function(){' +
+  'function _oaiCloseCard(){' +
+  'var sels=[".info-card",".diocese-info-card","#diocese-info","#info-panel",".lv-info-card"];' +
+  'for(var i=0;i<sels.length;i++){var cards=document.querySelectorAll(sels[i]);for(var j=0;j<cards.length;j++){var el=cards[j];var st=window.getComputedStyle(el);if(st.display!=="none"&&st.visibility!=="hidden"&&el.offsetHeight>0){el.style.display="none";el.classList.remove("open","show","active","on","visible");}}}' +
+  'try{if(window._map&&window._map.closeOverlay)window._map.closeOverlay();}catch(e){}' +
+  'try{if(window.map&&window.map.closeOverlay)window.map.closeOverlay();}catch(e){}' +
+  'try{if(window.closeInfoCard)window.closeInfoCard();}catch(e){}' +
+  '}' +
+  'function _oaiIsCard(el){if(!el)return false;return !!(el.closest&&el.closest(".info-card,.diocese-info-card,#diocese-info,#info-panel,.lv-info-card"));}' +
+  'document.addEventListener("click",function(e){if(!_oaiIsCard(e.target))_oaiCloseCard();},true);' +
+  'document.addEventListener("touchend",function(e){if(!_oaiIsCard(e.target))_oaiCloseCard();},true);' +
+  '})();';
 
 const CORE_RETURN_KEY='catholic_core_return_v1';
 function saveCoreReturnState(extra){
