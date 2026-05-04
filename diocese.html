@@ -1622,9 +1622,9 @@ window.addEventListener('pageshow',function(){
     if(sv){setTimeout(function(){lv.scrollTop=parseInt(sv);},30);}
   }
 });
-/* ── 스와이프 탭 전환 (list ↔ search만) ── */
+/* ── 스와이프 탭 전환: 목록에서 관구별 지도로 복귀 가능, 지도 화면 자체에는 스와이프 없음 ── */
 (function(){
-  var SWIPE_TABS=['list','search'];
+  var SWIPE_TABS=['gwangu','list','search'];
   var sx=0,sy=0,sMoving=false,sLocked=false;
   var THRESHOLD=60;
   function addSwipe(el){
