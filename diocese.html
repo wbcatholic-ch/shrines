@@ -1703,7 +1703,20 @@ window.addEventListener('pageshow',function(){
     var sv=document.getElementById('search-view'); if(sv) sv.scrollTop=0;
     var btn=document.querySelector('.tab[data-tab="gwangu"]'); if(btn) btn.click();
   };
+  function normalizeDioceseExternalUrl(url){
+    url=String(url||'').trim();
+    if(!url) return '';
+    if(!/^https?:\/\//i.test(url)) url='https://'+url.replace(/^\/+/, '');
+    try{
+      var u=new URL(url);
+      var host=u.hostname.toLowerCase().replace(/^www\./,'');
+      if(host==='ucatholic.or.kr'){u.protocol='http:';u.hostname='ucatholic.or.kr';return u.toString();}
+      if(host==='caincheon.or.kr'){u.protocol='http:';u.hostname='www.caincheon.or.kr';return u.toString();}
+      return u.toString();
+    }catch(e){return url;}
+  }
   window.openDioceseUrl = function(url, source){
+    url=normalizeDioceseExternalUrl(url);
     if(!url) return; var state=window.getDioceseReturnState(source||'link');
     if(window.parent && window.parent!==window && typeof window.parent.openDioceseExternal==='function') window.parent.openDioceseExternal(url,state);
     else { try{ sessionStorage.setItem('oai_diocese_standalone_return',JSON.stringify(state)); }catch(e){} try{ var w=window.open(url,'_blank','noopener'); if(w) return; }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
