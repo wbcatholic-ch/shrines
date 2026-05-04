@@ -1697,18 +1697,20 @@ window.addEventListener('pageshow',function(){
   if(window.__OAI_DIOCESE_CARD_CLOSE_ANYWHERE_20260504__) return;
   window.__OAI_DIOCESE_CARD_CLOSE_ANYWHERE_20260504__=true;
   function card(){return document.getElementById('card');}
-  function isCardOpen(){var c=card();return !!(c&&c.classList.contains('on'));}
+  function closeCardNow(){var c=card(); if(!c) return; try{hideCard();}catch(_){c.classList.remove('on');}}
   function closeIfOutside(e){
     var c=card(); if(!c||!c.classList.contains('on')) return;
-    var t=e.target;
-    if(!t) return;
+    var t=e.target; if(!t) return;
     if(t.closest && (t.closest('#card') || t.closest('.dp') || t.closest('[data-dio-url]'))) return;
     var openedAt=Number(c.dataset.openedAt||0);
-    if(openedAt && Date.now()-openedAt<80) return;
-    try{hideCard();}catch(_){c.classList.remove('on');}
+    if(openedAt && Date.now()-openedAt<120) return;
+    closeCardNow();
   }
+  /* click이 생성되지 않는 모바일 탭/지도 터치도 잡기 위해 pointerdown을 우선 사용 */
+  document.addEventListener('pointerdown',closeIfOutside,true);
   document.addEventListener('click',closeIfOutside,true);
-  document.addEventListener('touchend',closeIfOutside,true);
+  document.addEventListener('touchstart',closeIfOutside,{capture:true,passive:true});
+  document.addEventListener('touchend',closeIfOutside,{capture:true,passive:true});
 })();
 </script>
 
