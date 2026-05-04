@@ -266,13 +266,48 @@
   #close-btn{display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;}
   @media(max-width:380px){#write-btn{padding:8px 12px;font-size:13px;}#header-texts .title{font-size:18px;}}
 
+
+
+/* OAI 20260504-2: 문의·건의 헤더 십자/글자 표준화 */
+#header{
+  width:100%!important;
+  max-width:none!important;
+  background:linear-gradient(135deg,#1f2a44 0%,#31446c 100%)!important;
+  min-height:70px!important;
+  padding:0 16px!important;
+  align-items:center!important;
+  gap:12px!important;
+  border-bottom:2px solid var(--gold,#d4aa6a)!important;
+}
+#qna-cross-icon{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#fff!important;
+  font-size:24px!important;
+  font-weight:900!important;
+  line-height:1!important;
+}
+#header-texts{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;min-width:0!important;}
+#header-texts .title{font-size:20px!important;font-weight:800!important;line-height:1.24!important;color:#fff!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+#header-texts .sub{font-size:11px!important;font-weight:600!important;line-height:1.25!important;color:rgba(255,255,255,.72)!important;opacity:1!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+#close-btn{
+  width:36px!important;height:36px!important;min-width:36px!important;
+  color:rgba(212,170,106,.95)!important;
+  background:rgba(255,255,255,.13)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  font-size:20px!important;
+}
 </style>
 </head>
 <body>
 
 <!-- 헤더 -->
 <div id="header">
-  <div id="header-texts">
+  <div id="qna-cross-icon" aria-hidden="true">✝</div><div id="header-texts">
     <div class="title" id="header-title">문의 · 건의</div>
     <div class="sub">보편 교회 가톨릭 앱</div>
   </div>

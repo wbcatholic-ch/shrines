@@ -201,6 +201,22 @@ body{background:var(--bg)!important;}
   header{display:none!important;}
 }
 
+
+
+/* OAI 20260504-2: 폴드 화면 헤더 전체폭 + 그라데이션 복구 */
+html,body{width:100%!important;max-width:none!important;margin:0!important;overflow-x:hidden!important;}
+header{
+  width:100%!important;
+  max-width:none!important;
+  align-self:stretch!important;
+  background:linear-gradient(135deg,#1f2a44 0%,#31446c 100%)!important;
+  color:#fff!important;
+  border-bottom:2px solid #d4aa6a!important;
+}
+.hd h1{font-size:20px!important;line-height:1.24!important;text-align:left!important;color:#fff!important;}
+.hd-sub{font-size:11px!important;line-height:1.25!important;color:rgba(255,255,255,.72)!important;text-align:left!important;}
+.hd-icon{font-size:24px!important;color:#fff!important;}
+@media (min-width:560px){header{width:100vw!important;max-width:100vw!important;}}
 </style>
 <script id="oai-no-cache-runtime-20260501">
 (function(){
