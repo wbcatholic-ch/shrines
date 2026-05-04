@@ -5655,7 +5655,12 @@ window.initPrayerView = function(){
     if(!appActive()){
       var exiting = false;
       if(typeof window._showBackToast==='function') exiting = window._showBackToast() === true;
-      if(!exiting){ try{ history.pushState({_p:1}, '', _href); }catch(e){} }
+      /*
+       * OAI 20260505: 커버에서 두 번째 뒤로가기 때도 히스토리 트랩을 즉시 복구한다.
+       * window.close()/네이티브 종료가 실패하는 브라우저/PWA 환경에서 트랩을 복구하지 않으면
+       * 이전 외부사이트 기록으로 이동한 뒤 종료되는 문제가 생긴다.
+       */
+      try{ history.pushState({_p:1}, '', _href); }catch(e){}
       return;
     }
 
