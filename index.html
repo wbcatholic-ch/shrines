@@ -2389,13 +2389,10 @@ function attemptAppExit(){
   // Cordova/WebView 계열에서는 네이티브 종료를 우선 시도한다.
   try{ if(navigator.app && typeof navigator.app.exitApp === 'function'){ navigator.app.exitApp(); return; } }catch(e){}
 
-  // 일반 브라우저/PWA에서는 window.close가 막히는 경우가 많으므로
-  // 현재 뒤로가기 트랩을 해제한 뒤 Android 시스템 뒤로가기 흐름에 맡긴다.
+  // 중요: 여기서 history.back()을 호출하면 외부사이트 방문 기록으로 되돌아갈 수 있다.
+  // 따라서 종료 시도는 window.close까지만 하고, 히스토리 트랩은 다시 심지 않는다.
   try{ window.open('', '_self'); window.close(); }catch(e){}
   try{ document.documentElement.classList.add('app-exiting'); }catch(e){}
-  setTimeout(function(){
-    try{ history.back(); }catch(e){}
-  }, 40);
 }
 function closeExitDlg(){
   _exitReady=false;
