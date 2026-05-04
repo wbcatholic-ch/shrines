@@ -1896,8 +1896,6 @@ window.addEventListener('focus', function(){
 /* ── 뒤로가기 핸들러는 principle-back-controller-20260424 에서 통합 관리 ── */
 function _doBack() {} // 하위호환용 stub
 function handleBack() {} // 하위호환용 stub
-
-/* OAI removed old pull-to-refresh handler: unified final handler below */
 </script>
 <div id="app"><div id="tabbar"><button class="tab-btn" data-tab="nearby" onclick="toggleTab('nearby')"><span class="tab-icon">📍</span><span id="tab-nearby-lbl">내주변</span></button><button class="tab-btn" data-tab="list" onclick="toggleTab('list')"><span class="tab-icon">📋</span><span id="tab-list-lbl">목록</span></button><button class="tab-btn" data-tab="region" onclick="toggleTab('region')"><span class="tab-icon">🔍</span>지역검색
     </button><button class="tab-btn" data-tab="route" onclick="toggleTab('route')"><span class="tab-icon">🧭</span>길찾기
@@ -4189,7 +4187,6 @@ function _fmtTime(s){
   if(m<60) return m+'분';
   return Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':'');
 }
-/* OAI removed legacy cv-pull handler */
 // ── 스와이프 탭 이동 (v9-7) ──────────────────────────────────────
 (function(){
   const TABS = ['nearby','list','region','route'];
@@ -5662,11 +5659,6 @@ window.initPrayerView = function(){
   }, false);
 
 })();
-
-/* removed auto ?v=Date.now redirect for no-cache mode */
-
-/* OAI removed destructive startup reset: preserves back/external return state. */
-
 (function(){
   try{
     var key='prayer_font_size', base=16;
@@ -5749,20 +5741,10 @@ window.initPrayerView = function(){
   }
 
   /* 기존 뒤로가기 컨트롤러보다 먼저 처리해야 하므로 capture 단계에서 막는다. */
-  /* disabled duplicate prayer popstate handler */
-  // window.addEventListener('popstate', function(e){ handlePrayerBack(e); }, true);
-  /* disabled duplicate prayer backbutton handler */
-  // document.addEventListener('backbutton', function(e){ handlePrayerBack(e); }, true);
+
 
   /* 관구교구 iframe 글자크기 강제 주입 제거: diocese.html 원본 스타일을 사용 */
 })();
-
-/* removed unstable duplicate patch: OAI_FINAL_STABILITY_20260428__ */
-
-/* removed unstable duplicate diocese iframe style injector: original diocese.html style is authoritative */
-
-/* removed unstable duplicate patch: OAI_TRUE_FINAL_CATCHUP_20260428__ */
-
 (function(){
   'use strict';
   if(window.__OAI_SAFE_FONT_REGION_FIX_20260428__) return;
@@ -5831,9 +5813,6 @@ window.initPrayerView = function(){
     if(pv && pv.classList.contains('open')) syncPrayerTabOn();
   }, 500);
 })();
-
-/* removed unstable duplicate patch: OAI_FINAL_REQUEST_20260428__ */
-
 (function(){
   if(window.__OAI_FAITH_RETREAT_PARISH_FINAL_20260428__) return;
   window.__OAI_FAITH_RETREAT_PARISH_FINAL_20260428__ = true;
@@ -5877,15 +5856,6 @@ window.initPrayerView = function(){
     setTimeout(patchDioceseParishCount,700);
   },true);
 })();
-
-/* removed unstable duplicate patch: OAI_VERIFIED_PRAYER_SWIPE_CROSS_20260428__ */
-
-/* removed unstable duplicate patch: OAI_FINAL_SAFE_SWIPE_HEADER_20260428__ */
-
-/* removed unstable duplicate patch: segment_15 */
-
-/* removed unstable duplicate patch: OAI_FINAL_SINGLE_CLEAN_20260429__ */
-
 (function(){
   if(window.__OAI_FINAL_PRECISE_20260429_V3__) return;
   window.__OAI_FINAL_PRECISE_20260429_V3__=true;
@@ -6020,8 +5990,6 @@ window.initPrayerView = function(){
     if(el) observer.observe(el, {attributes:true, attributeFilter:['class']});
   });
 })();
-
-/* OAI removed duplicate route-sheet observer: 경로삭제가 아닌 닫기/복귀에서 노란마커로 강제 이동하지 않도록 제거. */
 (function(){
   // 설치 버튼: standalone 감지 즉시 숨김 (CSS 외 JS 보강)
   function hideInstallIfStandalone(){
@@ -6601,9 +6569,6 @@ html.retreat-mode #region-body .nearby-dist span{
   margin-left:4px!important;
 }
 </style>
-
-<!-- OAI 20260504 final: smooth swipe + no-shake restore/reload stabilization -->
-
 <style id="oai-external-return-stabilize-20260505">
 /* 외부사이트 복귀 직후: 안드로이드 웹뷰/Chrome 주소창·하단영역 재계산 흔들림 억제 */
 html.oai-external-return-stabilize,
