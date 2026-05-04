@@ -1468,6 +1468,7 @@ function showCard(el){
     card.style.bottom=onBottom?'auto':'50px';
   }
   card.classList.add('on');
+  try{card.dataset.openedAt=String(Date.now());}catch(e){}
 }
 function toggleDetail(){
   detOpen=!detOpen;
@@ -1686,6 +1687,28 @@ window.addEventListener('pageshow',function(){
     else { try{ sessionStorage.setItem('oai_diocese_standalone_return',JSON.stringify(state)); }catch(e){} try{ var w=window.open(url,'_blank','noopener'); if(w) return; }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
   };
   document.addEventListener('click',function(e){ var t=e.target&&e.target.closest?e.target.closest('[data-dio-url]'):null; if(!t) return; e.preventDefault(); e.stopPropagation(); window.openDioceseUrl(t.getAttribute('data-dio-url'),t.getAttribute('data-dio-source')||'link'); },true);
+})();
+</script>
+
+
+<script id="oai-diocese-card-close-anywhere-20260504">
+(function(){
+  'use strict';
+  if(window.__OAI_DIOCESE_CARD_CLOSE_ANYWHERE_20260504__) return;
+  window.__OAI_DIOCESE_CARD_CLOSE_ANYWHERE_20260504__=true;
+  function card(){return document.getElementById('card');}
+  function isCardOpen(){var c=card();return !!(c&&c.classList.contains('on'));}
+  function closeIfOutside(e){
+    var c=card(); if(!c||!c.classList.contains('on')) return;
+    var t=e.target;
+    if(!t) return;
+    if(t.closest && (t.closest('#card') || t.closest('.dp') || t.closest('[data-dio-url]'))) return;
+    var openedAt=Number(c.dataset.openedAt||0);
+    if(openedAt && Date.now()-openedAt<80) return;
+    try{hideCard();}catch(_){c.classList.remove('on');}
+  }
+  document.addEventListener('click',closeIfOutside,true);
+  document.addEventListener('touchend',closeIfOutside,true);
 })();
 </script>
 

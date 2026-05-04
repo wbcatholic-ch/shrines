@@ -11,7 +11,7 @@
   }
 })();
 </script>
-<script src="parishes.js?v=20260504-user1"></script>
+<script src="parishes.js?v=20260504-final-urlfix1"></script>
 
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, max-age=0, must-revalidate">
@@ -24,8 +24,8 @@
 <meta name="application-name" content="가톨릭 앱">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0e1535">
-<link rel="manifest" href="manifest.json?v=20260504-user1">
-<link rel="apple-touch-icon" href="icon-192x192.png?v=20260504-user1">
+<link rel="manifest" href="manifest.json?v=20260504-final-urlfix1">
+<link rel="apple-touch-icon" href="icon-192x192.png?v=20260504-final-urlfix1">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="가톨릭 앱 - 가톨릭 신앙의 여정을 함께 합니다">
 <title>가톨릭 앱</title>
@@ -2054,13 +2054,15 @@ function saveCoreReturnState(extra){
 function normalizeCatholicExternalUrl(url){
   url = String(url || '').trim();
   if(!url) return '';
+  // 잘못 저장된 축약/오타 URL 보정: http//example.com → https://example.com
+  url = url.replace(/^http\/\//i, 'https://').replace(/^https\/\//i, 'https://');
   if(url.indexOf('//') === 0) url = 'https:' + url;
   if(!/^https?:\/\//i.test(url)) url = 'https://' + url.replace(/^\/+/, '');
   try{
     var u = new URL(url);
     var host = u.hostname.toLowerCase();
     if(host === 'www.ucatholic.or.kr') u.hostname = 'ucatholic.or.kr';
-    if(host === 'ucatholic.or.kr') u.protocol = 'https:';
+    if(u.hostname.toLowerCase() === 'ucatholic.or.kr') u.protocol = 'https:';
     if(host === 'wjcatholic.or.kr') u.hostname = 'www.wjcatholic.or.kr';
     if(u.hostname.toLowerCase() === 'www.wjcatholic.or.kr') u.protocol = 'https:';
     if(host === 'www.cathms.kr') u.hostname = 'cathms.kr';
@@ -6664,6 +6666,73 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
     document.documentElement.classList.add('oai-reloading-20260504');
     stabilizeCover();
   });
+})();
+</script>
+
+
+<!-- OAI 20260504 final-final: external-return shake fix + web tab sync -->
+<style id="oai-final-return-websync-20260504">
+  html.oai-external-return-freeze *,
+  html.oai-external-return-freeze *::before,
+  html.oai-external-return-freeze *::after{
+    transition:none!important;
+    animation:none!important;
+    scroll-behavior:auto!important;
+  }
+  #web-cats,#web-view .web-cats{scroll-behavior:auto!important;}
+  #web-view .web-cat-btn,#web-cats .web-cat-btn{
+    transition:none!important;
+    animation:none!important;
+  }
+  #web-list,#pr-list-ul,#prayer-list-view{
+    transform:translate3d(0,0,0);
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+  }
+</style>
+<script id="oai-final-return-websync-20260504-script">
+(function(){
+  'use strict';
+  if(window.__OAI_FINAL_RETURN_WEBSYNC_20260504__) return;
+  window.__OAI_FINAL_RETURN_WEBSYNC_20260504__=true;
+  function freeze(ms){
+    var root=document.documentElement;
+    root.classList.add('oai-external-return-freeze');
+    clearTimeout(root.__oaiExternalFreezeTimer);
+    root.__oaiExternalFreezeTimer=setTimeout(function(){root.classList.remove('oai-external-return-freeze');},ms||260);
+  }
+  function coverVisible(){
+    var c=document.getElementById('cover');
+    return !!(c && !document.documentElement.classList.contains('app-active') && getComputedStyle(c).display!=='none');
+  }
+  function stabilizeOnlyCover(){
+    if(!coverVisible()) return;
+    var c=document.getElementById('cover');
+    if(c){
+      c.style.transform='none'; c.style.top='0'; c.style.left='0'; c.style.right='0'; c.style.bottom='0'; c.scrollTop=0;
+    }
+    try{window.scrollTo(0,0);}catch(e){}
+  }
+  window.addEventListener('pageshow',function(){freeze(300);stabilizeOnlyCover();setTimeout(stabilizeOnlyCover,60);},true);
+  window.addEventListener('focus',function(){freeze(260);stabilizeOnlyCover();},true);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden){freeze(260);stabilizeOnlyCover();}},true);
+
+  function syncWebTab(){
+    var active=document.querySelector('#web-cats .web-cat-btn.on,#web-view .web-cat-btn.on');
+    if(!active) return;
+    try{active.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'});}
+    catch(e){try{active.scrollIntoView(false);}catch(_){}}
+  }
+  var old=window.setWebCat;
+  if(typeof old==='function' && !old.__oaiFinalWebSyncInstant){
+    window.setWebCat=function(cat){
+      var r=old.apply(this,arguments);
+      requestAnimationFrame(syncWebTab);
+      setTimeout(syncWebTab,40);
+      return r;
+    };
+    window.setWebCat.__oaiFinalWebSyncInstant=true;
+  }
 })();
 </script>
 
