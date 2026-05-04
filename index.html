@@ -6341,13 +6341,34 @@ html.retreat-mode #srch-modal .sm-filter{
 }
 </style>
 
-<style id="oai-retreat-tabbar-white-only-20260504">
-/* 피정의 집: 최상단 4개 탭을 감싸는 배경만 성지처럼 흰색 계열로 적용 */
-html.retreat-mode #tabbar{
-  background:rgba(255,255,255,.97)!important;
+
+<style id="oai-retreat-green-gold-only-20260504-final">
+/* 피정의집: 상부 탭 배경은 어두운 녹색 단색, 활성 필터는 금색 */
+html.retreat-mode #tabbar,
+html.retreat-mode .sheet-hd,
+html.retreat-mode .srch-bar,
+html.retreat-mode .filter-bar,
+html.retreat-mode .region-wrap,
+html.retreat-mode .sm-hd,
+html.retreat-mode .sm-filter,
+html.retreat-mode #srch-modal .sm-srch,
+html.retreat-mode #srch-modal #sm-tab-bar,
+html.retreat-mode #srch-modal .sm-filter{
+  background:#3F7E5B!important;
   background-image:none!important;
-  border-bottom:1px solid rgba(203,213,225,.95)!important;
-  box-shadow:0 10px 26px rgba(15,23,42,.10)!important;
+}
+html.retreat-mode .filter-btn.active,
+html.retreat-mode .sm-fb.on,
+html.retreat-mode #srch-modal .sm-fb.on{
+  background:#D4AA6A!important;
+  color:#1F2937!important;
+  border-color:#C49A57!important;
+  font-weight:900!important;
+}
+html.retreat-mode #tabbar .tab-btn.active{
+  background:#3F7E5B!important;
+  color:#fff!important;
+  border-color:#C49A57!important;
 }
 </style>
 </body>
