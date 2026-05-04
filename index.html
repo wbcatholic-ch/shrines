@@ -1384,6 +1384,9 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
   box-shadow:0 3px 10px rgba(180,130,0,.22)!important;
   font-weight:900!important;
 }
+
+/* [3] 문의·건의 플로팅 버튼 크기 */
+#qna-cover-btn{min-height:52px!important;padding:0 22px!important;font-size:15px!important;font-weight:900!important;gap:9px!important;border-radius:999px!important}
 </style>
 <div id="missa-view">
   <div id="missa-bar">
@@ -1626,52 +1629,101 @@ function closeDioceseView(){
 function dioceseLoaded(){
   var loading=document.getElementById('diocese-loading');
   if(loading) loading.style.display='none';
-  /* 교구 지도 빈 곳 터치 → 인포카드 닫기 (동일출처 iframe 직접 조작) */
-  try{
-    var frame=document.getElementById('diocese-frame');
-    if(!frame||!frame.contentDocument) return;
-    var doc=frame.contentDocument;
-    if(doc.__oaiCloseInjected) return;
-    doc.__oaiCloseInjected=true;
-    /* 열린 카드 닫기 함수 */
-    doc.__oaiCloseCard=function(){
-      var sels=['.info-card','.diocese-info-card','#diocese-info','#info-panel','.lv-info-card'];
+  _oaiDioceseSetupCardClose();
+}
+/* 관구교구 인포카드 닫기 — 부모 document 오버레이 방식 */
+function _oaiDioceseSetupCardClose(){
+  /* 기존 오버레이 제거 */
+  var old=document.getElementById('_oai_dio_overlay');
+  if(old) old.parentNode.removeChild(old);
+
+  var dioceseView=document.getElementById('diocese-view');
+  var frame=document.getElementById('diocese-frame');
+  if(!dioceseView||!frame) return;
+
+  /* 투명 오버레이: iframe 위에 겹침. pointer-events:none 상태 → 클릭 통과 */
+  var ov=document.createElement('div');
+  ov.id='_oai_dio_overlay';
+  ov.style.cssText='position:absolute;inset:0;z-index:5;background:transparent;pointer-events:none;';
+  dioceseView.style.position='relative';
+  dioceseView.appendChild(ov);
+
+  /* 카드가 열렸는지 체크 → 오버레이 활성화 */
+  function _isCardOpen(){
+    try{
+      var doc=frame.contentDocument||frame.contentWindow.document;
+      if(!doc) return false;
+      /* 모든 visible 자식 검사: offsetHeight>0 이고 위치가 중앙 이상 */
+      var sels=['.info-card','.diocese-info-card','#diocese-info','#info-panel',
+                '.lv-info-card','[class*="info-card"]','[class*="infowindow"]'];
       for(var i=0;i<sels.length;i++){
-        var nodes=doc.querySelectorAll(sels[i]);
+        var nodes;
+        try{ nodes=doc.querySelectorAll(sels[i]); }catch(e){ continue; }
         for(var j=0;j<nodes.length;j++){
-          var el=nodes[j];
-          var st=doc.defaultView.getComputedStyle(el);
-          if(st.display!=='none'&&st.visibility!=='hidden'&&el.offsetHeight>0){
-            el.style.display='none';
-            el.classList.remove('open','show','active','on','visible');
-          }
+          if(nodes[j].offsetHeight>0) return true;
         }
       }
-      /* attribute 기반 카드 (class에 info 포함) */
-      var all=doc.querySelectorAll('[class*="info-card"],[class*="info_window"],[class*="infowindow"],[class*="popup"]');
-      for(var k=0;k<all.length;k++){
-        var el2=all[k];
-        if(el2.offsetHeight>0){
-          el2.style.display='none';
-          el2.classList.remove('open','show','active','on','visible');
+    }catch(e){}
+    return false;
+  }
+
+  /* 카드 닫기 */
+  function _closeCard(){
+    try{
+      var win=frame.contentWindow;
+      if(win&&win.closeInfoCard) win.closeInfoCard();
+    }catch(e){}
+    try{
+      var doc=frame.contentDocument||frame.contentWindow.document;
+      var sels=['.info-card','.diocese-info-card','#diocese-info','#info-panel',
+                '.lv-info-card','[class*="info-card"]','[class*="infowindow"]'];
+      for(var i=0;i<sels.length;i++){
+        var nodes;
+        try{ nodes=doc.querySelectorAll(sels[i]); }catch(e){ continue; }
+        for(var j=0;j<nodes.length;j++){
+          nodes[j].style.display='none';
+          nodes[j].classList.remove('open','show','active','on','visible');
         }
       }
-      try{ var w=frame.contentWindow; if(w&&w.closeInfoCard) w.closeInfoCard(); }catch(e){}
-      try{ var w2=frame.contentWindow; if(w2&&w2._map&&w2._map.closeOverlay) w2._map.closeOverlay(); }catch(e){}
-    };
-    /* 카드 영역 안인지 판별 */
-    doc.__oaiIsCard=function(el){
-      if(!el||!el.closest) return false;
-      return !!(el.closest('.info-card,.diocese-info-card,#diocese-info,#info-panel,.lv-info-card') ||
-                el.closest('[class*="info-card"],[class*="info_window"],[class*="infowindow"],[class*="popup"]'));
-    };
-    doc.addEventListener('click',function(e){
-      if(!doc.__oaiIsCard(e.target)) doc.__oaiCloseCard();
-    },true);
-    doc.addEventListener('touchend',function(e){
-      if(!doc.__oaiIsCard(e.target)) doc.__oaiCloseCard();
-    },{capture:true,passive:true});
-  }catch(ex){}
+    }catch(e){}
+    /* 오버레이 비활성 */
+    ov.style.pointerEvents='none';
+  }
+
+  /* 오버레이 클릭 → 카드 닫기 */
+  ov.addEventListener('click',function(e){
+    e.stopPropagation();
+    _closeCard();
+  });
+  ov.addEventListener('touchend',function(e){
+    e.stopPropagation();
+    _closeCard();
+  },{passive:true});
+
+  /* 폴링: 카드 열리면 오버레이 활성화 */
+  var _pollTimer=null;
+  function _startPoll(){
+    if(_pollTimer) return;
+    _pollTimer=setInterval(function(){
+      if(!dioceseView.classList.contains('open')){
+        clearInterval(_pollTimer); _pollTimer=null; return;
+      }
+      ov.style.pointerEvents=_isCardOpen()?'auto':'none';
+    },250);
+  }
+
+  /* diocese-view가 열릴 때 폴링 시작 */
+  var _obs=new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      if(m.attributeName==='class'){
+        if(dioceseView.classList.contains('open')) _startPoll();
+        else{ clearInterval(_pollTimer); _pollTimer=null; ov.style.pointerEvents='none'; }
+      }
+    });
+  });
+  _obs.observe(dioceseView,{attributes:true});
+  /* 이미 열려있으면 즉시 시작 */
+  if(dioceseView.classList.contains('open')) _startPoll();
 }
 
 const CORE_RETURN_KEY='catholic_core_return_v1';
@@ -5128,7 +5180,7 @@ window.initPrayerView = function(){
 })();
 </script>
 
-<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
+<div id="qna-view" class="module-view"><div class="module-bar web"><div class="module-bar-main"><div class="module-bar-ico" style="font-size:22px;background:rgba(255,255,255,.15);">💬</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의 / Q&A</div><div class="module-bar-sub">질문, 오류, 수정요청을 남기고 답변을 확인하세요</div></div></div><button class="module-close" onclick="document.getElementById('qna-view').classList.remove('open');if(typeof goToCover==='function')goToCover();" aria-label="닫기">×</button></div><div class="qna-body"><div class="qna-tabs"><button class="qna-tab on" type="button" onclick="qnaShowTab('write')">작성</button><button class="qna-tab" type="button" onclick="qnaShowTab('answers')">답변</button></div><div class="qna-list" id="qna-list"></div></div></div>
 
 <script id="patches">
 /*
