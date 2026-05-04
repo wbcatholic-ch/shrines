@@ -1247,10 +1247,13 @@ html.retreat-mode .list-item,
 html.retreat-mode .region-item{width:100%!important;min-width:0!important;box-sizing:border-box!important;align-items:center!important}
 html.retreat-mode .nearby-info,
 html.retreat-mode .li-info{flex:1 1 auto!important;min-width:0!important}
-html.retreat-mode .nearby-meta{width:112px!important;min-width:112px!important;max-width:112px!important;flex:0 0 112px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:5px!important;margin-top:0!important;overflow:visible!important}
-html.retreat-mode .nearby-type{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:112px!important;min-width:82px!important;font-size:11px!important;line-height:1!important;white-space:nowrap!important;text-align:center!important;padding:5px 10px!important;box-sizing:border-box!important;word-break:keep-all!important;overflow:visible!important;text-overflow:clip!important}
-html.retreat-mode .nearby-dist{display:flex!important;align-items:baseline!important;justify-content:center!important;width:112px!important;max-width:112px!important;font-size:13px!important;line-height:1.1!important;white-space:nowrap!important;text-align:center!important;padding:0!important;box-sizing:border-box!important;word-break:keep-all!important;overflow:visible!important;gap:3px!important}
-html.retreat-mode .nearby-dist span{font-size:10px!important;line-height:1.1!important;white-space:nowrap!important;margin-left:3px!important;display:inline!important;word-break:keep-all!important}
+html.retreat-mode .nearby-meta{width:118px!important;min-width:118px!important;max-width:118px!important;flex:0 0 118px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:5px!important;margin-top:0!important;overflow:visible!important;white-space:nowrap!important}
+html.retreat-mode .nearby-type{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:118px!important;min-width:94px!important;font-size:11px!important;line-height:1!important;white-space:nowrap!important;text-align:center!important;padding:5px 9px!important;box-sizing:border-box!important;word-break:keep-all!important;overflow:visible!important;text-overflow:clip!important;letter-spacing:-.04em!important}
+html.retreat-mode .nearby-dist{display:inline-flex!important;align-items:baseline!important;justify-content:center!important;width:118px!important;max-width:118px!important;font-size:13px!important;line-height:1.1!important;white-space:nowrap!important;text-align:center!important;padding:0!important;box-sizing:border-box!important;word-break:keep-all!important;overflow:visible!important;gap:3px!important;letter-spacing:-.03em!important}
+html.retreat-mode .nearby-dist span,html.retreat-mode .nearby-dist *{font-size:10px!important;line-height:1.1!important;white-space:nowrap!important;margin-left:3px!important;display:inline!important;word-break:keep-all!important;flex:0 0 auto!important}
+html.retreat-mode #region-body .nearby-meta{width:118px!important;min-width:118px!important;max-width:118px!important;flex-basis:118px!important}
+html.retreat-mode #region-body .nearby-type{white-space:nowrap!important;word-break:keep-all!important;min-width:94px!important;max-width:118px!important}
+html.retreat-mode #region-body .nearby-dist{white-space:nowrap!important;word-break:keep-all!important;width:118px!important;max-width:118px!important}
 html.retreat-mode .li-badge{font-size:11px!important;line-height:1!important;white-space:nowrap!important;text-align:center!important;padding:5px 10px!important;max-width:112px!important;box-sizing:border-box!important;word-break:keep-all!important}
 @keyframes cv-pull-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 /* 커버 이모지 중복 방지: 실제 span 한 개만 표시 */
@@ -1994,10 +1997,25 @@ function normalizeCatholicExternalUrl(url){
     return u.toString();
   }catch(e){ return url; }
 }
+function openAndroidExternalIntent(url){
+  try{
+    if(!/android/i.test(navigator.userAgent||'')) return false;
+    const u = new URL(url);
+    if(u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const scheme = u.protocol.replace(':','');
+    const target = u.host + u.pathname + u.search + u.hash;
+    const intent = 'intent://' + target + '#Intent;scheme=' + scheme + ';package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+    location.href = intent;
+    return true;
+  }catch(e){ return false; }
+}
+
 function openCoreExternalUrl(url, extra){
   url = normalizeCatholicExternalUrl(url);
   if(!url) return;
   saveCoreReturnState(extra);
+  // 안드로이드 PWA에서는 외부 사이트를 앱 히스토리에 쌓지 않도록 Chrome intent로 보낸다.
+  if(openAndroidExternalIntent(url)) return;
   // 외부링크는 앱/현재창을 덮지 않고 무조건 새창으로 연다.
   try{
     const w = window.open(url, '_blank', 'noopener');
@@ -2416,7 +2434,8 @@ function attemptAppExit(){
   try{ if(navigator.app && typeof navigator.app.exitApp === 'function') navigator.app.exitApp(); }catch(e){}
   try{ window.open('', '_self'); window.close(); }catch(e){}
   // 이전 버전의 강제 히스토리 이동 fallback은 외부링크 방문 기록을 따라가는 원인이어서 제거한다.
-  setTimeout(()=>{ window._appExiting = false; }, 700);
+  // 종료 직후에는 back-controller가 히스토리를 다시 심지 않도록 종료 플래그를 유지한다.
+  try{ document.documentElement.classList.add('app-exiting'); }catch(e){}
 }
 function closeExitDlg(){$('exit-dlg').classList.remove('open');}
 function doExit(){
@@ -4493,6 +4512,7 @@ function _fmtTime(s){
     }
     saveReturnState(payload);
     try{ if(typeof window.__oaiSetStableAppVh==='function') window.__oaiSetStableAppVh(true); }catch(e){}
+    if(typeof openAndroidExternalIntent === 'function' && openAndroidExternalIntent(url)) return;
     try{
       const w = window.open(url, '_blank', 'noopener');
       if(w) return;
@@ -5607,6 +5627,7 @@ window.initPrayerView = function(){
     /* 커버: 토스트 → 두 번째에 종료. go(1) 재복원 없이 바로 트랩만 다시 심어 2번으로 끝낸다. */
     if(!appActive()){
       if(typeof window._showBackToast==='function') window._showBackToast();
+      if(window._appExiting) return;
       try{ history.pushState({_p:1}, '', _href); }catch(e){}
       return;
     }
