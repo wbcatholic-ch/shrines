@@ -2028,6 +2028,17 @@ function normalizeCatholicExternalUrl(url){
     if(typeof _decUrl === 'function') url = _decUrl(url);
   }catch(e){}
 
+  // 접속 오류가 확인된 교구 공식 홈페이지는 열기 직전에만 최소 보정한다.
+  // 의정부교구 https 인증서 경고 회피, 인천교구 모바일 접속 지연 회피.
+  try{
+    var _lowerUrl = String(url).toLowerCase();
+    if(_lowerUrl.indexOf('ucatholic.or.kr') > -1){
+      url = 'http://ucatholic.or.kr/';
+    }else if(_lowerUrl.indexOf('caincheon.or.kr') > -1){
+      url = 'http://www.caincheon.or.kr/';
+    }
+  }catch(e){}
+
   // 명백한 표기 오류만 보정한다.
   url = url
     .replace(/^hthttp:\/\//i, 'http://')
