@@ -2763,6 +2763,25 @@ function _updateTabBtns(active){
   }
 }
 
+
+function _showShrineNeighborsAround(item, keepCount){
+  if(_mode!=='shrine' || !_map || !item || !item.lat || !item.lng) return false;
+  try{
+    const count=(typeof keepCount==='number' && keepCount>0) ? keepCount : 0;
+    const nearby=SHRINES
+      .filter(s=>s && s.lat && s.lng)
+      .map(s=>({s,d:calcDist(item.lat,item.lng,s.lat,s.lng)}))
+      .sort((a,b)=>a.d-b.d)
+      .slice(0,count || undefined)
+      .map(o=>o.s);
+    if(nearby.length){
+      _showItemsOnMap(nearby);
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
 function _focusMarkerAboveInfoCard(item){
   if(!_map || !item || !item.lat || !item.lng) return;
   try{
@@ -2797,6 +2816,8 @@ function selectItem(idx, opts={}){
    _showItemsOnMap(_nearbyCache);
   } else if(opts.fromRegion && _regionCache.length>0){
    _showItemsOnMap(_regionCache);
+  } else if(_listSrch && _listSrch.trim()){
+   _showShrineNeighborsAround(item,0);
   } else {
    _restoreMapMarkers();
   }
@@ -3655,7 +3676,7 @@ function _showRegionResults(q,lat,lng,doc){
         if(rgl) rgl.innerHTML=sorted.map((o,i)=>{
           const idx=items.indexOf(o.x.s);const c=_getModeMarkerColor(o.x.s);const lbl=_getModeTypeLabel(o.x.s);
           const km=o.r.km.toFixed(1);const dur=o.r.dur?`<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(o.r.dur)}</span>`:'';
-          return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.s.name}</div><div class="nearby-addr">${o.x.s.addr.substring(0,26)}${o.x.s.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${lbl}</div><div class="nearby-dist">🚗${km}km${dur}</div></div></div>`;
+          return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.s.name}</div><div class="nearby-addr">${o.x.s.addr.substring(0,26)}${o.x.s.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c};color:#fff;border:1px solid ${c}">${lbl}</div><div class="nearby-dist">🚗${km}km${dur}</div></div></div>`;
         }).join('');
       }
     });
@@ -3689,7 +3710,7 @@ function _showRegionFallback(q){
   return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})">
    <div class="nearby-num" style="background:${c};width:26px;height:26px;font-size:12px">${i+1}</div>
    <div class="nearby-info"><div class="nearby-name">${s.name}</div><div class="nearby-addr">${s.addr.substring(0,26)}…</div></div>
-   <div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${_mode==='shrine'?s.type:(_mode==='retreat'?'피정의 집':'성당')}</div></div>
+   <div class="nearby-meta"><div class="nearby-type" style="background:${c};color:#fff;border:1px solid ${c}">${_mode==='shrine'?s.type:(_mode==='retreat'?'피정의 집':'성당')}</div></div>
   </div>`;
   }).join('');
   $('region-body').innerHTML=
@@ -4189,7 +4210,7 @@ function _nearbyHtml(idx,i,name,addr,c,tLabel,distId,estKm){
  return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div><div class="nearby-dist" id="${distId}">🚗${estKm}km</div></div></div>`;
 }
 function _regionHtml(idx,i,name,addr,c,tLabel,distId,estKm){
- return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div>${distId?`<div class="nearby-dist" id="${distId}">🚗${estKm}km</div>`:''}</div></div>`;
+ return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c};color:#fff;border:1px solid ${c}">${tLabel}</div>${distId?`<div class="nearby-dist" id="${distId}">🚗${estKm}km</div>`:''}</div></div>`;
 }
 function _show(el,d){if(el)el.style.display=d||'flex';}
 function _hide(el){if(el)el.style.display='none';}
@@ -6363,11 +6384,11 @@ window.initPrayerView = function(){
   }
   function installRefresh(){
     var cover=$('cover'), ind=$('cv-pull-modern'); if(!cover||!ind||cover.__oaiFinalUnifiedRefresh) return; cover.__oaiFinalUnifiedRefresh=true;
-    var sx=0, sy=0, active=false, ready=false, refreshing=false, TH=82, MAX=132, HOLD=520;
+    var sx=0, sy=0, active=false, ready=false, refreshing=false, TH=82, MAX=150, HOLD=720;
     function isCoverVisible(){return !!(cover && !document.documentElement.classList.contains('app-active') && getComputedStyle(cover).display!=='none');}
-    function setScale(dy){var y=Math.min(Math.max(dy,0),MAX);var v=Math.max(.78,Math.min(1.08,.78+(y/MAX)*.30));ind.style.setProperty('--pull-scale',String(v));ind.style.setProperty('transform','translate(-50%,'+(Math.round(y*.42)+8)+'px) scale('+v+')','important');}
+    function setScale(dy){var y=Math.min(Math.max(dy,0),MAX);var v=Math.max(.78,Math.min(1.08,.78+(y/MAX)*.30));ind.style.setProperty('--pull-scale',String(v));ind.style.setProperty('transform','translate(-50%,'+(Math.round(y*.48)+24)+'px) scale('+v+')','important');}
     function show(state,dy){setScale(dy||0);ind.classList.add('show');ind.classList.toggle('ready',state==='ready');ind.classList.toggle('refreshing',state==='refreshing');}
-    function hide(){ind.classList.remove('show','ready','refreshing');ind.style.setProperty('--pull-scale','.78');ind.style.setProperty('transform','translate(-50%,8px) scale(.78)','important');}
+    function hide(){ind.classList.remove('show','ready','refreshing');ind.style.setProperty('--pull-scale','.78');ind.style.setProperty('transform','translate(-50%,24px) scale(.78)','important');}
     cover.addEventListener('touchstart',function(e){
       if(refreshing||!isCoverVisible()||cover.scrollTop>0||!e.touches||!e.touches[0]) return;
       sx=e.touches[0].clientX; sy=e.touches[0].clientY; active=true; ready=false; hide();
@@ -6398,7 +6419,99 @@ window.initPrayerView = function(){
     },{passive:true,capture:true});
     cover.addEventListener('touchcancel',function(){active=false;ready=false;hide();},{passive:true,capture:true});
   }
+
+  function resetTextInput(id){
+    try{var x=$(id); if(x){x.value=''; x.blur&&x.blur();}}catch(e){}
+  }
+  function resetCurrentAppView(){
+    try{document.activeElement&&document.activeElement.blur&&document.activeElement.blur();}catch(e){}
+    try{
+      if(document.getElementById('web-view') && document.getElementById('web-view').classList.contains('open')){
+        if(typeof window.openWebView==='function') window.openWebView({hardReset:true});
+        return true;
+      }
+      if(document.getElementById('trail-view') && document.getElementById('trail-view').classList.contains('open')){
+        if(typeof window.openTrailView==='function') window.openTrailView({hardReset:true,forceRebuild:true});
+        return true;
+      }
+      if(document.getElementById('prayer-view') && document.getElementById('prayer-view').classList.contains('open')){
+        resetTextInput('prayer-search-inp');
+        try{var pv=document.getElementById('prayer-list-view'); if(pv) pv.scrollTop=0;}catch(e){}
+        try{if(typeof showPrayerListOnly==='function') showPrayerListOnly();}catch(e){}
+        return true;
+      }
+      if(document.getElementById('qna-view') && document.getElementById('qna-view').classList.contains('open')){
+        try{if(typeof window.oaiQnaBackToList==='function') window.oaiQnaBackToList();}catch(e){}
+        try{var ql=document.getElementById('qna-list'); if(ql) ql.scrollTop=0;}catch(e){}
+        return true;
+      }
+      if(document.documentElement.classList.contains('app-active')){
+        try{if(typeof closeInfoCard==='function') closeInfoCard();}catch(e){}
+        try{if(typeof closeAllTabs==='function') closeAllTabs();}catch(e){}
+        try{if(typeof resetRoute==='function') resetRoute();}catch(e){}
+        try{_filterDio='all'; _listSrch=''; _regionLat=null; _regionLng=null; _regionCache=[]; _regionName=''; _regionPlaceName=''; _nearbyCache=[]; _curFromRegion=false;}catch(e){}
+        resetTextInput('list-srch-inp'); resetTextInput('region-inp');
+        try{var x=$('list-srch-x'); if(x) x.style.display='none';}catch(e){}
+        try{document.querySelectorAll('.filter-btn').forEach(function(b,i){b.classList.toggle('active',i===0);});}catch(e){}
+        try{document.querySelectorAll('.sm-fb').forEach(function(b,i){b.classList.toggle('on',i===0);});}catch(e){}
+        try{if(typeof renderList==='function') renderList();}catch(e){}
+        try{if(typeof _restoreMapMarkers==='function') _restoreMapMarkers();}catch(e){}
+        try{if(_map){_map.setCenter(new _LL(36.2,127.9)); _map.setLevel(8);}}catch(e){}
+        try{if(typeof openTab==='function') openTab('nearby');}catch(e){}
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+  window.__oaiSoftCurrentRefresh = resetCurrentAppView;
+
+  function installInternalRefresh(){
+    if(window.__OAI_INTERNAL_PULL_REFRESH_INSTALLED_20260505__) return;
+    window.__OAI_INTERNAL_PULL_REFRESH_INSTALLED_20260505__=true;
+    var sx=0, sy=0, active=false, ready=false, refreshing=false, TH=86, MAX=154, HOLD=520;
+    function isInternalTarget(e){
+      if(!document.documentElement.classList.contains('app-active')) return false;
+      if(e && e.target && e.target.closest && e.target.closest('#map,#info-card,#srch-modal,#sheet-route')) return false;
+      var sc=(e && e.target && e.target.closest) ? e.target.closest('.sheet-body,.web-list,#trail-list,#prayer-list-view,#qna-list,.qna-body') : null;
+      if(sc && sc.scrollTop>2) return false;
+      return true;
+    }
+    function show(state,dy){
+      var ind=$('cv-pull-modern'); if(!ind) return;
+      var y=Math.min(Math.max(dy||0,0),MAX), v=Math.max(.78,Math.min(1.08,.78+(y/MAX)*.30));
+      ind.style.setProperty('--pull-scale',String(v));
+      ind.style.setProperty('transform','translate(-50%,'+(Math.round(y*.48)+24)+'px) scale('+v+')','important');
+      ind.style.display='flex';
+      ind.classList.add('show');
+      ind.classList.toggle('ready',state==='ready');
+      ind.classList.toggle('refreshing',state==='refreshing');
+    }
+    function hide(){var ind=$('cv-pull-modern'); if(!ind) return; ind.classList.remove('show','ready','refreshing'); ind.style.setProperty('--pull-scale','.78'); ind.style.setProperty('transform','translate(-50%,24px) scale(.78)','important'); ind.style.display='';}
+    document.addEventListener('touchstart',function(e){
+      if(refreshing||!isInternalTarget(e)||!e.touches||!e.touches[0]) return;
+      sx=e.touches[0].clientX; sy=e.touches[0].clientY; active=true; ready=false; hide();
+    },{passive:true,capture:true});
+    document.addEventListener('touchmove',function(e){
+      if(!active||refreshing||!e.touches||!e.touches[0]) return;
+      if(!isInternalTarget(e)){active=false;ready=false;hide();return;}
+      var dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy;
+      if(Math.abs(dx)>Math.abs(dy)*1.2) return;
+      if(dy<=0){ready=false;hide();return;}
+      if(e.cancelable)e.preventDefault();
+      ready=dy>=TH; show(ready?'ready':'show',dy);
+    },{passive:false,capture:true});
+    document.addEventListener('touchend',function(){
+      if(!active) return; active=false;
+      if(ready){
+        ready=false; refreshing=true; show('refreshing',MAX);
+        try{navigator.vibrate&&navigator.vibrate(10);}catch(e){}
+        setTimeout(function(){try{resetCurrentAppView();}catch(e){} hide(); refreshing=false;},HOLD);
+      }else{ready=false;hide();}
+    },{passive:true,capture:true});
+    document.addEventListener('touchcancel',function(){active=false;ready=false;hide();},{passive:true,capture:true});
+  }
   window.addEventListener('pageshow', applyForceCoverAfterReload);
+  installInternalRefresh();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installRefresh,{once:true});else installRefresh();
 })();
 
@@ -6742,7 +6855,7 @@ html.oai-missa-return-stabilize #missa-view.open{
 <style id="oai-cover-pull-github-like-20260505">
 /* 커버 전용 당겨서 새로고침: 기능은 유지, 표시만 GitHub/브라우저식 원형 스피너 느낌으로 정리 */
 #cv-pull-modern{
-  top:calc(104px + env(safe-area-inset-top,0px))!important;
+  top:calc(128px + env(safe-area-inset-top,0px))!important;
   width:54px!important;
   height:54px!important;
   min-width:54px!important;
@@ -6776,7 +6889,7 @@ html.oai-missa-return-stabilize #missa-view.open{
 }
 html.app-active #cv-pull-modern{
   opacity:0!important;
-  display:none!important;
+  pointer-events:none!important;
 }
 </style>
 
@@ -6820,6 +6933,15 @@ html.app-active #cv-pull-modern{
   window.addEventListener('popstate', function(){ showQnaListIfDetail(); }, true);
 })();
 </script>
+
+
+<style id="oai-stable-refresh-shrine-region-fix-20260505">
+/* 안정형 커버 당겨서 새로고침: 표시 위치만 아래로, 화면 자체 transform 없음 */
+#cv-pull-modern{top:calc(128px + env(safe-area-inset-top,0px))!important;}
+#cv-pull-modern.show,#cv-pull-modern.ready,#cv-pull-modern.refreshing{opacity:1!important;}
+#region-body .nearby-type{min-width:64px!important;text-align:center!important;color:#fff!important;font-weight:900!important;box-shadow:0 1px 3px rgba(15,23,42,.16)!important;}
+#region-body .nearby-num{box-shadow:0 1px 4px rgba(15,23,42,.18)!important;}
+</style>
 
 </body>
 </html>
