@@ -2021,56 +2021,76 @@ function saveCoreReturnState(extra){
 function normalizeCatholicExternalUrl(url){
   url = String(url || '').trim();
   if(!url) return '';
-
-  // 기존 데이터에 남아 있는 1~8/PB/PR/P2 같은 단축 URL을 여기서 먼저 풀어준다.
-  // 데이터 파일은 전체 URL이 원칙이지만, 남은 단축값 때문에 잘못 열리는 문제를 방지한다.
-  try{
-    if(typeof _decUrl === 'function') url = _decUrl(url);
-  }catch(e){}
-
-  // 흔한 오타 보정: http//example.com, https//example.com
+  try{ if(typeof _decUrl === 'function') url = _decUrl(url); }catch(e){}
   url = url.replace(/^hthttp:\/\//i, 'http://').replace(/^hthttps:\/\//i, 'https://').replace(/^http\/\//i, 'http://').replace(/^https\/\//i, 'https://');
   if(url.indexOf('//') === 0) url = 'https:' + url;
-  if(!/^https?:\/\//i.test(url)) url = 'https://' + url.replace(/^\/+/, '');
-
+  if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) url = 'https://' + url.replace(/^\/+/, '');
   try{
     var u = new URL(url);
     var host = u.hostname.toLowerCase();
-    // 의정부교구는 www 유무에 따라 모바일 크롬 인증서 동작이 달라질 수 있어
-    // 관구교구에서 열리는 주소 형태를 보존한다.
+    if(host === 'www.ucatholic.or.kr') u.hostname = 'ucatholic.or.kr';
     if(host === 'wjcatholic.or.kr') u.hostname = 'www.wjcatholic.or.kr';
-    if(u.hostname.toLowerCase() === 'www.wjcatholic.or.kr') u.protocol = 'https:';
     if(host === 'www.cathms.kr') u.hostname = 'cathms.kr';
-    if(u.hostname.toLowerCase() === 'cathms.kr') u.protocol = 'https:';
-    if(u.hostname.toLowerCase() === 'www.caincheon.or.kr') u.protocol = 'https:';
+    if(/(^|\.)(caincheon\.or\.kr|ucatholic\.or\.kr|wjcatholic\.or\.kr|cathms\.kr|sd\.uca\.or\.kr)$/i.test(u.hostname)) u.protocol = 'https:';
     u.pathname = u.pathname.replace(/\/{2,}/g, '/');
     return u.toString();
   }catch(e){ return url; }
 }
+
+function toAndroidChromeIntent(url){
+  try{
+    var u = new URL(url);
+    var scheme = (u.protocol || 'https:').replace(':','') || 'https';
+    var full = u.host + u.pathname + u.search + u.hash;
+    return 'intent://' + full + '#Intent;scheme=' + scheme + ';package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+  }catch(e){ return url; }
+}
+
+function openCatholicExternalWindow(url){
+  url = normalizeCatholicExternalUrl(url);
+  if(!url) return false;
+  var ua = '';
+  try{ ua = navigator.userAgent || ''; }catch(e){}
+  var isAndroid = /Android/i.test(ua);
+
+  // noopener를 window.open의 feature로 넣지 않는다.
+  // Android PWA/WebView에서 null 반환 → a태그 폴백 → 앱 내부 탐색으로 이어지는 원인을 차단한다.
+  try{
+    var w = window.open('', '_blank');
+    if(w){
+      try{ w.opener = null; }catch(e){}
+      try{ w.location.replace(url); }catch(e){ try{ w.location.href = url; }catch(_){} }
+      return true;
+    }
+  }catch(e){}
+
+  // 새창 핸들이 막힌 Android에서는 a태그보다 Chrome intent가 안전하다.
+  if(isAndroid){
+    try{ window.location.href = toAndroidChromeIntent(url); return true; }catch(e){}
+  }
+
+  try{
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'external';
+    a.style.position = 'fixed';
+    a.style.left = '-9999px';
+    a.style.top = '-9999px';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ try{ a.remove(); }catch(e){} }, 300);
+    return true;
+  }catch(e){}
+  return false;
+}
+
 function openCoreExternalUrl(url, extra){
   url = normalizeCatholicExternalUrl(url);
   if(!url) return;
   saveCoreReturnState(extra);
-  // 외부링크는 앱/현재창을 덮지 않고 무조건 새창으로 연다.
-  try{
-    const w = window.open(url, '_blank');
-    if(w){ try{ w.opener = null; }catch(e){} return; }
-  }catch(e){}
-  try{
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    // display:none 이면 iOS Safari/PWA에서 클릭 이벤트가 무시되므로 제거
-    a.style.position = 'fixed';
-    a.style.opacity = '0';
-    a.style.pointerEvents = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ try{ a.remove(); }catch(e){} }, 300);
-  }catch(e){
-    alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
-  }
+  if(openCatholicExternalWindow(url)) return;
+  alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
 }
 
 function clearRouteNoFocus(){
@@ -4437,7 +4457,7 @@ function _fmtTime(s){
    op:"천주교 수원교구", url:"https://www.casuwon.or.kr/",
    desc:"교구 소식·교육·행사·사목 자료 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"의정부교구",
-   op:"천주교 의정부교구", url:"https://www.ucatholic.or.kr/",
+   op:"천주교 의정부교구", url:"https://ucatholic.or.kr/",
    desc:"교구 공지·본당 안내·사목 자료 제공"},
   {cat:"교구", ico:"⛪", prov:"서울관구", name:"춘천교구",
    op:"천주교 춘천교구", url:"https://www.cccatholic.or.kr/",
@@ -4558,28 +4578,7 @@ function _fmtTime(s){
     saveReturnState(payload);
     try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize(payload.module || 'external'); }catch(e){}
 
-    // 관구교구(openDioceseExternal)와 같은 새창 열기 방식으로 통일.
-    // 일부 가톨릭 주요 웹사이트가 PWA/WebView에서 window.open(url,'_blank')만으로는
-    // 열리지 않는 경우가 있어 noopener + a[target=_blank] 폴백까지 동일하게 적용한다.
-    function openNewTabSameAsDiocese(u){
-      try{
-        const w = window.open(u, '_blank');
-        if(w){ try{ w.opener = null; }catch(e){} return true; }
-      }catch(e){}
-      try{
-        const a = document.createElement('a');
-        a.href = u;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function(){ try{ a.remove(); }catch(e){} }, 300);
-        return true;
-      }catch(e){}
-      return false;
-    }
-
-    if(openNewTabSameAsDiocese(url)) return;
+    if(typeof openCatholicExternalWindow === 'function' && openCatholicExternalWindow(url)) return;
     alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
   }
 
@@ -6121,12 +6120,8 @@ window.initPrayerView = function(){
     var payload = state || {};
     try{ var frame = document.getElementById('diocese-frame'); if(frame && frame.contentWindow && typeof frame.contentWindow.getDioceseReturnState === 'function'){ payload = frame.contentWindow.getDioceseReturnState(payload.source || 'link') || payload; } }catch(e){}
     try{ sessionStorage.setItem(DIO_KEY, JSON.stringify(payload)); }catch(e){}
-    try{
-      url = (typeof normalizeCatholicExternalUrl === 'function') ? normalizeCatholicExternalUrl(url) : url;
-      var w = window.open(url, '_blank');
-      if(w){ try{ w.opener = null; }catch(e){} return; }
-    }catch(e){}
-    try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); }
+    if(typeof openCatholicExternalWindow === 'function' && openCatholicExternalWindow(url)) return;
+    alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');
   };
   function restoreDioceseIfNeeded(){
     var raw=null; try{ raw=sessionStorage.getItem(DIO_KEY); }catch(e){}
@@ -6277,7 +6272,7 @@ window.initPrayerView = function(){
   if(window.__OAI_PRECISE_20260502__) return;
   window.__OAI_PRECISE_20260502__ = true;
   function byId(id){ return document.getElementById(id); }
-  function openNewTab(url){ if(!url) return; try{ url=(typeof normalizeCatholicExternalUrl==='function')?normalizeCatholicExternalUrl(url):url; }catch(e){} try{ var w=window.open(url,'_blank'); if(w){ try{w.opener=null;}catch(e){} return; } }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener external'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
+  function openNewTab(url){ if(!url) return; if(typeof openCatholicExternalWindow === 'function' && openCatholicExternalWindow(url)) return; alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); }
   window.openDioceseExternal=function(url,state){ if(!url) return; try{sessionStorage.setItem('oai_diocese_return_state_v3',JSON.stringify(state||{}));}catch(e){} openNewTab(url); };
   function rememberRouteDest(){ try{ if(_rE&&_rE.lat) return {lat:_rE.lat,lng:_rE.lng,idx:_rE.idx,name:_rE.name}; if(_curInfoItem&&_curInfoItem.item) return {lat:_curInfoItem.item.lat,lng:_curInfoItem.item.lng,idx:_curInfoItem.idx,item:_curInfoItem.item,name:_curInfoItem.item.name}; }catch(e){} return null; }
   function restoreDest(dest){ if(!dest||!dest.lat) return; setTimeout(function(){ try{ var items=(typeof _getCurrentItems==='function')?_getCurrentItems():[]; var idx=(typeof dest.idx==='number'&&dest.idx>=0)?dest.idx:items.findIndex(function(p){return Number(p.lat)===Number(dest.lat)&&Number(p.lng)===Number(dest.lng);}); var item=idx>=0?items[idx]:dest.item; if(item&&typeof _showInfoCard==='function') _showInfoCard(item,idx); if(item&&typeof _focusMarkerAboveInfoCard==='function') _focusMarkerAboveInfoCard(item); }catch(e){} },80); }
