@@ -11,7 +11,7 @@
   }
 })();
 </script>
-<script src="parishes.js?v=20260504-final-urlfix1"></script>
+<script src="parishes.js?v=20260505-final-fix1"></script>
 
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, max-age=0, must-revalidate">
@@ -24,8 +24,8 @@
 <meta name="application-name" content="가톨릭 앱">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0e1535">
-<link rel="manifest" href="manifest.json?v=20260504-final-urlfix1">
-<link rel="apple-touch-icon" href="icon-192x192.png?v=20260504-final-urlfix1">
+<link rel="manifest" href="manifest.json?v=20260505-final-fix1">
+<link rel="apple-touch-icon" href="icon-192x192.png?v=20260505-final-fix1">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="가톨릭 앱 - 가톨릭 신앙의 여정을 함께 합니다">
 <title>가톨릭 앱</title>
@@ -1928,7 +1928,7 @@ function openMissa(){
   try{ localStorage.setItem('oai_last_missa_url', url); }catch(e){}
   try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize('missa'); }catch(e){}
   /* 외부 브라우저로 이동 — view 열지 않음 */
-  try{ window.open(url,'_blank','noopener'); }catch(e){}
+  try{ var mw=window.open(url,'_blank'); if(mw){ try{mw.opener=null;}catch(_){} } }catch(e){}
 }
 function closeMissa(){
   const view=$('missa-view');
@@ -2041,7 +2041,11 @@ function normalizeCatholicExternalUrl(url){
     if(host === 'wjcatholic.or.kr') u.hostname = 'www.wjcatholic.or.kr';
     if(u.hostname.toLowerCase() === 'www.wjcatholic.or.kr') u.protocol = 'https:';
     if(host === 'www.cathms.kr') u.hostname = 'cathms.kr';
-    if(u.hostname.toLowerCase() === 'cathms.kr') u.protocol = 'https:';
+    if(u.hostname.toLowerCase() === 'cathms.kr'){
+      u.protocol = 'https:';
+      // PA 프리픽스(https://cathms.kr/) + /E_2/... 조합으로 생긴 이중 슬래시 보정
+      u.pathname = u.pathname.replace(/\/{2,}/g, '/');
+    }
     if(u.hostname.toLowerCase() === 'www.caincheon.or.kr') u.protocol = 'https:';
     return u.toString();
   }catch(e){ return url; }
@@ -2052,8 +2056,8 @@ function openCoreExternalUrl(url, extra){
   saveCoreReturnState(extra);
   // 외부링크는 앱/현재창을 덮지 않고 무조건 새창으로 연다.
   try{
-    const w = window.open(url, '_blank', 'noopener');
-    if(w) return;
+    const w = window.open(url, '_blank');
+    if(w){ try{ w.opener = null; }catch(_){} return; }
   }catch(e){}
   try{
     const a = document.createElement('a');
@@ -4548,8 +4552,8 @@ function _fmtTime(s){
     // 열리지 않는 경우가 있어 noopener + a[target=_blank] 폴백까지 동일하게 적용한다.
     function openNewTabSameAsDiocese(u){
       try{
-        const w = window.open(u, '_blank', 'noopener');
-        if(w) return true;
+        const w = window.open(u, '_blank');
+        if(w){ try{ w.opener = null; }catch(_){} return true; }
       }catch(e){}
       try{
         const a = document.createElement('a');
@@ -5549,11 +5553,23 @@ window.initPrayerView = function(){
 
   var _href = location.href.split('#')[0];
 
+  function rearmBackTrap(){
+    if(window._appExiting) return;
+    _href = location.href.split('#')[0];
+    try{
+      history.replaceState({_p:0}, '', _href);
+      history.pushState({_p:1}, '', _href);
+    }catch(e){}
+  }
+
   /* history 초기화 */
-  try{
-    history.replaceState({_p:0}, '', _href);
-    history.pushState({_p:1}, '', _href);
-  }catch(e){}
+  rearmBackTrap();
+
+  var _firstPageshow = true;
+  window.addEventListener('pageshow', function(){
+    if(_firstPageshow){ _firstPageshow = false; return; }
+    setTimeout(rearmBackTrap, 0);
+  }, true);
 
   function $b(id){ return document.getElementById(id); }
   function appActive(){ return document.documentElement.classList.contains('app-active'); }
@@ -5940,7 +5956,7 @@ window.initPrayerView = function(){
   function setEmojiIcons(){var icons={'cc-1':'✝️','cc-2':'📖','cc-3':'🙏','cc-4':'⛪','cc-5':'🌿','cc-6':'🥾','cc-7':'🌐','cc-8':'🧭'};Object.keys(icons).forEach(function(id){var btn=el(id);if(!btn)return;var wrap=btn.querySelector('.cover-icon-wrap');if(wrap)wrap.innerHTML='<span class="cover-emoji" aria-hidden="true">'+icons[id]+'</span>';});}
   function normalizeLabels(root){root=root||document;try{root.querySelectorAll('button,a,span,div').forEach(function(n){if(!n||!n.childNodes||n.childNodes.length!==1||n.childNodes[0].nodeType!==3)return;var t=n.textContent,nt=t;nt=nt.replace(/카카오\s*맵/g,'카카오내비').replace(/카카오\s*나비/g,'카카오내비').replace(/Kakao\s*Map/gi,'카카오내비').replace(/Kakao\s*Navi/gi,'카카오내비');nt=nt.replace(/상장예식\s*\(\s*위령기도1\s*\)/g,'위령기도1(상장예식)').replace(/^위령기도1$/g,'위령기도1(상장예식)').replace(/Memorial Prayer 1\s*\(\s*Courting Ceremony\s*\)/gi,'위령기도1(상장예식)');nt=nt.replace(/위령\s*기도2\s*\(\s*짧은\s*위령기도\s*\)/g,'위령기도2 (짧은 위령기도)').replace(/^위령기도2$/g,'위령기도2 (짧은 위령기도)').replace(/Memorial Prayer 2\s*\(\s*short Memorial Prayer\s*\)/gi,'위령기도2 (짧은 위령기도)');if(nt!==t)n.textContent=nt;});}catch(e){}}
   function configureQna(){window.QNA_FORM_URL=SHEET_URL;window.QNA_ANSWER_URL=SHEET_URL;var q=el('qna-list');if(q&&q.innerHTML.indexOf('Google Form')>=0){q.innerHTML='<div class="qna-card"><div class="qna-kicker">문의 · 수정건의</div><div class="qna-title">Google Sheet 연결</div><div class="qna-text">문의와 수정건의는 연결된 Google Sheet에 남길 수 있습니다. 비밀 작성은 시트 권한 설정 또는 Google Form/Apps Script 연결이 필요합니다.</div><div class="qna-actions"><button class="primary" type="button" onclick="qnaOpenFormUrl()">문의 작성하기</button><button type="button" onclick="qnaOpenAnswerUrl()">답변 보기</button></div></div>';}}
-  window.qnaOpenFormUrl=function(){try{var w=window.open(SHEET_URL,'_blank','noopener'); if(w)return;}catch(_){} alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');};window.qnaOpenAnswerUrl=function(){try{var w=window.open(SHEET_URL,'_blank','noopener'); if(w)return;}catch(_){} alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');};
+  window.qnaOpenFormUrl=function(){try{var w=window.open(SHEET_URL,'_blank'); if(w){try{w.opener=null;}catch(__){} return;}}catch(_){} alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');};window.qnaOpenAnswerUrl=function(){try{var w=window.open(SHEET_URL,'_blank'); if(w){try{w.opener=null;}catch(__){} return;}}catch(_){} alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.');};
   function ll(lat,lng){try{if(typeof _LL==='function')return new _LL(lat,lng);}catch(e){}try{if(window.kakao&&kakao.maps)return new kakao.maps.LatLng(lat,lng);}catch(e){}return null;}
   function getMap(){try{if(typeof _map!=='undefined'&&_map)return _map;}catch(e){}return window._map||null;}
   function getLatLng(item){if(!item)return null;var lat=item.lat,lng=item.lng;if((lat==null||lng==null)&&item.coords){lat=item.coords.latitude||item.coords.lat;lng=item.coords.longitude||item.coords.lng;}lat=Number(lat);lng=Number(lng);return(isFinite(lat)&&isFinite(lng))?{lat:lat,lng:lng}:null;}
@@ -6107,8 +6123,8 @@ window.initPrayerView = function(){
     try{ var frame = document.getElementById('diocese-frame'); if(frame && frame.contentWindow && typeof frame.contentWindow.getDioceseReturnState === 'function'){ payload = frame.contentWindow.getDioceseReturnState(payload.source || 'link') || payload; } }catch(e){}
     try{ sessionStorage.setItem(DIO_KEY, JSON.stringify(payload)); }catch(e){}
     try{
-      var w = window.open(url, '_blank', 'noopener');
-      if(w) return;
+      var w = window.open(url, '_blank');
+      if(w){ try{w.opener=null;}catch(_){} return; }
     }catch(e){}
     try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); }
   };
@@ -6261,7 +6277,7 @@ window.initPrayerView = function(){
   if(window.__OAI_PRECISE_20260502__) return;
   window.__OAI_PRECISE_20260502__ = true;
   function byId(id){ return document.getElementById(id); }
-  function openNewTab(url){ if(!url) return; try{ var w=window.open(url,'_blank','noopener'); if(w) return; }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
+  function openNewTab(url){ if(!url) return; try{ var w=window.open(url,'_blank'); if(w){ try{w.opener=null;}catch(_){} return; } }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
   window.openDioceseExternal=function(url,state){ if(!url) return; try{sessionStorage.setItem('oai_diocese_return_state_v3',JSON.stringify(state||{}));}catch(e){} openNewTab(url); };
   function rememberRouteDest(){ try{ if(_rE&&_rE.lat) return {lat:_rE.lat,lng:_rE.lng,idx:_rE.idx,name:_rE.name}; if(_curInfoItem&&_curInfoItem.item) return {lat:_curInfoItem.item.lat,lng:_curInfoItem.item.lng,idx:_curInfoItem.idx,item:_curInfoItem.item,name:_curInfoItem.item.name}; }catch(e){} return null; }
   function restoreDest(dest){ if(!dest||!dest.lat) return; setTimeout(function(){ try{ var items=(typeof _getCurrentItems==='function')?_getCurrentItems():[]; var idx=(typeof dest.idx==='number'&&dest.idx>=0)?dest.idx:items.findIndex(function(p){return Number(p.lat)===Number(dest.lat)&&Number(p.lng)===Number(dest.lng);}); var item=idx>=0?items[idx]:dest.item; if(item&&typeof _showInfoCard==='function') _showInfoCard(item,idx); if(item&&typeof _focusMarkerAboveInfoCard==='function') _focusMarkerAboveInfoCard(item); }catch(e){} },80); }
