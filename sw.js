@@ -9,6 +9,12 @@ const APP_SHELL = [
   './qa-firebase.html',
   './parishes.js',
   './config.js',       // API 키 설정 파일 — 오프라인 시에도 지도 동작에 필요
+  './style.css',       // 3단계 파일 분리: 인라인 CSS → 외부 파일
+  './app.js',          // 핵심 앱 로직 (지도·마커·탭·경로)
+  './web.js',          // 가톨릭 웹사이트 목록 모듈
+  './prayer.js',       // 기도문 모듈
+  './patches.js',      // 뒤로가기·스와이프·터치 UX 패치
+  './sw-update.js',    // 서비스워커 캐시 버전 관리
   './manifest.json',
   './icon-192x192.png'
 ];
