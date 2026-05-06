@@ -3,9 +3,63 @@
    총 5개 <style> 블록을 하나로 통합합니다. */
 
 /* ============================================================
-   :root — 앱 전역 CSS 변수 (원본 index.html <style> 블록에서 복원)
-   index.html 에서 style.css 분리 시 유실됐던 변수들을 재정의.
-   ※ 하위 모드 오버라이드(html.retreat-mode 등)는 파일 하단에서 수행.
+   :root — 원본 index.html line 38 의 압축 변수 블록 (완전판)
+   파일 분리 시 누락됐던 --bg-color, --bg-unified, --oai-ivory,
+   --text-main, --card-bg, --oai-gold, --oai-shrine-header 등 복원.
+   ============================================================ */
+:root{
+  --navy2:#1a2456;--navy3:#243070;
+  --cream:#f5f0e8;--ink:#1F2937;--border:#dde3f2;
+  --pilgrim:#1f2a44;--martyr:#1b7a3e;
+  --parish-active:#466b92;--parish-accent:#e7f1fb;
+  --retreat-active:#6366f1;--retreat-accent:#eef2ff;
+  --addr-color:#6B7280;--dist-parish:#466b92;--dist-retreat:#4f46e5;
+  --sb:env(safe-area-inset-bottom,0);--st:env(safe-area-inset-top,0);
+  --stone:#f3eee5;--stone-2:#ebe3d7;--paper:#fffdf9;--panel:#fffaf2;
+  --line-soft:#e7ddcf;
+  --shadow-soft:0 12px 30px rgba(14,21,53,.10);
+  --shadow-card:0 16px 34px rgba(17,24,39,.11);
+  --ui-ink:#141b2d;--ui-ink-soft:#4d5a75;--ui-line:#e6dfd3;
+  --ui-panel:#ffffff;--ui-bg:#f7f4ee;
+  --ui-blue:#3563ff;--ui-indigo:#6d4df4;--ui-rose:#d94f70;
+  --ui-teal:#118a7e;--ui-amber:#f59e0b;
+  --bg-unified:#f5f0e8;                 /* 목록/시트 배경 */
+  --pink-start:#E8397A;--pink-end:#f0609a;
+  --header-h:calc(52px + env(safe-area-inset-top,0));
+  --module-tab-h:48px;
+  --mod-header-h:calc(56px + env(safe-area-inset-top,0px));
+  --mod-tabbar-h:52px;--tab-btn-h:40px;
+  /* OAI 표준 컴포넌트 (완전판) */
+  --oai-shrine-header:#1f2a44;
+  --oai-parish-header:#4f6f90;
+  --oai-retreat-header:#7fb39a;
+  --oai-gold:#d4aa6a;
+  --oai-gold-border:#c49a57;
+  --oai-btn:#eef1f4;--oai-btn-border:#cfd6dd;--oai-btn-text:#334155;
+  --oai-ivory:#e9deca;                  /* 검색바·필터바 배경 */
+  --oai-ivory-border:#d6c6a8;
+  --oai-std-scale:var(--app-font-scale,1);
+  --oai-std-header-h:72px;
+  --app-fs-title:calc(16px * var(--app-font-scale,1));
+  --app-fs-sub:calc(12px * var(--app-font-scale,1));
+  --app-fs-body:calc(16px * var(--app-font-scale,1));
+  /* 성지/성당/피정 모드 소프트 팔레트 */
+  --shrine-soft-2:#f5f7fc;
+  --church-soft-2:#f4f7fb;
+  --retreat-soft-2:#f5faf7;             /* 피정 sm-tab-bar 배경 */
+  /* 커버 테마 */
+  --bg-color:#F7F0E5;                   /* #cover 배경 */
+  --text-main:#3E362E;                  /* 커버 텍스트 */
+  --text-sub:#7A7065;
+  --card-bg:#FFFFFF;                    /* .cover-card 배경 */
+  /* UI 표면 */
+  --ui-surface:#fbfaf7;--ui-card:#ffffff;
+  --ui-line-strong:#d9cfbf;--ui-text:#1f2937;--ui-sub:#7b8794;
+}
+
+/* ============================================================
+   :root — 앱 전역 CSS 변수 (파일 분리 시 옮겨진 기존 블록)
+   ※ 위 블록과 중복되는 변수는 아래가 마지막이므로 최종값으로 적용됨.
    ============================================================ */
 :root{
   /* ── 기본 팔레트 ─────────────────────────── */
@@ -2010,3 +2064,298 @@ html.oai-missa-return-stabilize #missa-view.open{
 html.app-active #cv-pull-modern{
   opacity:0!important;
   display:none!important;
+}
+
+/* ================================================================
+   ▌ 모듈 헤더·탭·버튼 표준화 (최종 덮어쓰기)
+   ▌ 순례길 / 기도문 / 웹사이트 / 관구·교구 / 문의·건의
+   ▌
+   ▌ 표준 토큰 (이 파일 :root 에서 관리):
+   ▌   헤더 높이   --oai-std-header-h : 70px
+   ▌   탭바 높이   --oai-std-tab-h    : 36px  → 탭바 wrapper = 36+16=52px
+   ▌   버튼 높이   --oai-std-btn-h    : 36px
+   ▌   타이틀 fs   --oai-std-title-fs : 20px
+   ▌   서브 fs     --oai-std-sub-fs   : 11px
+   ▌   버튼 fs     --oai-std-btn-fs   : 14px
+   ▌   border-r    --oai-std-radius   : 14px
+   ▌
+   ▌ 이 블록은 파일 내 모든 이전 선언보다 나중에 위치하므로
+   ▌ !important 없이도 대부분 이긴다. 충돌 우려 시만 !important.
+   ================================================================ */
+
+/* ── 1. :root 토큰 확정 ──────────────────────────────────────────── */
+:root {
+  --oai-std-header-h : 70px;
+  --oai-std-tab-h    : 36px;
+  --oai-std-tabbar-h : 52px;   /* 탭바 wrapper 고정 높이 (탭 36 + 상하 패딩 8) */
+  --oai-std-btn-h    : 36px;
+  --oai-std-title-fs : 20px;
+  --oai-std-sub-fs   : 11px;
+  --oai-std-btn-fs   : 14px;
+  --oai-std-radius   : 14px;
+  --oai-std-gap      : 8px;
+  --oai-std-icon-sz  : 28px;   /* 헤더 이모지 폰트 크기 */
+  --oai-std-close-sz : 36px;   /* 닫기 버튼 크기 */
+  --oai-std-hdr-pad  : calc(10px + env(safe-area-inset-top, 0px)); /* 헤더 상단 패딩 */
+}
+
+/* ── 2. 헤더 (module-bar / #prayer-bar / #diocese-bar) ───────────── */
+#prayer-bar,
+#diocese-bar,
+#web-view   .module-bar,
+#trail-view .module-bar,
+#qna-view   .module-bar,
+#diocese-view .module-bar {
+  /* 크기·레이아웃 */
+  height     : calc(var(--oai-std-header-h) + env(safe-area-inset-top, 0px)) !important;
+  min-height : calc(var(--oai-std-header-h) + env(safe-area-inset-top, 0px)) !important;
+  max-height : calc(var(--oai-std-header-h) + env(safe-area-inset-top, 0px)) !important;
+  padding    : var(--oai-std-hdr-pad) 16px 10px !important;
+  box-sizing : border-box !important;
+  flex-shrink: 0 !important;
+  display    : flex !important;
+  align-items: center !important;
+  gap        : 0 !important;           /* 내부 .module-bar-main 이 gap 담당 */
+  /* 공통 배경 (각 모듈이 덮어쓸 수 있도록 배경은 아래서 별도 지정) */
+  border-bottom: 2px solid var(--gold) !important;
+  box-shadow : 0 4px 16px rgba(14, 21, 53, .22) !important;
+}
+
+/* 헤더 내 main 컨테이너 */
+#prayer-bar .module-bar-main,
+#web-view   .module-bar-main,
+#trail-view .module-bar-main,
+#qna-view   .module-bar-main,
+#diocese-view .module-bar-main {
+  display    : flex !important;
+  align-items: center !important;
+  gap        : 14px !important;
+  flex       : 1 !important;
+  min-width  : 0 !important;
+}
+
+/* 헤더 아이콘 */
+#prayer-bar .module-bar-ico,
+#web-view   .module-bar-ico,
+#trail-view .module-bar-ico,
+#qna-view   .module-bar-ico,
+#diocese-view .module-bar-ico {
+  width      : 44px !important;
+  height     : 44px !important;
+  min-width  : 44px !important;
+  flex       : 0 0 44px !important;
+  border-radius : 12px !important;
+  background : rgba(255,255,255,.12) !important;
+  border     : 1px solid rgba(255,255,255,.2) !important;
+  display    : flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size  : var(--oai-std-icon-sz) !important;
+  line-height: 1 !important;
+  color      : #fff !important;
+}
+
+/* 헤더 텍스트 래퍼 */
+#prayer-bar .module-bar-txt,
+#web-view   .module-bar-txt,
+#trail-view .module-bar-txt,
+#qna-view   .module-bar-txt,
+#diocese-view .module-bar-txt {
+  display        : flex !important;
+  flex-direction : column !important;
+  align-items    : flex-start !important;
+  justify-content: center !important;
+  min-width      : 0 !important;
+  gap            : 2px !important;
+}
+
+/* 헤더 타이틀 */
+#prayer-bar-ttl,
+#prayer-bar .module-bar-title,
+#web-view   .module-bar-title,
+#trail-view .module-bar-title,
+#qna-view   .module-bar-title,
+#diocese-view .module-bar-title,
+#diocese-bar-title {
+  font-size    : var(--oai-std-title-fs) !important;
+  font-weight  : 800 !important;
+  line-height  : 1.2 !important;
+  letter-spacing: -.02em !important;
+  color        : #fff !important;
+  white-space  : nowrap !important;
+  overflow     : hidden !important;
+  text-overflow: ellipsis !important;
+  margin       : 0 !important;
+}
+
+/* 헤더 서브타이틀 */
+#prayer-bar-sub,
+#prayer-bar .module-bar-sub,
+#web-view   .module-bar-sub,
+#trail-view .module-bar-sub,
+#qna-view   .module-bar-sub,
+#diocese-view .module-bar-sub {
+  font-size  : var(--oai-std-sub-fs) !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  color      : rgba(255,255,255,.65) !important;
+  white-space: nowrap !important;
+  overflow   : hidden !important;
+  text-overflow: ellipsis !important;
+  margin     : 0 !important;
+  opacity    : 1 !important;
+}
+
+/* 닫기 버튼 */
+#prayer-close,
+#prayer-bar .module-close,
+#web-view   .module-close,
+#trail-view .module-close,
+#qna-view   .module-close,
+#diocese-view .module-close {
+  width   : var(--oai-std-close-sz) !important;
+  height  : var(--oai-std-close-sz) !important;
+  min-width: var(--oai-std-close-sz) !important;
+  flex    : 0 0 var(--oai-std-close-sz) !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,.13) !important;
+  border  : 1px solid rgba(255,255,255,.22) !important;
+  color   : rgba(212,170,106,.9) !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  display : flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  cursor  : pointer !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── 3. 탭바 wrapper ─────────────────────────────────────────────── */
+#prayer-tabs,
+#web-view  .web-cats,
+#trail-view .trail-tabs,
+#qna-view  .qna-tabs {
+  height    : var(--oai-std-tabbar-h) !important;
+  min-height: var(--oai-std-tabbar-h) !important;
+  max-height: var(--oai-std-tabbar-h) !important;
+  padding   : 8px 14px !important;
+  display   : flex !important;
+  align-items: center !important;
+  gap       : var(--oai-std-gap) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  scrollbar-width: none !important;
+  background: rgba(255,255,255,.92) !important;
+  border-bottom: 1px solid rgba(0,0,0,.08) !important;
+}
+#prayer-tabs::-webkit-scrollbar,
+#web-view  .web-cats::-webkit-scrollbar,
+#trail-view .trail-tabs::-webkit-scrollbar,
+#qna-view  .qna-tabs::-webkit-scrollbar { display: none !important; }
+
+/* ── 4. 탭 버튼 (비활성) ─────────────────────────────────────────── */
+#prayer-tabs .pr-tab,
+#web-view  .web-cat-btn,
+#trail-view .trail-tab,
+#qna-view  .qna-tab {
+  /* 크기 */
+  height    : var(--oai-std-tab-h) !important;
+  min-height: var(--oai-std-tab-h) !important;
+  padding   : 0 16px !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  /* 모양 */
+  border-radius: var(--oai-std-radius) !important;
+  border    : 1.5px solid #dde3ee !important;
+  background: #f4f6fb !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8) !important;
+  /* 글자 */
+  font-size  : var(--oai-std-btn-fs) !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+  color      : #5a6478 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  /* 레이아웃 */
+  display    : flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap        : 6px !important;
+  cursor     : pointer !important;
+}
+/* 순례길 탭은 균등 분할 */
+#trail-view .trail-tab { flex: 1 1 0 !important; }
+/* 문의·건의 탭도 균등 분할 */
+#qna-view .qna-tab     { flex: 1 1 0 !important; }
+
+/* ── 5. 탭 버튼 (활성) ───────────────────────────────────────────── */
+#prayer-tabs .pr-tab.active,
+#prayer-tabs .pr-tab.on,
+#web-view  .web-cat-btn.on,
+#trail-view .trail-tab.on,
+#qna-view  .qna-tab.on {
+  font-weight: 800 !important;
+  border-color: transparent !important;
+  box-shadow : 0 4px 12px rgba(14,21,53,.16) !important;
+  color      : #fff !important;
+}
+
+/* 모듈별 활성 탭 배경색 */
+#prayer-tabs .pr-tab.active,
+#prayer-tabs .pr-tab.on       { background: var(--navy, #0e1535) !important; }
+#web-view  .web-cat-btn.on    { background: #0e1a3a !important; }           /* 웹사이트 — 딥네이비 */
+#trail-view .trail-tab.on     { background: var(--navy, #0e1535) !important; }
+#qna-view  .qna-tab.on        { background: var(--navy, #0e1535) !important; }
+
+/* ── 6. 헤더 배경색 (모듈별) ─────────────────────────────────────── */
+/* 기도문 */
+#prayer-bar {
+  background: linear-gradient(135deg, #0e1535 0%, #1a2456 100%) !important;
+}
+/* 순례길 */
+#trail-view .module-bar {
+  background: linear-gradient(135deg, #0e1535 0%, #1f2a44 100%) !important;
+}
+/* 웹사이트 */
+#web-view .module-bar {
+  background: linear-gradient(135deg, #0e1a3a 0%, #1a2d5a 100%) !important;
+}
+/* 문의·건의 */
+#qna-view .module-bar {
+  background: linear-gradient(135deg, #1f2a44 0%, #2f4167 100%) !important;
+}
+/* 관구·교구 */
+#diocese-view .module-bar,
+#diocese-bar {
+  background: linear-gradient(135deg, #1f2a44 0%, #2f4167 100%) !important;
+}
+
+/* ── 7. font-scale 반영 (oai-font-global) ───────────────────────── */
+html.oai-font-global #prayer-bar-ttl,
+html.oai-font-global #prayer-bar .module-bar-title,
+html.oai-font-global #web-view   .module-bar-title,
+html.oai-font-global #trail-view .module-bar-title,
+html.oai-font-global #qna-view   .module-bar-title,
+html.oai-font-global #diocese-view .module-bar-title,
+html.oai-font-global #diocese-bar-title {
+  font-size: calc(var(--oai-std-title-fs) * var(--app-font-scale, 1)) !important;
+}
+html.oai-font-global #prayer-bar-sub,
+html.oai-font-global #prayer-bar .module-bar-sub,
+html.oai-font-global #web-view   .module-bar-sub,
+html.oai-font-global #trail-view .module-bar-sub,
+html.oai-font-global #qna-view   .module-bar-sub,
+html.oai-font-global #diocese-view .module-bar-sub {
+  font-size: calc(var(--oai-std-sub-fs) * var(--app-font-scale, 1)) !important;
+}
+html.oai-font-global #prayer-tabs .pr-tab,
+html.oai-font-global #web-view  .web-cat-btn,
+html.oai-font-global #trail-view .trail-tab,
+html.oai-font-global #qna-view  .qna-tab {
+  font-size: calc(var(--oai-std-btn-fs) * var(--app-font-scale, 1)) !important;
+}
+
+/* ── 끝 ─────────────────────────────────────────────────────────── */
