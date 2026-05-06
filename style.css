@@ -2009,3 +2009,13 @@ html.app-active #app{display:block!important;}
 .sheet.open{transform:translateY(0)!important;}
 .nearby-item:first-child,.list-item:first-child,.region-item:first-child{margin-top:0!important;}
 
+
+
+/* COVER CATEGORY VISIBILITY FIX */
+#cover .cat-btn,
+.cover-category-btn,
+.category-btn{
+  background:#F1E7D2!important;
+  border:1.5px solid #D6C2A3!important;
+  color:#1f2a44!important;
+}
