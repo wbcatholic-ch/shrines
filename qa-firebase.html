@@ -13,7 +13,6 @@
 <!-- ★ Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <style>
   /* ── 리셋 & 기본 ── */
@@ -34,7 +33,7 @@
   }
   body {
     font-family: 'Noto Sans KR', sans-serif;
-    background: var(--gray-50);
+    background: #f6efe4;
     min-height: 100vh;
     width: 100%;
     max-width: 720px;
@@ -45,32 +44,49 @@
 
   /* ── 헤더 ── */
   #header {
-    background: var(--blue);
-    color: #fff;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    width: 100%; max-width: none; box-sizing: border-box;
+    background: #1f2a44; color: #fff;
+    height: 70px; min-height: 70px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
     position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 16px rgba(14,21,53,.35);
+    border-radius: 0; border-bottom: 0; box-shadow: none;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  #qna-cross-icon {
+    width: 42px; height: 42px; min-width: 42px; flex: 0 0 42px;
+    border-radius: 12px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 900; line-height: 1;
+  }
+  #header-texts {
+    min-width: 0; flex: 1; display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: center;
+  }
+  #header-texts .title {
+    font-size: 20px; font-weight: 800; line-height: 1.24; letter-spacing: -.02em;
+    color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;
+  }
+  #header-texts .sub {
+    font-size: 11px; font-weight: 600; line-height: 1.25; margin-top: 3px;
+    color: rgba(255,255,255,.72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   #close-btn {
-    display: flex; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
-    color: rgba(212,170,106,.95); border-radius: 50%; width: 36px; height: 36px;
-    min-width: 36px; font-size: 22px; font-weight: 900; cursor: pointer; flex-shrink: 0;
-    align-items: center; justify-content: center; line-height: 1; padding: 0;
-    font-family: sans-serif; -webkit-tap-highlight-color: transparent;
+    width: 36px; height: 36px; min-width: 36px; flex: 0 0 36px;
+    border-radius: 50%; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22);
+    color: rgba(212,170,106,.95); font-size: 20px; font-weight: 900; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: none; -webkit-tap-highlight-color: transparent;
   }
-  #header-texts .title { font-size: 20px; font-weight: 800; line-height: 1.25; letter-spacing: -.02em; }
-  #header-texts .sub   { font-size: 11px; opacity: .72; margin-top: 3px; font-weight: 600; }
-  #header-texts { flex: 1; min-width: 0; overflow: hidden; }
   #write-btn {
-    margin-left: auto; background: rgba(255,255,255,.18);
-    border: 1px solid rgba(255,255,255,.35); color: #fff;
-    border-radius: 20px; padding: 8px 16px;
-    font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap;
-    font-family: inherit; flex-shrink: 0;
+    position: fixed; right: 18px;
+    bottom: calc(22px + env(safe-area-inset-bottom,0px));
+    z-index: 300; height: 52px; min-height: 52px; padding: 0 18px;
+    border-radius: 999px; background: #1f2a44; border: 1px solid rgba(212,170,106,.55);
+    color: #fff; font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px; font-weight: 800; line-height: 1; cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15,23,42,.24);
   }
+  #write-btn:active { transform: scale(.97); }
 
   /* ── 뷰 전환 ── */
   .view { display: none; padding: 0 0 80px; }
@@ -79,20 +95,21 @@
   /* ── 필터 ── */
   #filter-bar {
     display: flex; gap: 6px; padding: 14px 14px 8px;
+    background:#f6efe4;
     overflow-x: auto; scrollbar-width: none;
   }
   #filter-bar::-webkit-scrollbar { display: none; }
   .filter-btn {
-    flex-shrink: 0; border: 1.5px solid var(--gray-200); border-radius: 20px;
-    padding: 5px 14px; font-size: 13px; background: #fff; color: var(--gray-500);
+    flex-shrink: 0; border: 1.5px solid #e6dccb; border-radius: 20px;
+    padding: 6px 15px; font-size: 16px; background: #fffaf2; color: #5f564c;
     cursor: pointer; font-weight: 500; font-family: inherit; transition: all .15s;
   }
-  .filter-btn.active { background: var(--blue); color: var(--gold); border-color: var(--blue); font-weight: 700; }
+  .filter-btn.active { background: #1f2a44; color: var(--gold); border-color: #1f2a44; font-weight: 800; }
 
   /* ── 게시글 목록 ── */
   #post-list { padding: 4px 14px; }
   .card {
-    background: #fff; border-radius: var(--radius); padding: 14px 16px;
+    background: #fffaf2; border:1px solid #e6dccb; border-radius: var(--radius); padding: 14px 16px;
     margin-bottom: 10px; box-shadow: var(--shadow); cursor: pointer;
     animation: fadeUp .25s ease both; transition: transform .12s;
   }
@@ -102,13 +119,13 @@
     to   { opacity: 1; transform: translateY(0); }
   }
   .card-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 7px; }
-  .card-title { font-size: 14px; font-weight: 600; color: #1E293B; line-height: 1.45; margin-bottom: 5px; }
-  .card-meta  { font-size: 11px; color: var(--gray-400); }
-  .card-date  { margin-left: auto; font-size: 11px; color: var(--gray-400); }
+  .card-title { font-size: 16px; font-weight: 600; color: #1E293B; line-height: 1.45; margin-bottom: 5px; }
+  .card-meta  { font-size: 16px; color: var(--gray-400); }
+  .card-date  { margin-left: auto; font-size: 16px; color: var(--gray-400); }
 
   /* 배지 공통 */
   .badge {
-    border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700;
+    border-radius: 20px; padding: 3px 10px; font-size: 16px; font-weight: 700;
     display: inline-flex; align-items: center; gap: 3px;
   }
   .badge-문의     { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
@@ -120,67 +137,55 @@
   .badge-wait  { background:#FEF9C3; color:#92400E; border:1px solid #FDE68A; font-weight:500; }
 
   /* ── 상세 ── */
-  #detail-view { padding: 16px; }
+  #detail-view { padding: 16px; background:#f6efe4; }
   .detail-head {
-    background: #fff; border-radius: var(--radius);
+    background: #fffaf2; border:1px solid #e6dccb; border-radius: var(--radius);
     padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
   }
-  .detail-title { font-size: 17px; font-weight: 700; color: #1E293B; margin: 10px 0 6px; line-height: 1.4; }
-  .detail-meta  { font-size: 12px; color: var(--gray-400); }
+  .detail-title { font-size: 16px; font-weight: 700; color: #1E293B; margin: 10px 0 6px; line-height: 1.4; }
+  .detail-meta  { font-size: 16px; color: var(--gray-400); }
   .detail-body  {
-    background: #fff; border-radius: var(--radius); padding: 16px;
-    font-size: 14px; line-height: 1.85; color: #334155;
-    margin-bottom: 12px; box-shadow: var(--shadow); white-space: pre-wrap;
+    background: #f6efe4; border-radius: var(--radius); padding: 16px;
+    font-size: 16px; line-height: 1.85; color: #334155;
+    margin-bottom: 12px; box-shadow: var(--shadow); white-space: pre-wrap; border:1px solid #e6dccb;
   }
   .answer-box {
-    background: var(--blue-l); border: 1px solid var(--blue-b);
+    background: #f9f3e8; border: 1px solid #e6dccb;
     border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
   }
-  .answer-label { font-size: 12px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
-  .answer-text  { font-size: 14px; line-height: 1.8; color: #1E3A5F; white-space: pre-wrap; }
+  .answer-label { font-size: 16px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
+  .answer-text  { font-size: 16px; line-height: 1.8; color: #1E3A5F; white-space: pre-wrap; }
   .pending-box  {
-    background: var(--gray-50); border: 1px dashed var(--gray-200);
+    background: #fffaf2; border: 1px dashed #e6dccb;
     border-radius: var(--radius); padding: 14px; text-align: center;
-    font-size: 13px; color: var(--gray-500); margin-bottom: 12px;
+    font-size: 16px; color: var(--gray-500); margin-bottom: 12px;
   }
 
   /* ── 관리자 영역 ── */
   .admin-area { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--gray-200); }
   #admin-toggle-btn {
-    width: 100%; background: none; border: 1px dashed var(--gray-200);
-    color: var(--gray-400); border-radius: 10px; padding: 9px;
-    font-size: 12px; cursor: pointer; font-family: inherit;
+    width: 100%; background: #fffaf2; border: 1px dashed #e6dccb;
+    color: #8a7b68; border-radius: 10px; padding: 10px;
+    font-size: 16px; cursor: pointer; font-family: inherit;
   }
-  #admin-form { background: #FFF8F0; border: 1px solid #FED7AA; border-radius: var(--radius); padding: 14px; }
+  #admin-form { background: #fffaf2; border: 1px solid #e6dccb; border-radius: var(--radius); padding: 14px; }
   .admin-pin-row { display: flex; gap: 8px; margin-bottom: 10px; }
   #admin-pin-input { flex: 1; }
-  #admin-pin-check { padding: 0 16px; background: #92400E; color: #fff; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; font-family: inherit; }
-
-  /* ── Firebase 관리자 로그인 ── */
-  .admin-login-panel{background:#FFF8F0;border:1px solid #FED7AA;border-radius:var(--radius);padding:14px;margin-top:10px;}
-  .admin-login-title{font-size:13px;font-weight:800;color:#92400E;margin-bottom:8px;}
-  .admin-login-desc{font-size:12px;color:#78716C;line-height:1.6;margin-bottom:10px;}
-  .admin-login-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .admin-login-btn{border:none;border-radius:10px;padding:10px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
-  .admin-logout-btn{border:1px solid #E5E7EB;border-radius:10px;padding:10px 14px;background:#fff;color:#475569;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
-  .admin-state{font-size:12px;color:#64748B;line-height:1.6;margin-top:8px;word-break:break-all;}
-  .admin-state.ok{color:#166534;font-weight:700;}
-  .admin-state.err{color:#B91C1C;font-weight:700;}
-
+  #admin-pin-check { padding: 0 16px; background: #92400E; color: #fff; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-family: inherit; }
   #answer-textarea {
-    width: 100%; border: 1px solid #FED7AA; border-radius: 10px;
-    padding: 10px 12px; font-size: 13px; line-height: 1.75; resize: vertical;
-    font-family: inherit; background: #fff; min-height: 100px;
+    width: 100%; border: 1px solid #e6dccb; border-radius: 10px;
+    padding: 10px 12px; font-size: 16px; line-height: 1.75; resize: vertical;
+    font-family: inherit; background: #fffaf2; min-height: 100px;
   }
 
   /* ── 글쓰기 ── */
-  #write-view { padding: 16px; }
+  #write-view { padding: 16px; background:#f6efe4; }
   .field-group { margin-bottom: 18px; }
-  .field-label { display: block; font-size: 13px; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; }
+  .field-label { display: block; font-size: 16px; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; }
   .cat-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .cat-opt {
     border: 1.5px solid var(--gray-200); border-radius: 20px;
-    padding: 6px 16px; font-size: 13px; background: #fff;
+    padding: 7px 16px; font-size: 16px; background: #fffaf2;
     color: var(--gray-500); cursor: pointer; font-weight: 500; font-family: inherit;
     transition: all .15s;
   }
@@ -188,27 +193,27 @@
   .cat-opt.active-수정제안 { background:#FEF9C3; color:#92400E; border-color:#FDE68A; font-weight:700; }
   .cat-opt.active-개선건의 { background:#F0FDF4; color:#166534; border-color:#BBF7D0; font-weight:700; }
   .cat-opt.active-칭찬     { background:#FDF4FF; color:#7E22CE; border-color:#E9D5FF; font-weight:700; }
-  input[type=text], input[type=number], textarea {
-    width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px;
-    padding: 11px 14px; font-size: 14px; font-family: inherit; outline: none;
-    background: #fff; transition: border-color .15s;
+  input[type=text], input[type=number], input[type=password], textarea {
+    width: 100%; border: 1.5px solid #e6dccb; border-radius: 10px;
+    padding: 11px 14px; font-size: 16px; font-family: inherit; outline: none;
+    background: #fffaf2; transition: border-color .15s;
   }
-  input[type=text]:focus, input[type=number]:focus, textarea:focus { border-color: var(--gold); }
+  input[type=text]:focus, input[type=number]:focus, input[type=password]:focus, textarea:focus { border-color: var(--gold); }
   textarea { resize: vertical; line-height: 1.75; }
-  .char-count { text-align: right; font-size: 11px; color: var(--gray-400); margin-top: 4px; }
-  .error-msg { color: #DC2626; font-size: 13px; margin-bottom: 12px; }
-  .notice-txt { text-align: center; font-size: 11px; color: var(--gray-400); margin-top: 12px; }
+  .char-count { text-align: right; font-size: 16px; color: var(--gray-400); margin-top: 4px; }
+  .error-msg { color: #DC2626; font-size: 16px; margin-bottom: 12px; }
+  .notice-txt { text-align: center; font-size: 16px; color: var(--gray-400); margin-top: 12px; }
 
   /* ── 버튼 ── */
   .btn-primary {
     width: 100%; background: var(--blue); color: #fff; border: none;
-    border-radius: 12px; padding: 13px; font-size: 15px; font-weight: 700;
+    border-radius: 12px; padding: 13px; font-size: 16px; font-weight: 700;
     cursor: pointer; font-family: inherit; transition: opacity .15s;
   }
   .btn-primary:active { opacity: .85; }
   .btn-secondary {
     flex: 1; background: var(--gray-100); color: var(--gray-500); border: none;
-    border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 600;
+    border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 600;
     cursor: pointer; font-family: inherit;
   }
   .btn-row { display: flex; gap: 8px; margin-top: 10px; }
@@ -216,11 +221,11 @@
   /* ── 성공 화면 ── */
   #success-view { padding: 60px 24px; text-align: center; display: none; }
   #success-view .icon { font-size: 52px; margin-bottom: 16px; }
-  #success-view .ttl  { font-size: 20px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
-  #success-view .sub  { font-size: 14px; color: var(--gray-500); line-height: 1.8; margin-bottom: 28px; }
+  #success-view .ttl  { font-size: 16px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
+  #success-view .sub  { font-size: 16px; color: var(--gray-500); line-height: 1.8; margin-bottom: 28px; }
 
   /* ── 로딩 / 빈화면 ── */
-  .loading-box { text-align: center; padding: 60px 0; color: var(--gray-400); font-size: 14px; }
+  .loading-box { text-align: center; padding: 60px 0; color: var(--gray-400); font-size: 16px; }
   .spinner {
     width: 28px; height: 28px; border: 3px solid var(--gray-200);
     border-top-color: var(--gold); border-radius: 50%;
@@ -229,121 +234,41 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
 
-  /* 폴드폰/큰 화면 대응: 화면 폭과 높이를 더 넓게 사용 */
+  /* ── 반응형 / safe-area ── */
   html { min-height: 100%; }
   body { min-height: 100dvh; overflow-x: hidden; }
-  #header { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
   .view { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
-  #post-list, #write-view, #detail-view { width: 100%; max-width: 680px; margin-left: auto; margin-right: auto; }
+  #post-list, #write-view, #detail-view { width: 100%; max-width: 680px; margin: 0 auto; }
   @media (min-width: 600px) {
-    #header { border-radius: 0 0 18px 18px; }
     #filter-bar { max-width: 680px; margin: 0 auto; width: 100%; }
     .card { padding: 16px 18px; }
   }
+  @media (min-width: 720px) {
+    #write-btn { right: calc((100vw - 680px)/2 + 18px); }
+  }
+  @media (max-width: 380px) {
+    #header-texts .title { font-size: 18px; }
+  }
   @media (max-height: 720px) {
-    #header { padding-bottom: 10px; }
     .field-group { margin-bottom: 12px; }
     #write-view { padding-top: 12px; }
     textarea { min-height: 96px; }
   }
 
-
-  /* OAI 20260504: 문의·건의 헤더를 앱 공통 모듈 헤더와 동일한 크기로 표준화 */
-  #header{min-height:70px; padding:0 16px;}
-  #close-btn{display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important;}
-  @media(max-width:380px){#write-btn{padding:8px 12px;font-size:13px;}#header-texts .title{font-size:18px;}}
+</style>
 
 
-
-/* OAI 20260504-2: 문의·건의 헤더 십자/글자 표준화 */
-#header{
-  width:100%!important;
-  max-width:none!important;
-  background:linear-gradient(135deg,#1f2a44 0%,#31446c 100%)!important;
-  min-height:70px!important;
-  padding:0 16px!important;
-  align-items:center!important;
-  gap:12px!important;
-  border-bottom:2px solid var(--gold,#d4aa6a)!important;
+<style id="oai-touch-ux-standard-20260506">
+/* OAI 20260506: 공통 터치 UX 표준화 */
+.oai-touch-pressed{
+  transform:scale(.965)!important;
+  filter:brightness(.96)!important;
+  transition:transform .12s ease, filter .12s ease!important;
 }
-#qna-cross-icon{
-  width:42px!important;
-  height:42px!important;
-  min-width:42px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  color:#fff!important;
-  font-size:24px!important;
-  font-weight:900!important;
-  line-height:1!important;
+.oai-touchable{
+  transition:transform .12s ease, filter .12s ease!important;
+  will-change:transform;
 }
-#header-texts{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;min-width:0!important;}
-#header-texts .title{font-size:20px!important;font-weight:800!important;line-height:1.24!important;color:#fff!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
-#header-texts .sub{font-size:11px!important;font-weight:600!important;line-height:1.25!important;color:rgba(255,255,255,.72)!important;opacity:1!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
-#close-btn{
-  width:36px!important;height:36px!important;min-width:36px!important;
-  color:rgba(212,170,106,.95)!important;
-  background:rgba(255,255,255,.13)!important;
-  border:1px solid rgba(255,255,255,.22)!important;
-  font-size:20px!important;
-}
-
-
-/* OAI 20260504-5: 문의·건의 헤더 최종 표준화 */
-#header{width:100%!important;max-width:none!important;min-height:70px!important;height:70px!important;padding:0 16px!important;background:#1f2a44!important;background-image:none!important;background-color:#1f2a44!important;color:#fff!important;display:flex!important;align-items:center!important;gap:12px!important;border-radius:0!important;border-bottom:0!important;box-shadow:none!important;box-sizing:border-box!important;}
-#qna-cross-icon{width:42px!important;height:42px!important;min-width:42px!important;flex:0 0 42px!important;border-radius:12px!important;background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.24)!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-family:'Noto Sans KR',sans-serif!important;font-size:24px!important;font-weight:900!important;line-height:1!important;}
-#header-texts{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;text-align:left!important;}
-#header-texts .title{font-family:'Noto Sans KR',sans-serif!important;font-size:20px!important;font-weight:800!important;line-height:1.24!important;letter-spacing:-.02em!important;color:#fff!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important;}
-#header-texts .sub{font-family:'Noto Sans KR',sans-serif!important;font-size:11px!important;font-weight:600!important;line-height:1.25!important;margin-top:3px!important;color:rgba(255,255,255,.72)!important;opacity:1!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
-#close-btn{width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;border-radius:50%!important;background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.22)!important;color:rgba(212,170,106,.95)!important;font-size:20px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:none!important;}
-#write-btn{height:36px!important;min-height:36px!important;padding:0 14px!important;border-radius:999px!important;background:rgba(255,255,255,.16)!important;background-image:none!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;font-size:14px!important;font-weight:800!important;line-height:1!important;}
-@media(min-width:600px){#header{border-radius:0!important;width:100%!important;max-width:none!important;}}
-
-
-/* OAI 20260504-6: 글쓰기 버튼을 헤더에서 우측 하단 고정 버튼으로 이동 */
-#write-btn{
-  position:fixed!important;
-  right:18px!important;
-  bottom:calc(22px + env(safe-area-inset-bottom,0px))!important;
-  z-index:300!important;
-  height:52px!important;
-  min-height:52px!important;
-  padding:0 18px!important;
-  border-radius:999px!important;
-  background:#1f2a44!important;
-  background-image:none!important;
-  border:1px solid rgba(212,170,106,.55)!important;
-  color:#fff!important;
-  font-family:'Noto Sans KR',sans-serif!important;
-  font-size:15px!important;
-  font-weight:800!important;
-  line-height:1!important;
-  box-shadow:0 10px 24px rgba(15,23,42,.24)!important;
-}
-#write-btn:active{transform:scale(.97)!important;}
-@media(min-width:720px){#write-btn{right:calc((100vw - 680px)/2 + 18px)!important;}}
-
-
-/* 문의·건의 본문 글자 크기: 헤더는 그대로 두고, 목록/상세/글작성/완료 영역만 16px로 통일 */
-.view,
-.view *:not(.spinner),
-#success-view,
-#success-view *{
-  font-size:16px!important;
-}
-#write-view input[type=text],
-#write-view input[type=number],
-#write-view textarea,
-#write-view button,
-#write-view .field-label,
-#write-view .cat-opt,
-#write-view .char-count,
-#write-view .notice-txt,
-#write-view .error-msg{
-  font-size:16px!important;
-}
-
 </style>
 </head>
 <body>
@@ -413,18 +338,13 @@ const FIREBASE_CONFIG = {
   appId:             "1:952327785327:web:1576bc6d678ba42f8a369a"
 };
 
-/* ★ 2. 관리자 계정
-   - HTML에는 비밀번호를 넣지 않습니다.
-   - Firebase Authentication에서 Google 로그인을 켠 뒤, 아래 ADMIN_EMAIL에 관리자 Google 이메일 1개만 입력하세요.
-   - 실제 보호는 Firestore 보안 규칙에서 같은 이메일 또는 UID로 제한해야 합니다. */
-const ADMIN_EMAIL = "관리자_구글_이메일을_여기에_입력하세요";
+/* ★ 2. 관리자 비밀번호 (상봉님만 아는 숫자/문자) */
+const ADMIN_PASSWORD = "bong0219";
 
 /* ══════════════════════════════════════════════ */
 
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.firestore();
-const auth = firebase.auth();
-const ADMIN_PROVIDER = new firebase.auth.GoogleAuthProvider();
 const COL = db.collection("qa_posts");
 
 /* ─── 상수 ─── */
@@ -437,38 +357,76 @@ let currentFilter  = "전체";
 let currentPost    = null;
 let selectedCat    = "문의";
 let adminUnlocked  = false;
-let adminUser      = null;
 let unsubscribe    = null;
 
 /* ═══════════════════ 뷰 전환 ═══════════════════ */
-function showView(id) {
+let qaHistoryReady = false;
+let suppressQaHistory = false;
+
+function qaBaseUrl(){
+  return location.pathname + location.search;
+}
+
+function setQaHistory(id, mode){
+  if(suppressQaHistory) return;
+  try{
+    const state = { qaView: id };
+    const url = id === 'list-view' ? qaBaseUrl() : qaBaseUrl() + '#'+(id === 'write-view' ? 'write' : 'detail');
+    if(mode === 'replace' || !qaHistoryReady){
+      history.replaceState(state, '', url);
+      qaHistoryReady = true;
+    }else if(id !== 'list-view'){
+      history.pushState(state, '', url);
+    }else{
+      history.replaceState(state, '', qaBaseUrl());
+    }
+  }catch(e){}
+}
+
+function showView(id, opt) {
+  opt = opt || {};
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
 
   const isList   = id === 'list-view';
-  const isDetail = id === 'detail-view-wrap';
   const isWrite  = id === 'write-view';
 
   document.getElementById('write-btn').style.display = isList ? '' : 'none';
   document.getElementById('success-view').style.display = 'none';
 
-  /* 글쓰기 뷰일 때 X는 목록으로, 나머지는 앱으로 복귀 */
   var closeBtn = document.getElementById('close-btn');
   if(closeBtn){
-    closeBtn.onclick = isWrite ? function(){ goList(); } : function(){ handleQaBack(); };
+    closeBtn.onclick = isList ? function(){ handleQaBack(); } : function(){ goList(); };
   }
 
   const titles = { 'list-view':'문의 · 건의', 'detail-view-wrap':'상세보기', 'write-view':'글 작성' };
   document.getElementById('header-title').textContent = titles[id] || '문의 · 건의';
+
+  if(opt.history !== false){
+    setQaHistory(id, opt.historyMode || (isList ? 'replace' : 'push'));
+  }
 }
 
-function goList()   { showView('list-view');  adminUnlocked = false; }
+function goList(opt)   {
+  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(e){}
+  opt = opt || {};
+  showView('list-view', { history: opt.history !== false, historyMode: opt.historyMode || 'replace' });
+  adminUnlocked = false;
+  currentPost = null;
+}
 function goWrite()  {
   resetForm();
-  showView('write-view');
+  showView('write-view', { historyMode:'push' });
+  var titleInput = document.getElementById('f-title');
+  if(titleInput){
+    setTimeout(function(){
+      try{ titleInput.focus({preventScroll:true}); }
+      catch(e){ try{ titleInput.focus(); }catch(_){} }
+    },120);
+  }
 }
-function goDetail() { showView('detail-view-wrap'); }
+function goDetail() { showView('detail-view-wrap', { historyMode:'push' }); }
 
 /* ═══════════════════ 필터 바 ═══════════════════ */
 function buildFilterBar() {
@@ -568,9 +526,22 @@ function showDetailView(post) {
         <div class="pending-box">⏳ 답변을 준비 중입니다. 잠시 기다려 주세요.</div>`}
 
       <div class="admin-area">
-        <button id="admin-toggle-btn" onclick="toggleAdminArea()">🔧 관리자 답변/삭제</button>
+        <button id="admin-toggle-btn" onclick="toggleAdminArea()">🔧 관리자 답변 달기</button>
         <div id="admin-form" style="display:none;">
-          ${renderAdminPanel(post)}
+          <div style="font-size:16px;font-weight:700;color:#92400E;margin-bottom:10px;">관리자 인증 후 답변 작성</div>
+          <div class="admin-pin-row" id="admin-pin-row">
+            <input type="password" id="admin-pin-input" placeholder="관리자 비밀번호" style="flex:1;">
+            <button id="admin-pin-check" onclick="verifyAdmin()">확인</button>
+          </div>
+          <div id="admin-write-area" style="display:none;">
+            <textarea id="answer-textarea" rows="4" placeholder="답변을 입력하세요…">${escHtml(post.answer || '')}</textarea>
+            <div class="btn-row">
+              <button class="btn-primary" style="font-size:16px;" onclick="submitAnswer()">답변 등록</button>
+              <button class="btn-secondary" onclick="deleteCurrentPost()">글 삭제</button>
+              <button class="btn-secondary" onclick="toggleAdminArea()">취소</button>
+            </div>
+          </div>
+          <div id="admin-error" class="error-msg" style="display:none;margin-top:8px;"></div>
         </div>
       </div>
     </div>`;
@@ -579,101 +550,28 @@ function showDetailView(post) {
 }
 
 /* ═══════════════════ 관리자 ═══════════════════ */
-function normalizeAdminEmail() {
-  return (ADMIN_EMAIL || '').trim().toLowerCase();
-}
-function isAdminUser(user) {
-  const email = normalizeAdminEmail();
-  return !!(user && email && user.email && user.email.toLowerCase() === email);
-}
-function renderAdminPanel(post) {
-  const email = normalizeAdminEmail();
-  if (!email || email.indexOf('@') < 0) {
-    return `
-      <div class="admin-login-panel">
-        <div class="admin-login-title">관리자 이메일 설정 필요</div>
-        <div class="admin-login-desc">qa-firebase.html의 ADMIN_EMAIL에 관리자 Google 이메일 1개를 입력해야 답변/삭제가 가능합니다.</div>
-      </div>`;
-  }
-  if (!adminUser) {
-    return `
-      <div class="admin-login-panel">
-        <div class="admin-login-title">Firebase 관리자 로그인</div>
-        <div class="admin-login-desc">HTML 비밀번호 방식은 제거했습니다. 관리자 Google 계정 1개로만 로그인합니다.</div>
-        <div class="admin-login-row">
-          <button class="admin-login-btn" onclick="adminLogin()">Google로 관리자 로그인</button>
-        </div>
-        <div id="admin-error" class="admin-state err" style="display:none;"></div>
-      </div>`;
-  }
-  if (!isAdminUser(adminUser)) {
-    return `
-      <div class="admin-login-panel">
-        <div class="admin-login-title">관리자 계정이 아닙니다</div>
-        <div class="admin-login-desc">현재 로그인: ${escHtml(adminUser.email || '')}</div>
-        <button class="admin-logout-btn" onclick="adminLogout()">로그아웃</button>
-      </div>`;
-  }
-  adminUnlocked = true;
-  return `
-    <div class="admin-login-panel">
-      <div class="admin-login-title">관리자 로그인 완료</div>
-      <div class="admin-state ok">${escHtml(adminUser.email || '')}</div>
-      <textarea id="answer-textarea" rows="4" placeholder="답변을 입력하세요…">${escHtml(post.answer || '')}</textarea>
-      <div class="btn-row">
-        <button class="btn-primary" style="font-size:14px;" onclick="submitAnswer()">답변 등록</button>
-        <button class="btn-secondary" onclick="deleteCurrentPost()">글 삭제</button>
-        <button class="btn-secondary" onclick="adminLogout()">로그아웃</button>
-        <button class="btn-secondary" onclick="toggleAdminArea()">취소</button>
-      </div>
-    </div>`;
-}
 function toggleAdminArea() {
   const form = document.getElementById('admin-form');
-  if (!form) return;
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  if (form.style.display !== 'none' && currentPost) form.innerHTML = renderAdminPanel(currentPost);
 }
-async function adminLogin() {
-  const err = document.getElementById('admin-error');
-  try {
-    await auth.signInWithPopup(ADMIN_PROVIDER);
-  } catch (e) {
-    try {
-      await auth.signInWithRedirect(ADMIN_PROVIDER);
-    } catch (e2) {
-      if (err) {
-        err.textContent = '로그인 실패: ' + (e2 && e2.message ? e2.message : e.message);
-        err.style.display = 'block';
-      } else {
-        alert('로그인 실패: ' + (e2 && e2.message ? e2.message : e.message));
-      }
-    }
+function verifyAdmin() {
+  const pw = document.getElementById('admin-pin-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('admin-pin-row').style.display = 'none';
+    document.getElementById('admin-write-area').style.display = 'block';
+    document.getElementById('admin-error').style.display = 'none';
+    adminUnlocked = true;
+  } else {
+    document.getElementById('admin-error').textContent = '비밀번호가 틀렸습니다.';
+    document.getElementById('admin-error').style.display = 'block';
   }
 }
-async function adminLogout() {
-  try { await auth.signOut(); } catch(e) {}
-  adminUnlocked = false;
-  if (currentPost) showDetailView(currentPost);
-}
-function refreshAdminPanel() {
-  const form = document.getElementById('admin-form');
-  if (form && form.style.display !== 'none' && currentPost) form.innerHTML = renderAdminPanel(currentPost);
-}
-auth.onAuthStateChanged(function(user){
-  adminUser = user || null;
-  adminUnlocked = isAdminUser(adminUser);
-  refreshAdminPanel();
-});
 async function submitAnswer() {
-  if (!isAdminUser(adminUser) || !currentPost) {
-    alert('관리자 계정으로 로그인해야 합니다.');
-    return;
-  }
+  if (!adminUnlocked) return;
   const text = document.getElementById('answer-textarea').value.trim();
   if (!text) return;
   try {
-    await COL.doc(currentPost.id).update({ answer: text, answered: true, answeredAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await COL.doc(currentPost.id).update({ answer: text, answered: true });
     currentPost = { ...currentPost, answer: text, answered: true };
     alert('답변이 등록되었습니다.');
     showDetailView(currentPost);
@@ -683,10 +581,7 @@ async function submitAnswer() {
 }
 
 async function deleteCurrentPost() {
-  if (!isAdminUser(adminUser) || !currentPost) {
-    alert('관리자 계정으로 로그인해야 합니다.');
-    return;
-  }
+  if (!adminUnlocked || !currentPost) return;
   if (!confirm('이 글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.')) return;
   try {
     await COL.doc(currentPost.id).delete();
@@ -719,7 +614,18 @@ function resetForm() {
   document.getElementById('form-error').style.display = 'none';
 }
 
+var titleInput = document.getElementById('f-title');
+if(titleInput){
+  titleInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      try{ titleInput.blur(); }catch(_){}
+    }
+  });
+}
+
 async function submitPost() {
+  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(e){}
   const title   = document.getElementById('f-title').value.trim();
   const content = document.getElementById('f-content').value.trim();
   const errEl   = document.getElementById('form-error');
@@ -741,12 +647,8 @@ async function submitPost() {
 
   try {
     await COL.add(data);
-    resetForm();
+    // 글 작성 완료 후에는 별도 완료 화면이나 커버로 가지 않고 목록으로 복귀
     goList();
-    var listView=document.getElementById('list-view');
-    if(listView) listView.style.display='';
-    var success=document.getElementById('success-view');
-    if(success) success.style.display='none';
   } catch(e) {
     errEl.textContent = '저장 실패: ' + e.message; errEl.style.display = 'block';
   }
@@ -760,24 +662,139 @@ function escHtml(str) {
 
 /* ═══════════════════ 뒤로가기 처리 ═══════════════════ */
 function handleQaBack(){
-  var state = window.history.state;
-  // 상세/작성 뷰에서는 목록으로
   var active = document.querySelector('.view.active');
-  if(active && active.id !== 'list-view'){ goList(); return; }
-  // 목록에서는 앱으로 복귀
+  if(active && active.id !== 'list-view'){
+    goList({historyMode:'replace'});
+    return;
+  }
+  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(e){}
   if(document.referrer && document.referrer.indexOf(location.hostname)>=0){
     history.back();
   } else {
     location.href='index.html';
   }
 }
-// handleQaBack: X 버튼 클릭 시 앱/목록 복귀
-document.addEventListener('DOMContentLoaded', function(){});
+
+window.addEventListener('popstate', function(){
+  var active = document.querySelector('.view.active');
+  if(active && active.id !== 'list-view'){
+    suppressQaHistory = true;
+    goList({history:false});
+    suppressQaHistory = false;
+  }
+});
+
 
 /* ═══════════════════ 초기화 ═══════════════════ */
 buildFilterBar();
 buildCatRow();
+showView('list-view', { historyMode:'replace' });
 subscribeList();
+</script>
+
+<script id="oai-cache-lifecycle-20260506-opt1">
+(function(){
+  'use strict';
+  var APP_VERSION = '20260506-opt1';
+  if('serviceWorker' in navigator){
+    try{ navigator.serviceWorker.register('./sw.js?v=' + encodeURIComponent(APP_VERSION)).then(function(reg){try{reg.update();}catch(e){}}).catch(function(){}); }catch(e){}
+  }
+})();
+</script>
+
+
+<script id="oai-touch-ux-keyboard-20260506">
+(function(){
+  if(window.__oaiTouchUxKeyboard20260506) return;
+  window.__oaiTouchUxKeyboard20260506 = true;
+
+  var DELAY_MS = 105;
+  var delayedSelectors = [
+    '.cv-hotspot','.cv-extra-btn','.cv-btn',
+    '.prayer-item','.prayer-card','.prayer-list-item',
+    '.list-item','.nearby-item','.region-item',
+    '.sm-item','.sm-place-item',
+    '.trail-card','.trail-sh-body',
+    '.lv-card','.si-r','.card',
+    '.filter-btn','.cat-opt','.tab','.tab-btn','.trail-tab','.web-cat-btn'
+  ].join(',');
+
+  var directSelectors = [
+    'a','input','textarea','select','label',
+    '.ic-link-btn','.ic-hp-btn','.ic-guide-btn',
+    '.btn-kakao-route','.btn-kakao-nav','.c-btn',
+    '.web-card','.trail-foot','.web-card-foot','.trail-sh-foot',
+    '#close-btn','.module-close','.sheet-x','.sm-x','.ic-close-btn','.c-x',
+    '.btn-primary','.btn-secondary','#write-btn','#sb','#admin-pin-check'
+  ].join(',');
+
+  function closest(el, sel){
+    try{return el && el.closest ? el.closest(sel) : null;}catch(e){return null;}
+  }
+  function press(el){
+    if(!el || el.__oaiPressing) return;
+    el.__oaiPressing = true;
+    el.classList.add('oai-touchable','oai-touch-pressed');
+    setTimeout(function(){
+      try{el.classList.remove('oai-touch-pressed');}catch(e){}
+      el.__oaiPressing = false;
+    }, DELAY_MS + 45);
+  }
+
+  document.addEventListener('pointerdown', function(e){
+    var el = closest(e.target, delayedSelectors);
+    if(!el) return;
+    press(el);
+  }, true);
+
+  document.addEventListener('click', function(e){
+    if(e.__oaiTouchReplay) return;
+    if(closest(e.target, directSelectors)) return;
+    var el = closest(e.target, delayedSelectors);
+    if(!el) return;
+    if(el.__oaiClickDelay) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    press(el);
+    el.__oaiClickDelay = true;
+    setTimeout(function(){
+      try{
+        var ev = new MouseEvent('click', {bubbles:true,cancelable:true,view:window});
+        ev.__oaiTouchReplay = true;
+        el.dispatchEvent(ev);
+      }catch(err){
+        try{ el.click(); }catch(_e){}
+      }
+      setTimeout(function(){ el.__oaiClickDelay = false; }, 0);
+    }, DELAY_MS);
+  }, true);
+
+  function disableKeyboardSuggestions(root){
+    root = root || document;
+    var nodes = root.querySelectorAll ? root.querySelectorAll('input[type="text"], input[type="search"], input:not([type]), textarea') : [];
+    nodes.forEach(function(el){
+      if(el.type === 'password' || el.type === 'number' || el.type === 'tel' || el.type === 'email') return;
+      el.setAttribute('autocomplete','off');
+      el.setAttribute('autocorrect','off');
+      el.setAttribute('autocapitalize','off');
+      el.setAttribute('spellcheck','false');
+      el.setAttribute('enterkeyhint','done');
+    });
+  }
+  disableKeyboardSuggestions(document);
+  document.addEventListener('DOMContentLoaded', function(){ disableKeyboardSuggestions(document); });
+  try{
+    var mo = new MutationObserver(function(muts){
+      for(var i=0;i<muts.length;i++){
+        for(var j=0;j<muts[i].addedNodes.length;j++){
+          var n=muts[i].addedNodes[j];
+          if(n && n.nodeType===1) disableKeyboardSuggestions(n);
+        }
+      }
+    });
+    mo.observe(document.documentElement,{childList:true,subtree:true});
+  }catch(e){}
+})();
 </script>
 </body>
 </html>

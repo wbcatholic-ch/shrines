@@ -66,7 +66,8 @@ header{flex-shrink:0;background:var(--d);border-bottom:none;z-index:30;
   transition:opacity .15s,transform .12s,box-shadow .15s;}
 .tab.on{background:var(--d);color:#fff;border-color:transparent;font-weight:700;
   box-shadow:0 2px 8px rgba(31,42,68,.28);}
-.tab:active{transform:scale(.97);}
+.tab:active{transform:scale(.992);}
+.tab.on,.tab.on:active{transform:none!important;}
 
 /* ── 뷰 컨테이너 ── */
 #main{flex:1;overflow:hidden;min-height:0;position:relative;background:var(--bg);}
@@ -163,7 +164,7 @@ header{flex-shrink:0;background:var(--d);border-bottom:none;z-index:30;
 .lv-card{background:var(--card);border-radius:var(--r);border:1px solid var(--bdr);
   box-shadow:0 1px 8px rgba(0,0,0,.06);margin-bottom:12px;overflow:hidden;cursor:pointer;
   transition:transform .12s,box-shadow .12s;}
-.lv-card:active{transform:scale(.983);box-shadow:none;}
+.lv-card.oai-touch-pressed{transform:translateY(6px) scale(.982);box-shadow:none;filter:brightness(.96);}
 /* top: 뱃지 + 교구전체명 */
 .lv-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 0;gap:8px;}
 .lv-bdg{font-size:12px;font-weight:800;padding:4px 10px;border-radius:6px;color:#fff;white-space:nowrap;flex-shrink:0;}
@@ -222,36 +223,64 @@ body > header{display:none!important;visibility:hidden!important;height:0!import
 #card .c-x{display:flex!important;align-items:center!important;justify-content:center!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
 
 </style>
-<script id="oai-no-cache-runtime-20260501">
-(function(){
-  try{
-    var u = new URL(location.href);
-    if(u.searchParams.has('v')){
-      u.searchParams.delete('v');
-      history.replaceState(history.state, document.title, u.pathname + (u.search || '') + u.hash);
-    }
-  }catch(e){}
-  try{
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        regs.forEach(function(reg){ try{ reg.unregister(); }catch(e){} });
-      }).catch(function(){});
-    }
-    if(window.caches && caches.keys){
-      caches.keys().then(function(keys){
-        keys.forEach(function(k){ try{ caches.delete(k); }catch(e){} });
-      }).catch(function(){});
-    }
-  }catch(e){}
-})();
-</script>
-
 <style id="oai-diocese-tab-standard-20260504">
-/* 관구교구 헤더 아래 탭 버튼 표준화 */
+/* 관구교구 헤더 아래 탭 버튼 표준화 + 글자 크기 조절(지도 제외) */
+:root{--dio-font-scale:1;}
 .tab-bar{height:55px!important;padding:8px 10px!important;gap:8px!important;background:#FFFBF2!important;border-top:0!important;border-bottom:1px solid #DDD5C8!important;align-items:center!important;}
-.tab{height:40px!important;border-radius:12px!important;font-size:15px!important;font-weight:800!important;background:#F8FAFC!important;color:#475569!important;border:1.5px solid #CBD5E1!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+.tab{height:40px!important;border-radius:12px!important;font-size:calc(15px * var(--dio-font-scale,1))!important;font-weight:800!important;background:#F8FAFC!important;color:#475569!important;border:1.5px solid #CBD5E1!important;display:flex!important;align-items:center!important;justify-content:center!important;}
 .tab.on{background:#1F2A44!important;color:#fff!important;border-color:#1F2A44!important;box-shadow:0 3px 10px rgba(31,42,68,.22)!important;}
+
+
+
+
+
+#search-view #si,#search-view #sb{font-size:calc(15px * var(--dio-font-scale,1))!important;}
+#search-view .sh{font-size:calc(11px * var(--dio-font-scale,1))!important;}
+#search-view .se{font-size:calc(13px * var(--dio-font-scale,1))!important;}
+#search-view .sl{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#search-view .si-r-op{font-size:calc(11px * var(--dio-font-scale,1))!important;}
+#search-view .sd{font-size:calc(16px * var(--dio-font-scale,1))!important;}
+#search-view .sg{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#search-view .si-r-url{font-size:calc(11px * var(--dio-font-scale,1))!important;}
+#search-view .si-r-arr{font-size:calc(15px * var(--dio-font-scale,1))!important;}
+#search-view .sot{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#search-view .sod{font-size:calc(13px * var(--dio-font-scale,1))!important;}
+#search-view .sodd{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#list-view .lv-sec-bdg{font-size:calc(15px * var(--dio-font-scale,1))!important;}
+#list-view .lv-sec-cnt{font-size:calc(14px * var(--dio-font-scale,1))!important;}
+#list-view .lv-bdg{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#list-view .lv-op{font-size:calc(11.5px * var(--dio-font-scale,1))!important;}
+#list-view .lv-name{font-size:calc(17px * var(--dio-font-scale,1))!important;}
+#list-view .lv-rg,#list-view .lv-det{font-size:calc(13px * var(--dio-font-scale,1))!important;}
+#list-view .lv-parish-count{font-size:calc(8px * var(--dio-font-scale,1))!important;}
+#list-view .lv-parish-count b{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#list-view .lv-parish-count span{font-size:calc(7px * var(--dio-font-scale,1))!important;}
+#list-view .lv-url{font-size:calc(12px * var(--dio-font-scale,1))!important;}
+#list-view .lv-arr{font-size:calc(15px * var(--dio-font-scale,1))!important;}
+@media(max-width:360px){}
 </style>
+
+
+<style id="oai-touch-ux-standard-20260506">
+/* OAI 20260506: 공통 터치 UX 표준화 */
+.oai-touch-pressed{
+  transform:scale(.992)!important;
+  filter:brightness(.995)!important;
+  transition:transform .12s ease, filter .12s ease!important;
+}
+.oai-touchable{
+  transition:transform .12s ease, filter .12s ease!important;
+  will-change:transform;
+}
+</style>
+
+<style id="oai-diocese-smooth-entry-20260506">
+/* OAI 20260506: 관구·교구 첫 표시/탭 전환 부드럽게 */
+#map-view.on,#list-view.on,#search-view.on{animation:oaiDioFadeIn .22s ease both;}
+@keyframes oaiDioFadeIn{from{opacity:.01}to{opacity:1}}
+html.oai-dio-returning #map-view.on,html.oai-dio-returning #list-view.on,html.oai-dio-returning #search-view.on{animation:none!important;}
+</style>
+
 </head>
 <body>
 <header>
@@ -1196,7 +1225,12 @@ function buildListView(){
       const ico=document.createElement('div');ico.className='lv-ico';
       ico.textContent='⛪';
       const info=document.createElement('div');info.className='lv-info';
-      const nm=document.createElement('div');nm.className='lv-name';nm.textContent=(dName==='군종교구')?dName:(dName+' · '+(m.parishes||0)+'개 본당');
+      const nm=document.createElement('div');nm.className='lv-name';
+      if(dName==='춘천교구' || dName==='부산교구'){
+        nm.textContent=dName+' · '+(m.parishes||0)+'개 본당(해외본당 제외)';
+      }else{
+        nm.textContent=(dName==='군종교구')?dName:(dName+' · '+(m.parishes||0)+'개 본당');
+      }
       const rg=document.createElement('div');rg.className='lv-rg';
       rg.innerHTML='📍 '+m.region;
       info.appendChild(nm);info.appendChild(rg);
@@ -1226,6 +1260,23 @@ function buildListView(){
 }
 
 
+
+
+(function(){
+  var KEY='prayer_font_size', BASE=16;
+  function currentScale(){
+    var px=parseInt(localStorage.getItem(KEY)||BASE,10);
+    if(!px || px<15 || px>28) px=BASE;
+    return px/BASE;
+  }
+  window.dioApplySharedFont=function(){
+    var scale=currentScale();
+    document.documentElement.style.setProperty('--dio-font-scale', String(scale));
+  };
+  window.addEventListener('storage', function(e){ if(e.key===KEY) window.dioApplySharedFont(); });
+  window.dioApplySharedFont();
+})();
+
 document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click',function(){
     document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});
@@ -1234,6 +1285,15 @@ document.querySelectorAll('.tab').forEach(function(t){
     document.getElementById('map-view').classList.toggle('on',tab==='gwangu');
     document.getElementById('search-view').classList.toggle('on',tab==='search');
     document.getElementById('list-view').classList.toggle('on',tab==='list');
+    if(tab==='search'){
+      var si=document.getElementById('si');
+      if(si){
+        setTimeout(function(){
+          try{ si.focus({preventScroll:true}); }
+          catch(e){ try{ si.focus(); }catch(_){} }
+        },120);
+      }
+    }
     if(tab==='list'){
       // 스크롤 위치 복귀
       var sv=sessionStorage.getItem('listScroll');
@@ -1549,6 +1609,7 @@ function makeRow(disp,diocese,overlapDongs){
 }
 
 function doSearch(){
+  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(e){}
   const raw=document.getElementById('si').value.trim();
   const res=document.getElementById('sres');
   if(!raw){res.innerHTML='<div class="se">검색어를 입력하세요</div>';return;}
@@ -1706,11 +1767,113 @@ window.addEventListener('pageshow',function(){
   window.openDioceseUrl = function(url, source){
     if(!url) return; var state=window.getDioceseReturnState(source||'link');
     if(window.parent && window.parent!==window && typeof window.parent.openDioceseExternal==='function') window.parent.openDioceseExternal(url,state);
-    else { try{ sessionStorage.setItem('oai_diocese_standalone_return',JSON.stringify(state)); }catch(e){} try{ var w=window.open(url,'_blank','noopener'); if(w) return; }catch(e){} try{ var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){try{a.remove();}catch(e){}},300); }catch(e){ alert('새창 열기가 차단되었습니다. 브라우저의 팝업 허용을 확인해 주세요.'); } }
+    else { try{ sessionStorage.setItem('oai_diocese_standalone_return',JSON.stringify(state)); }catch(e){} location.href=url; }
   };
   document.addEventListener('click',function(e){ var t=e.target&&e.target.closest?e.target.closest('[data-dio-url]'):null; if(!t) return; e.preventDefault(); e.stopPropagation(); window.openDioceseUrl(t.getAttribute('data-dio-url'),t.getAttribute('data-dio-source')||'link'); },true);
 })();
 </script>
 
+
+
+<script id="oai-touch-ux-keyboard-20260506">
+(function(){
+  if(window.__oaiTouchUxKeyboard20260506) return;
+  window.__oaiTouchUxKeyboard20260506 = true;
+
+  var ACTION_DELAY_MS = 55;
+  var FEEDBACK_MS = 170;
+  var PRESS_DELAY_MS = 85;
+  var MOVE_CANCEL_PX = 7;
+  var delayedSelectors = '#list-view .lv-card';
+  var directSelectors = [
+    'a','input','textarea','select','label',
+    '#card','#card *','.c-x','.c-btn','[data-dio-url]',
+    '.tab','.tab-btn','#si','#font-controls button'
+  ].join(',');
+
+  var activeTouch = null;
+  function closest(el, sel){ try{return el && el.closest ? el.closest(sel) : null;}catch(e){return null;} }
+  function clearPress(el){ if(!el) return; try{el.classList.remove('oai-touch-pressed');}catch(e){} el.__oaiPressing=false; }
+  function press(el){
+    if(!el || el.__oaiPressing) return;
+    el.__oaiPressing = true;
+    el.classList.add('oai-touchable','oai-touch-pressed');
+    setTimeout(function(){ clearPress(el); }, FEEDBACK_MS);
+  }
+  function cancelActive(){
+    if(!activeTouch) return;
+    activeTouch.canceled = true;
+    if(activeTouch.timer){ clearTimeout(activeTouch.timer); activeTouch.timer = null; }
+    clearPress(activeTouch.el);
+    try{ activeTouch.el.__oaiTouchCanceledUntil = Date.now() + 350; }catch(e){}
+  }
+
+  document.addEventListener('pointerdown', function(e){
+    if(closest(e.target, directSelectors)) return;
+    var el = closest(e.target, delayedSelectors);
+    if(!el) return;
+    activeTouch = {el:el,id:e.pointerId,x:e.clientX,y:e.clientY,canceled:false,timer:null};
+    activeTouch.timer = setTimeout(function(){
+      if(activeTouch && activeTouch.el === el && !activeTouch.canceled) press(el);
+    }, PRESS_DELAY_MS);
+  }, true);
+  document.addEventListener('pointermove', function(e){
+    if(!activeTouch || activeTouch.id !== e.pointerId) return;
+    var dx=Math.abs(e.clientX-activeTouch.x), dy=Math.abs(e.clientY-activeTouch.y);
+    if(dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) cancelActive();
+  }, true);
+  document.addEventListener('pointercancel', cancelActive, true);
+  document.addEventListener('pointerup', function(e){
+    if(!activeTouch || activeTouch.id !== e.pointerId) return;
+    if(activeTouch.timer){ clearTimeout(activeTouch.timer); activeTouch.timer = null; }
+    if(activeTouch.canceled) clearPress(activeTouch.el);
+    activeTouch = null;
+  }, true);
+
+  document.addEventListener('click', function(e){
+    if(e.__oaiTouchReplay) return;
+    if(closest(e.target, directSelectors)) return;
+    var el = closest(e.target, delayedSelectors);
+    if(!el) return;
+    if(el.__oaiTouchCanceledUntil && Date.now() < el.__oaiTouchCanceledUntil){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if(el.__oaiClickDelay) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    press(el);
+    el.__oaiClickDelay = true;
+    setTimeout(function(){
+      try{
+        var ev = new MouseEvent('click', {bubbles:true,cancelable:true,view:window});
+        ev.__oaiTouchReplay = true;
+        el.dispatchEvent(ev);
+      }catch(err){ try{ el.click(); }catch(_e){} }
+      setTimeout(function(){ el.__oaiClickDelay = false; }, 0);
+    }, ACTION_DELAY_MS);
+  }, true);
+
+  function disableKeyboardSuggestions(root){
+    root = root || document;
+    var nodes = root.querySelectorAll ? root.querySelectorAll('input[type="text"], input[type="search"], input:not([type]), textarea') : [];
+    nodes.forEach(function(el){
+      if(el.type === 'password' || el.type === 'number' || el.type === 'tel' || el.type === 'email') return;
+      el.setAttribute('autocomplete','off');
+      el.setAttribute('autocorrect','off');
+      el.setAttribute('autocapitalize','off');
+      el.setAttribute('spellcheck','false');
+      el.setAttribute('enterkeyhint','done');
+    });
+  }
+  disableKeyboardSuggestions(document);
+  document.addEventListener('DOMContentLoaded', function(){ disableKeyboardSuggestions(document); });
+  try{
+    var mo = new MutationObserver(function(muts){
+      for(var i=0;i<muts.length;i++) for(var j=0;j<muts[i].addedNodes.length;j++){
+        var n=muts[i].addedNodes[j]; if(n && n.nodeType===1) disableKeyboardSuggestions(n);
+      }
+    });
+    mo.observe(document.documentElement,{childList:true,subtree:true});
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
