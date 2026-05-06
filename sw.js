@@ -1,4 +1,4 @@
-/* Catholic App Service Worker - 20260506-sec1
+/* 클로드정리 Service Worker - 20260506-sec1
    캐시를 매번 삭제하지 않고, 버전 변경 시 오래된 캐시만 정리합니다.
    localStorage/사용자 설정은 건드리지 않습니다. */
 const CACHE_VERSION = 'catholic-app-20260506-sec1';
