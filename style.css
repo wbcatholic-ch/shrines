@@ -2,6 +2,55 @@
    원본 index.html 에서 분리 (3단계 파일 분리)
    총 5개 <style> 블록을 하나로 통합합니다. */
 
+/* OAI FIX 20260506: 분리 후 누락된 공통 CSS 변수 복구 */
+:root{
+  --navy:#0e1535;
+  --navy2:#1a2456;
+  --gold:#d4aa6a;
+  --gold2:#c49a57;
+  --ink:#1a2035;
+  --border:#e5e7eb;
+  --bg-color:#f4efe4;
+  --text-main:#111827;
+  --bg-unified:#FFFBF2;
+  --ui-bg:#FFFBF2;
+  --tab-h:72px;
+  --mod-tabbar-h:55px;
+  --oai-std-header-h:70px;
+  --oai-std-tab-h:40px;
+  --oai-std-btn-h:42px;
+  --oai-std-gap:8px;
+  --oai-std-radius:12px;
+  --oai-std-btn-fs:15px;
+  --oai-std-title-fs:20px;
+  --oai-std-sub-fs:11px;
+  --oai-btn:#F8FAFC;
+  --oai-btn-border:#CBD5E1;
+  --oai-btn-text:#475569;
+  --oai-gold:#d4aa6a;
+  --oai-gold-border:#c49a57;
+  --oai-ivory:#efe7d7;
+  --oai-ivory-border:#d4c7ad;
+  --shrine:#1f2a44;
+  --pilgrim:#1f2a44;
+  --martyr:#8B1C2A;
+  --shrine-main:#1f2a44;
+  --shrine-main-2:#2d3a5f;
+  --shrine-soft:#f4ead6;
+  --church-main:#4f6f90;
+  --church-main-2:#3f5d7b;
+  --church-soft:#e8eff6;
+  --parish-bg:#446e93;
+  --parish-active:#446e93;
+  --parish-accent:#446e93;
+  --retreat-main:#3F7E5B;
+  --retreat-main-2:#4F8F6A;
+  --retreat-soft:#E8F3EC;
+  --retreat-bg:#3F7E5B;
+  --retreat-active:#3F7E5B;
+  --retreat-accent:#3F7E5B;
+}
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;background:var(--navy)!important;font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none;overscroll-behavior-x:none!important;overflow-x:hidden!important}
 ::-webkit-scrollbar{width:4px}
@@ -1891,3 +1940,72 @@ html.oai-missa-return-stabilize #missa-view.open{
 html.app-active #cv-pull-modern{
   opacity:0!important;
   display:none!important;
+
+/* OAI FIX 20260506: 분리 안정화 최종 보정 */
+}
+/* 위 닫는 중괄호는 파일 끝의 @supports 블록 누락을 닫기 위한 안전 보정입니다. */
+#cover{
+  background:#f4efe4!important;
+  background-color:#f4efe4!important;
+  color:#111827!important;
+}
+#app{position:fixed!important;inset:0!important;display:none;overflow:hidden!important;background:#FFFBF2!important;}
+html.app-active #app{display:block!important;}
+#map-wrap{position:fixed!important;top:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;bottom:0!important;min-height:280px!important;overflow:hidden!important;background:#0e1535!important;}
+#map{width:100%!important;height:100%!important;min-height:280px!important;}
+.sheet{top:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;}
+#list-body,#nearby-body,#region-body,.sheet-body{background:#FFFBF2!important;}
+#list-body,#nearby-body,#region-body{padding-top:8px!important;}
+#tabbar{height:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;min-height:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;}
+#tabbar .tab-btn{height:60px!important;min-height:60px!important;}
+#prayer-tabs,
+#web-view .web-cats,
+#trail-view .trail-tabs,
+#qna-view .qna-tabs{
+  min-height:55px!important;
+  height:55px!important;
+  padding:8px 10px!important;
+  gap:8px!important;
+  background:#FFFBF2!important;
+  border-top:0!important;
+  border-bottom:1px solid #DDD5C8!important;
+  align-items:center!important;
+  flex-shrink:0!important;
+  box-sizing:border-box!important;
+}
+#prayer-tabs .pr-tab,
+#web-view .web-cat-btn,
+#trail-view .trail-tab,
+#qna-view .qna-tab{
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 12px!important;
+  border-radius:12px!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  background:#F8FAFC!important;
+  color:#475569!important;
+  border:1.5px solid #CBD5E1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  line-height:1!important;
+}
+#prayer-tabs .pr-tab.on,
+#prayer-tabs .pr-tab.active,
+#web-view .web-cat-btn.on,
+#trail-view .trail-tab.on,
+#qna-view .qna-tab.on{
+  color:#fff!important;
+  border-color:transparent!important;
+  box-shadow:0 3px 10px rgba(31,42,68,.22)!important;
+}
+#trail-view .trail-tab.on{background:#1F2A44!important;border-color:#1F2A44!important;}
+#qna-view .qna-tab.on{background:#1F2A44!important;border-color:#1F2A44!important;}
+#prayer-list-view,#web-view .web-body,#trail-view .trail-body{min-height:0!important;flex:1 1 auto!important;}
+#web-view .web-list,#trail-list,#prayer-list-view{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;}
+/* 성지·성당·피정 첫 항목 위치 보정: top 변수 누락으로 밀리던 현상 방지 */
+.sheet.open{transform:translateY(0)!important;}
+.nearby-item:first-child,.list-item:first-child,.region-item:first-child{margin-top:0!important;}
+
