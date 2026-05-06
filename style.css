@@ -2,53 +2,82 @@
    원본 index.html 에서 분리 (3단계 파일 분리)
    총 5개 <style> 블록을 하나로 통합합니다. */
 
-/* OAI FIX 20260506: 분리 후 누락된 공통 CSS 변수 복구 */
+/* ============================================================
+   :root — 앱 전역 CSS 변수 (원본 index.html <style> 블록에서 복원)
+   index.html 에서 style.css 분리 시 유실됐던 변수들을 재정의.
+   ※ 하위 모드 오버라이드(html.retreat-mode 등)는 파일 하단에서 수행.
+   ============================================================ */
 :root{
-  --navy:#0e1535;
-  --navy2:#1a2456;
-  --gold:#d4aa6a;
-  --gold2:#c49a57;
-  --ink:#1a2035;
-  --border:#e5e7eb;
-  --bg-color:#f4efe4;
-  --text-main:#111827;
-  --bg-unified:#FFFBF2;
-  --ui-bg:#FFFBF2;
-  --tab-h:72px;
-  --mod-tabbar-h:55px;
-  --oai-std-header-h:70px;
-  --oai-std-tab-h:40px;
-  --oai-std-btn-h:42px;
-  --oai-std-gap:8px;
-  --oai-std-radius:12px;
-  --oai-std-btn-fs:15px;
-  --oai-std-title-fs:20px;
-  --oai-std-sub-fs:11px;
-  --oai-btn:#F8FAFC;
-  --oai-btn-border:#CBD5E1;
-  --oai-btn-text:#475569;
-  --oai-gold:#d4aa6a;
-  --oai-gold-border:#c49a57;
-  --oai-ivory:#efe7d7;
-  --oai-ivory-border:#d4c7ad;
-  --shrine:#1f2a44;
-  --pilgrim:#1f2a44;
-  --martyr:#8B1C2A;
-  --shrine-main:#1f2a44;
-  --shrine-main-2:#2d3a5f;
-  --shrine-soft:#f4ead6;
-  --church-main:#4f6f90;
-  --church-main-2:#3f5d7b;
-  --church-soft:#e8eff6;
-  --parish-bg:#446e93;
-  --parish-active:#446e93;
-  --parish-accent:#446e93;
-  --retreat-main:#3F7E5B;
-  --retreat-main-2:#4F8F6A;
-  --retreat-soft:#E8F3EC;
-  --retreat-bg:#3F7E5B;
-  --retreat-active:#3F7E5B;
-  --retreat-accent:#3F7E5B;
+  /* ── 기본 팔레트 ─────────────────────────── */
+  --navy:    #0e1535;          /* 앱 주 배경 */
+  --navy2:   #1f2a44;          /* 보조 헤더·바 배경 */
+  --gold:    #d4aa6a;          /* 포인트 금색 */
+  --gold2:   #b8965a;          /* 진한 금색 */
+  --d:       #1F2A44;          /* 범용 다크 컬러 */
+
+  /* ── 레이아웃 ──────────────────────────────── */
+  --tab-h:         72px;       /* 상단 탭바 높이 (safe-area 제외) */
+  --mod-header-h:  70px;       /* 모듈 뷰 헤더 높이 */
+  --sb:            0px;        /* safe-area-inset-bottom (JS가 덮어씀) */
+
+  /* ── 타이포그래피 ───────────────────────── */
+  --fs-header:          22px;
+  --fs-tab:             15px;
+  --cover-emoji-size:   34px;
+  --app-font-scale:     1;
+  --pr-item-fs:         15px;
+  --pr-body-fs:         16px;
+  --pr-detail-fs:       17px;
+  --pr-icon-fs:         17px;
+  --pr-icon-sz:         36px;
+  --pull-scale:         .74;
+
+  /* ── OAI 표준 컴포넌트 ─────────────────── */
+  --oai-std-header-h:  70px;   /* module-bar 높이 표준 */
+  --oai-std-tab-h:     36px;   /* 내부 탭(prayer/trail/web/qna) 높이 */
+  --oai-std-btn-h:     36px;   /* 버튼 높이 표준 */
+  --oai-std-radius:    10px;   /* 기본 border-radius */
+  --oai-std-gap:       8px;    /* flex gap 표준 */
+  --oai-std-btn-fs:    13px;   /* 버튼 폰트 크기 */
+  --oai-std-title-fs:  20px;   /* 모듈 헤더 타이틀 폰트 크기 */
+  --oai-std-sub-fs:    11px;   /* 모듈 헤더 서브타이틀 폰트 크기 */
+
+  /* ── 지도 마커 점 색상 (범례) ──────────── */
+  --shrine:  #c0392b;          /* 성지 — 빨강 */
+  --pilgrim: #1565c0;          /* 순례지 — 파랑 */
+  --martyr:  #1b7a3e;          /* 순교사적지 — 초록 */
+
+  /* ── 성지 모드 ─────────────────────────── */
+  --shrine-main:    #1f2a44;
+  --shrine-main-2:  #2d3a5f;
+  --shrine-soft:    #f4ead6;
+  --shrine-soft-2:  #e8dcc8;
+
+  /* ── 성당 / 교구 모드 ───────────────────── */
+  --parish-bg:      #2f4f6d;
+  --parish-active:  #446e93;
+  --church-main:    #4f6f90;
+  --church-main-2:  #3f5d7b;
+  --church-soft:    #e8eff6;
+
+  /* ── 피정의집 모드 (html.retreat-mode 에서 !important 재정의) ── */
+  --retreat-bg:      #3F7E5B;
+  --retreat-main:    #3F7E5B;
+  --retreat-main-2:  #2e6b4a;
+  --retreat-soft:    #e8f3ec;
+  --retreat-active:  #0d6f66;
+  --retreat-accent:  #E8F3EC;
+  --dist-retreat:    #3F7E5B;
+
+  /* ── 표지 카드 아이콘 배경색 (#cc-1 ~ #cc-8) ── */
+  --color-1: #8b2020;   /* 매일미사 — 버건디 */
+  --color-2: #1f2a44;   /* 주요기도문 — 네이비 */
+  --color-3: #b8965a;   /* 성지순례 — 금빛 (커버 서브타이틀에도 사용) */
+  --color-4: #2f4f6d;   /* 성당찾기 — 스틸블루 */
+  --color-5: #3F7E5B;   /* 피정의집 — 포레스트그린 */
+  --color-6: #5c4a37;   /* 순례길 — 어스브라운 */
+  --color-7: #1a3560;   /* 가톨릭 웹사이트 — 딥인디고 */
+  --color-8: #374151;   /* 관구·교구 — 슬레이트 */
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -781,17 +810,63 @@ html.retreat-mode .sm-fb.on{background:var(--retreat-soft,#e8f3ec)!important;col
 #trail-view .trail-tab,
 #qna-view .qna-tab{min-height:var(--oai-std-tab-h)!important;height:var(--oai-std-tab-h)!important;padding:0 13px!important;font-size:var(--oai-std-btn-fs)!important;border-radius:12px!important}
 /* 피정의집 전용 파스텔 그린: 활성 탭·필터·내주변 번호 */
-/* ↓ 아래 블록들은 하단 canonical 블록(#oai-retreat-unified-clean-20260504)에서 최종 재정의됨 — 중간 패치 제거 완료 */
+/* --retreat-bg 등 변수 최종값은 하단 #oai-retreat-unified-clean-20260504 에서 일괄 정의 */
+html.retreat-mode #tabbar,
+html.retreat-mode .sheet-hd,
+html.retreat-mode .srch-bar,
+html.retreat-mode .filter-bar,
+html.retreat-mode .region-wrap,
+html.retreat-mode .sm-hd,
+html.retreat-mode .sm-filter{background:linear-gradient(135deg,#66BB6A,#81C784)!important}
+html.retreat-mode .tab-btn.active,
+html.retreat-mode .filter-btn.active,
+html.retreat-mode .sm-fb.on,
+html.retreat-mode .sm-tab.active{background:#81C784!important;color:#ffffff!important;border-color:#6FBF73!important;box-shadow:0 4px 12px rgba(102,187,106,.24)!important}
+html.retreat-mode .nearby-dist,
+html.retreat-mode .region-list-hd,
+html.retreat-mode .dio-hd{color:#4F9E56!important}
+html.retreat-mode .ic-route-btn{background:#1565c0!important;color:#fff!important;border-color:#1565c0!important}
 /* 관구교구 본당 수 줄: 최종 표기 형식 유지 */
 .oai-parish-count-line{font-weight:500!important;letter-spacing:0!important}
-/* .oai-parish-count-line 표기 형식 */
+/* --retreat-bg 중간 패치 제거됨: 최종값은 하단 #oai-retreat-unified-clean-20260504 참조 */
+html.retreat-mode .srch-bar,html.retreat-mode .filter-bar,html.retreat-mode .region-wrap{background:#fff!important;border-bottom:1px solid #E5E7EB!important}
+html.retreat-mode .srch-inner{background:#F8FAFC!important;border-color:#DDE3EE!important}
+html.retreat-mode .srch-inner input{color:#1F2937!important}
+html.retreat-mode .srch-inner input::placeholder{color:#94A3B8!important}
+html.retreat-mode .filter-btn,html.retreat-mode .region-search-btn{background:#FFFFFF!important;color:#4B5563!important;border:1.5px solid #DDE3EE!important}
+html.retreat-mode .filter-btn.active,html.retreat-mode .sm-fb.on,html.retreat-mode .sm-tab.active{background:#3F7E5B!important;color:#fff!important;border-color:#3F7E5B!important}
+html.retreat-mode .nearby-num,html.retreat-mode .sm-role{background:#3F7E5B!important;color:#fff!important}
+html.retreat-mode .nearby-name,html.retreat-mode .li-name,html.retreat-mode .region-item .li-name,html.retreat-mode .sm-name,html.retreat-mode .sm-place-name{color:#111827!important}
 #cover .cover-card,#cover .cv-btn{transform:none!important;transform-origin:unset!important;width:100%!important;min-height:96px!important;padding:9px 8px 10px!important;border-radius:18px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;height:96px!important;flex-direction:column!important;text-align:center!important}
 #cover .cover-grid,#cover .cv-grid{gap:10px!important;width:100%!important;max-width:520px!important;margin:0 auto!important;padding:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(96px,auto)!important;align-content:start!important;flex:0 0 auto!important}
 @media (max-height:720px){#qna-cover-btn{bottom:calc(12px + env(safe-area-inset-bottom,0px)) !important;padding:9px 12px !important;}}
 /* 0) 화면 우측 밀림 방지 */
 html,body,#prayer-view,#prayer-list-view,#prayer-detail{max-width:100vw!important;overflow-x:hidden!important}
 /* 1) 피정의집 원래 초록 계열 복구 */
-/* prSlideLeft/Right 애니메이션 제거됨: from/to 모두 transform:none 이라 아무 동작 없었음 */
+/* --retreat-bg 중간 패치 제거됨: 최종값은 하단 #oai-retreat-unified-clean-20260504 참조 */
+html.retreat-mode .sheet-hd,
+html.retreat-mode .srch-bar,
+html.retreat-mode .filter-bar,
+html.retreat-mode .region-wrap,
+html.retreat-mode .sm-hd,
+html.retreat-mode .sm-filter{background:linear-gradient(135deg,#3F7E5B,#4F8F6A)!important}
+html.retreat-mode .filter-btn,
+html.retreat-mode .sm-fb{background:rgba(255,255,255,.14)!important;color:rgba(255,255,255,.93)!important;border-color:rgba(255,255,255,.30)!important}
+html.retreat-mode .filter-btn.active,
+html.retreat-mode .sm-fb.on,
+html.retreat-mode .sm-tab.active{background:#D4AA6A!important;color:#1F2937!important;border-color:#C49A57!important}
+/* 2) 피정의집 목록: 제목 검정, 번호 초록 */
+html.retreat-mode .nearby-name,
+html.retreat-mode .li-name,
+html.retreat-mode .region-item .li-name,
+html.retreat-mode .sm-name,
+html.retreat-mode .sm-place-name{color:#111827!important}
+html.retreat-mode .nearby-num,
+html.retreat-mode .sm-role{background:#4F8F6A!important;color:#fff!important}
+html.retreat-mode .nearby-type,
+html.retreat-mode .li-badge,
+html.retreat-mode .ic-type-badge{background:#E8F3EC!important;color:#3F7E5B!important}
+/* 3) 아이콘 svg 숨김만 유지 */
 #prayer-bar .module-bar-ico svg,
 #web-view .module-bar-ico svg,
 #trail-view .module-bar-ico svg,
@@ -800,6 +875,9 @@ html,body,#prayer-view,#prayer-list-view,#prayer-detail{max-width:100vw!importan
 .module-bar-txt{min-width:0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important}
 #prayer-view.open,#prayer-view,#prayer-list-view,#prayer-detail{max-width:100vw!important;overflow-x:hidden!important;box-sizing:border-box!important}
 /* prSlideLeft/Right 애니메이션 제거됨: from/to 모두 transform:none 이라 아무 동작 없었음 */
+html.retreat-mode .sheet-hd,html.retreat-mode .srch-bar,html.retreat-mode .filter-bar,html.retreat-mode .region-wrap,html.retreat-mode .sm-hd,html.retreat-mode .sm-filter{background:linear-gradient(135deg,var(--retreat-main-2),var(--retreat-main))!important}
+html.retreat-mode .filter-btn,html.retreat-mode .sm-fb{background:rgba(255,255,255,.12)!important;color:rgba(255,255,255,.92)!important;border-color:rgba(255,255,255,.28)!important}
+html.retreat-mode .nearby-type,html.retreat-mode .li-badge,html.retreat-mode .ic-type-badge{background:#E8F3EC!important;color:#3F7E5B!important}
 /* ===== 헤더 아이콘 통일: 둥근 사각형 반투명 박스 ===== */
 #prayer-bar,#web-view .module-bar,#trail-view .module-bar,#qna-view .module-bar,#diocese-view .module-bar{min-height:70px!important;height:70px!important;padding:0 16px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important}
 #prayer-bar .module-bar-main,#web-view .module-bar-main,#trail-view .module-bar-main,#qna-view .module-bar-main,#diocese-view .module-bar-main{display:flex!important;align-items:center!important;gap:14px!important;min-width:0!important;flex:1!important}
@@ -1423,13 +1501,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 
 
 /* OAI 20260504: remove header gradients and unify key headers with pilgrimage-route header color */
-/* :root 변수 — 한 곳에만 정의 (중복 :root 블록 병합) */
-:root{
-  --oai-pilgrimage-header-solid:#1f2a44;
-  --oai-common-header:#1f2a44;
-  --oai-common-title-fs:20px;
-  --oai-common-sub-fs:11px;
-}
+:root{--oai-pilgrimage-header-solid:#1f2a44;}
 #prayer-bar,
 #diocese-bar,
 .module-bar,
@@ -1463,7 +1535,7 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
 
 
 /* OAI 20260504-5: 주요기도문·순례길·웹사이트·관구교구·문의건의 헤더 최종 표준화 */
-/* :root 변수는 위 블록에서 일괄 정의됨 */
+:root{--oai-common-header:#1f2a44!important;--oai-common-title-fs:20px!important;--oai-common-sub-fs:11px!important;}
 #prayer-view.open,
 #web-view.module-view.open,
 #trail-view.module-view.open,
@@ -1767,7 +1839,6 @@ html.retreat-mode #sm-tab-bar .sm-tab.active{
   color:#ffffff!important;
   border-color:#C49A57!important;
   box-shadow:none!important;
-}
 
 /* 외부링크 복귀 시 안드로이드 동적 viewport(100dvh) 재계산으로 전체가 아래→위로 밀리는 현상 완화 */
 
@@ -1852,7 +1923,6 @@ html.retreat-mode #region-body .nearby-dist span{
   white-space:nowrap!important;
   display:inline!important;
   margin-left:4px!important;
-}
 
 /* 외부사이트 복귀 직후: 안드로이드 웹뷰/Chrome 주소창·하단영역 재계산 흔들림 억제 */
 html.oai-external-return-stabilize,
@@ -1940,82 +2010,3 @@ html.oai-missa-return-stabilize #missa-view.open{
 html.app-active #cv-pull-modern{
   opacity:0!important;
   display:none!important;
-
-/* OAI FIX 20260506: 분리 안정화 최종 보정 */
-}
-/* 위 닫는 중괄호는 파일 끝의 @supports 블록 누락을 닫기 위한 안전 보정입니다. */
-#cover{
-  background:#f4efe4!important;
-  background-color:#f4efe4!important;
-  color:#111827!important;
-}
-#app{position:fixed!important;inset:0!important;display:none;overflow:hidden!important;background:#FFFBF2!important;}
-html.app-active #app{display:block!important;}
-#map-wrap{position:fixed!important;top:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;bottom:0!important;min-height:280px!important;overflow:hidden!important;background:#0e1535!important;}
-#map{width:100%!important;height:100%!important;min-height:280px!important;}
-.sheet{top:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;}
-#list-body,#nearby-body,#region-body,.sheet-body{background:#FFFBF2!important;}
-#list-body,#nearby-body,#region-body{padding-top:8px!important;}
-#tabbar{height:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;min-height:calc(var(--tab-h) + env(safe-area-inset-top,0px))!important;}
-#tabbar .tab-btn{height:60px!important;min-height:60px!important;}
-#prayer-tabs,
-#web-view .web-cats,
-#trail-view .trail-tabs,
-#qna-view .qna-tabs{
-  min-height:55px!important;
-  height:55px!important;
-  padding:8px 10px!important;
-  gap:8px!important;
-  background:#FFFBF2!important;
-  border-top:0!important;
-  border-bottom:1px solid #DDD5C8!important;
-  align-items:center!important;
-  flex-shrink:0!important;
-  box-sizing:border-box!important;
-}
-#prayer-tabs .pr-tab,
-#web-view .web-cat-btn,
-#trail-view .trail-tab,
-#qna-view .qna-tab{
-  height:40px!important;
-  min-height:40px!important;
-  padding:0 12px!important;
-  border-radius:12px!important;
-  font-size:15px!important;
-  font-weight:800!important;
-  background:#F8FAFC!important;
-  color:#475569!important;
-  border:1.5px solid #CBD5E1!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  box-sizing:border-box!important;
-  line-height:1!important;
-}
-#prayer-tabs .pr-tab.on,
-#prayer-tabs .pr-tab.active,
-#web-view .web-cat-btn.on,
-#trail-view .trail-tab.on,
-#qna-view .qna-tab.on{
-  color:#fff!important;
-  border-color:transparent!important;
-  box-shadow:0 3px 10px rgba(31,42,68,.22)!important;
-}
-#trail-view .trail-tab.on{background:#1F2A44!important;border-color:#1F2A44!important;}
-#qna-view .qna-tab.on{background:#1F2A44!important;border-color:#1F2A44!important;}
-#prayer-list-view,#web-view .web-body,#trail-view .trail-body{min-height:0!important;flex:1 1 auto!important;}
-#web-view .web-list,#trail-list,#prayer-list-view{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;}
-/* 성지·성당·피정 첫 항목 위치 보정: top 변수 누락으로 밀리던 현상 방지 */
-.sheet.open{transform:translateY(0)!important;}
-.nearby-item:first-child,.list-item:first-child,.region-item:first-child{margin-top:0!important;}
-
-
-
-/* COVER CATEGORY VISIBILITY FIX */
-#cover .cat-btn,
-.cover-category-btn,
-.category-btn{
-  background:#F1E7D2!important;
-  border:1.5px solid #D6C2A3!important;
-  color:#1f2a44!important;
-}
