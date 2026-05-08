@@ -1,6 +1,6 @@
 /* app.js — 가톨릭 앱 핵심 로직
-   지도, 마커, 탭, 경로, 인포카드, 지역검색 등
-   원본 index.html  블록 A+B 에서 분리 */
+   지도, 마커, 탭, 경로, 인포카드, 지역검색
+   이벤트 바인딩 (bindEvents) 포함 */
 
 'use strict';
 
@@ -12,7 +12,7 @@ function hideCoverAndRun(callback) {
     var pd=document.getElementById('prayer-detail'); if(pd) pd.classList.remove('show');
     if(typeof closeAllTabs==='function') closeAllTabs();
     if(typeof closeInfoCard==='function') closeInfoCard();
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
   window._noAutoNearby = false;
   var cv = document.getElementById('cover');
   if (cv) cv.style.display = 'none';
@@ -23,13 +23,13 @@ function hideCoverAndRun(callback) {
 
 
 function markExternalReturnStabilize(kind){
-  try{ sessionStorage.setItem('oai_external_return_stabilize', kind || 'external'); }catch(e){}
+  try{ sessionStorage.setItem('oai_external_return_stabilize', kind || 'external'); }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 function oaiSmoothNavigate(url, kind, label){
   if(!url) return;
-  try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize(kind || 'external'); }catch(e){}
-  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(e){}
+  try{ if(typeof markExternalReturnStabilize==='function') markExternalReturnStabilize(kind || 'external'); }catch(e){ console.warn("[클로드정리]", e); }
+  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(e){ console.warn("[클로드정리]", e); }
   try{
     var html=document.documentElement;
     html.classList.add('oai-navigating-out');
@@ -44,15 +44,15 @@ function oaiSmoothNavigate(url, kind, label){
     var txt=veil.querySelector('.oai-nav-text');
     if(txt) txt.textContent=label || '외부 사이트로 이동 중입니다';
     veil.classList.add('show');
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
   requestAnimationFrame(function(){
-    setTimeout(function(){ location.href=url; }, 70);
+    setTimeout(function(){ location.href=url; }, 15);
   });
 }
 function oaiResetExternalPopupResidue(kind){
   // 외부사이트 복귀 시 남는 포커스/스크롤락만 정리한다.
   // 강제 resize 연속 발생은 지도/웹뷰 재계산 흔들림을 만들 수 있어 제거한다.
-  try{ if(document.activeElement && typeof document.activeElement.blur==='function') document.activeElement.blur(); }catch(e){}
+  try{ if(document.activeElement && typeof document.activeElement.blur==='function') document.activeElement.blur(); }catch(e){ console.warn("[클로드정리]", e); }
   try{
     document.documentElement.style.scrollBehavior='auto';
     document.body.style.scrollBehavior='auto';
@@ -64,18 +64,18 @@ function oaiResetExternalPopupResidue(kind){
     document.body.style.width='';
     document.body.style.transform='';
     document.body.style.willChange='auto';
-  }catch(e){}
-  try{ document.body.getBoundingClientRect(); }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
+  try{ document.body.getBoundingClientRect(); }catch(e){ console.warn("[클로드정리]", e); }
 }
 function applyExternalReturnStabilize(forceKind){
-  try{ document.documentElement.classList.remove('oai-navigating-out'); var v=document.getElementById('oai-nav-veil'); if(v) v.classList.remove('show'); }catch(e){}
+  try{ document.documentElement.classList.remove('oai-navigating-out'); var v=document.getElementById('oai-nav-veil'); if(v) v.classList.remove('show'); }catch(e){ console.warn("[클로드정리]", e); }
   var kind=forceKind||'';
   try{
     if(!kind){
       kind=sessionStorage.getItem('oai_external_return_stabilize') || '';
       sessionStorage.removeItem('oai_external_return_stabilize');
     }
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
   if(!kind) return;
   try{
     document.documentElement.classList.add('oai-external-return-stabilize');
@@ -84,10 +84,10 @@ function applyExternalReturnStabilize(forceKind){
     if(!document.documentElement.classList.contains('app-active')) window.scrollTo(0,0);
     var cv=document.getElementById('cover');
     if(cv && !document.documentElement.classList.contains('app-active')) cv.scrollTop=0;
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
   setTimeout(function(){
-    try{ document.documentElement.classList.remove('oai-external-return-stabilize','oai-missa-return-stabilize'); }catch(e){}
-    try{ document.documentElement.style.scrollBehavior=''; document.body.style.scrollBehavior=''; }catch(e){}
+    try{ document.documentElement.classList.remove('oai-external-return-stabilize','oai-missa-return-stabilize'); }catch(e){ console.warn("[클로드정리]", e); }
+    try{ document.documentElement.style.scrollBehavior=''; document.body.style.scrollBehavior=''; }catch(e){ console.warn("[클로드정리]", e); }
   }, 1200);
 }
 window.addEventListener('pageshow', function(){ applyExternalReturnStabilize(); }, true);
@@ -98,12 +98,10 @@ window.addEventListener('focus', function(){
   try{
     var kind=sessionStorage.getItem('oai_external_return_stabilize') || '';
     if(kind) applyExternalReturnStabilize();
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }, true);
 
 /* ── 뒤로가기 핸들러는 principle-back-controller-20260424 에서 통합 관리 ── */
-function _doBack() {} // 하위호환용 stub
-function handleBack() {} // 하위호환용 stub
 
 /* OAI removed old pull-to-refresh handler: unified final handler below */
 
@@ -114,7 +112,7 @@ function openMissa(){
   const mm=String(today.getMonth()+1).padStart(2,'0');
   const dd=String(today.getDate()).padStart(2,'0');
   const url='https://missa.cbck.or.kr/DailyMissa/'+yyyy+mm+dd;
-  try{ localStorage.setItem('oai_last_missa_url', url); }catch(e){}
+  try{ localStorage.setItem('oai_last_missa_url', url); }catch(e){ console.warn("[클로드정리]", e); }
   /* 외부 브라우저로 이동 — 화면 전환 페이드 후 location.href 방식 유지 */
   if(typeof oaiSmoothNavigate==='function') oaiSmoothNavigate(url, 'missa', '매일미사로 이동 중입니다');
   else location.href = url;
@@ -137,8 +135,8 @@ function openPrayerBook(opts){
   view.classList.add('open');
   if(typeof oaiEnterView==='function') oaiEnterView(view);
   setTimeout(function(){
-    if(typeof window.initPrayerView==='function') try{window.initPrayerView();}catch(e){}
-    if(!(opts&&opts.restore) && typeof showPrayerListOnly==='function') try{showPrayerListOnly();}catch(e){}
+    if(typeof window.initPrayerView==='function') try{window.initPrayerView();}catch(e){ console.warn("[클로드정리]", e); }
+    if(!(opts&&opts.restore) && typeof showPrayerListOnly==='function') try{showPrayerListOnly();}catch(e){ console.warn("[클로드정리]", e); }
     var list=document.getElementById('prayer-list-view'); if(list) list.scrollTop=0;
     var tabs=document.getElementById('prayer-tabs'); if(tabs) tabs.scrollLeft=0;
   }, 50);
@@ -169,13 +167,13 @@ function openDioceseView(opts){
   if(needsLoad){
     frame.onload=function(){
       if(loading) loading.style.display='none'; frame._loaded=true;
-      try{ frame.contentWindow && frame.contentWindow.dioApplySharedFont && frame.contentWindow.dioApplySharedFont(); }catch(e){}
-      if(!restore) try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){}
+      try{ frame.contentWindow && frame.contentWindow.dioApplySharedFont && frame.contentWindow.dioApplySharedFont(); }catch(e){ console.warn("[클로드정리]", e); }
+      if(!restore) try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){ console.warn("[클로드정리]", e); }
       if(typeof dioceseLoaded==='function') dioceseLoaded();
     };
-    frame.src='diocese.html?v=20260506-scrollguard1';
+    frame.src='diocese.html?v=20260508-v1';
   }else if(!restore){
-    try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){}
+    try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){ console.warn("[클로드정리]", e); }
   }
 }
 function closeDioceseView(){
@@ -199,7 +197,7 @@ function saveCoreReturnState(extra){
       mapCenter = {lat: c.getLat(), lng: c.getLng()};
       mapLevel = _map.getLevel();
     }
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
   const state={
     mode:_mode||'shrine',
     activeTab: _activeTab||'',
@@ -210,7 +208,7 @@ function saveCoreReturnState(extra){
     mapCenter: mapCenter,
     mapLevel: mapLevel
   };
-  try{ sessionStorage.setItem(CORE_RETURN_KEY, JSON.stringify(Object.assign(state, extra||{}))); }catch(e){}
+  try{ sessionStorage.setItem(CORE_RETURN_KEY, JSON.stringify(Object.assign(state, extra||{}))); }catch(e){ console.warn("[클로드정리]", e); }
 }
 function normalizeCatholicExternalUrl(url){
   url = String(url || '').trim();
@@ -220,7 +218,7 @@ function normalizeCatholicExternalUrl(url){
   // 데이터 파일은 전체 URL이 원칙이지만, 남은 단축값 때문에 잘못 열리는 문제를 방지한다.
   try{
     if(typeof _decUrl === 'function') url = _decUrl(url);
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 
   // 흔한 오타 보정: http//example.com, https//example.com
   url = url.replace(/^hthttp:\/\//i, 'http://').replace(/^hthttps:\/\//i, 'https://').replace(/^http\/\//i, 'http://').replace(/^https\/\//i, 'https://');
@@ -267,15 +265,15 @@ function clearRouteNoFocus(){
     if(typeof _clearRouteTmpMarkers==='function') _clearRouteTmpMarkers();
     if(typeof _showJukrimgulParkingMkr==='function') _showJukrimgulParkingMkr(false);
     var guide=document.getElementById('route-guide'); if(guide) guide.classList.remove('on');
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 function restoreCoreReturnState(){
   let raw=null;
-  try{ raw=sessionStorage.getItem(CORE_RETURN_KEY); }catch(e){}
+  try{ raw=sessionStorage.getItem(CORE_RETURN_KEY); }catch(e){ console.warn("[클로드정리]", e); }
   if(!raw) return false;
   let state=null;
-  try{ state=JSON.parse(raw); }catch(e){}
-  try{ sessionStorage.removeItem(CORE_RETURN_KEY); }catch(e){}
+  try{ state=JSON.parse(raw); }catch(e){ console.warn("[클로드정리]", e); }
+  try{ sessionStorage.removeItem(CORE_RETURN_KEY); }catch(e){ console.warn("[클로드정리]", e); }
   if(!state||!state.mode) return false;
 
   _mode=state.mode;
@@ -307,7 +305,7 @@ function restoreCoreReturnState(){
       try{
         _map.setCenter(new _LL(state.mapCenter.lat, state.mapCenter.lng));
         if(state.mapLevel) _map.setLevel(state.mapLevel);
-      }catch(e){}
+      }catch(e){ console.warn("[클로드정리]", e); }
     }
     _restoreMapMarkers();
     // 인포카드가 열려 있던 경우 복원
@@ -331,15 +329,15 @@ function restoreCoreReturnState(){
                 try{
                   _map.setCenter(new _LL(state.mapCenter.lat, state.mapCenter.lng));
                   if(state.mapLevel) _map.setLevel(state.mapLevel);
-                }catch(e){}
+                }catch(e){ console.warn("[클로드정리]", e); }
               },100);
             }
           }
-        }catch(e){}
+        }catch(e){ console.warn("[클로드정리]", e); }
       },400);
     } else if(state.activeTab){
       // 탭이 열려 있던 경우 복원
-      setTimeout(()=>{ try{ openTab(state.activeTab); }catch(e){} },300);
+      setTimeout(()=>{ try{ openTab(state.activeTab); }catch(e){ console.warn("[클로드정리]", e); } },300);
     }
     setTimeout(()=>{ document.documentElement.classList.remove('oai-returning'); }, 950);
   },restoreDelay);
@@ -356,14 +354,14 @@ window.addEventListener('pageshow', function(e){
       if(cv){ cv.style.display=''; cv.style.opacity='1'; }
       return;
     }
-  }catch(ex){}
+  }catch(ex){ console.warn("[클로드정리]", ex); }
   // sessionStorage 플래그 확인 → _noAutoNearby 세팅
   try{
     if(sessionStorage.getItem('_noAutoNearby_flag')==='1'){
       window._noAutoNearby = true;
       sessionStorage.removeItem('_noAutoNearby_flag');
     }
-  }catch(ex){}
+  }catch(ex){ console.warn("[클로드정리]", ex); }
   setTimeout(()=>{
     if(restoreCoreReturnState()) return;
     if(_screen==='map' && (!_map || !$('map')?.children.length)){
@@ -463,6 +461,42 @@ SHRINES.forEach(s=>{
 const _NAV='https://apis-navi.kakaomobility.com/v1/directions';
 const _AH={headers:{Authorization:'KakaoAK '+REST}};
 const _ACH={headers:{Authorization:'KakaoAK '+REST,'Content-Type':'application/json'}};
+
+/* ── Mobility API 동시 호출 제한 + 결과 캐시 ──────────────────────
+   - 동시 최대 5개 fetch (카카오 무료 쿼터 보호)
+   - 동일 origin→destination 결과는 세션 동안 재사용
+   ─────────────────────────────────────────────────────────────── */
+const _navCache = new Map();
+const _NAV_CONCURRENCY = 5;
+let _navActive = 0;
+const _navQueue = [];
+
+function _navFetch(origin, dest) {
+  const key = `${origin}→${dest}`;
+  if (_navCache.has(key)) return Promise.resolve(_navCache.get(key));
+  return new Promise((resolve) => {
+    function run() {
+      _navActive++;
+      fetch(`${_NAV}?origin=${origin}&destination=${dest}&priority=RECOMMEND`, _AH)
+        .then(r => r.json())
+        .then(data => {
+          const route = data.routes?.[0];
+          const val = (route && route.result_code === 0)
+            ? { km: route.summary.distance / 1000, dur: route.summary.duration }
+            : null;
+          if (val) _navCache.set(key, val);
+          resolve(val);
+        })
+        .catch(() => resolve(null))
+        .finally(() => {
+          _navActive--;
+          if (_navQueue.length) _navQueue.shift()();
+        });
+    }
+    if (_navActive < _NAV_CONCURRENCY) run();
+    else _navQueue.push(run);
+  });
+}
 const $=id=>document.getElementById(id);
 const $$=s=>document.querySelectorAll(s);
 const _GEO=navigator.geolocation;
@@ -536,10 +570,11 @@ const AppState = {
   exitTimer: null,
 
   // ── 성당/교구 지도 ──
-  dioMkrs:         {},   // code → [Marker, ...]
-  dioOverlays:     {},   // code → CustomOverlay
-  activeDio:       null, // 현재 마커 펼쳐진 교구 코드
-  parishSysInited: false,
+  dioMkrs:            {},   // code → [Marker, ...]
+  dioOverlays:        {},   // code → CustomOverlay
+  activeDio:          null, // 현재 마커 펼쳐진 교구 코드
+  parishSysInited:    false,
+  parishIdleListener: null, // 뷰포트 필터링용 idle 이벤트 리스너
 
   // ── 검색 디바운스 ──
   smPlaceDebounce: null,
@@ -588,10 +623,11 @@ const AppState = {
     ['_dp',               'dp'],
     ['_exitReady',        'exitReady'],
     ['_exitTimer',        'exitTimer'],
-    ['_dioMkrs',          'dioMkrs'],
-    ['_dioOverlays',      'dioOverlays'],
-    ['_activeDio',        'activeDio'],
-    ['_parishSysInited',  'parishSysInited'],
+    ['_dioMkrs',             'dioMkrs'],
+    ['_dioOverlays',         'dioOverlays'],
+    ['_activeDio',           'activeDio'],
+    ['_parishSysInited',     'parishSysInited'],
+    ['_parishIdleListener',  'parishIdleListener'],
     ['_smPlaceDebounce',  'smPlaceDebounce'],
     ['_smTab',            'smTab'],
   ];
@@ -664,7 +700,7 @@ const JUKRIMGUL_PARKING = {lat:35.550726, lng:129.014589, name:'죽림굴주차�
   });
 })();
 
-function cvInstall(){
+function triggerPwaInstall(){
   if(_dp){ _dp.prompt(); _dp.userChoice.then(()=>{_dp=null;}); }
 }
 (function(){
@@ -673,60 +709,7 @@ function cvInstall(){
   window._historyEnterMap = function(){};
 })();
 
-function _handleBack(){
-  if($('exit-dlg').classList.contains('open')){
-    closeExitDlg(); return;
-  }
-  if($('srch-modal').classList.contains('open')){
-    closeSearchModal(); return;
-  }
 
-  // 길찾기 상태가 남아 있으면 가장 먼저 정리한다.
-  // 순서: 경로선 삭제 → 출발/도착 초기화 → 도착 노랑마커/인포카드 복귀.
-  if(_activeTab==='route' || _routeMode || _rS || _rE){
-    const dest = (_rE && _rE.lat) ? Object.assign({}, _rE) : null;
-    try{ resetRoute(); }catch(e){}
-    _routeMode=false;
-    try{ _closeSheetOnly('route'); }catch(e){}
-    if(_activeTab==='route') _activeTab=null;
-    try{ _updateTabBtns(null); }catch(e){}
-    if(dest){
-      setTimeout(function(){
-        try{
-          const items = _getCurrentItems();
-          const idx = (typeof dest.idx==='number' && dest.idx>=0)
-            ? dest.idx
-            : items.findIndex(p=>Number(p.lat)===Number(dest.lat)&&Number(p.lng)===Number(dest.lng));
-          const item = idx>=0 ? items[idx] : null;
-          if(item){
-            if(_mode==='shrine') _selectShrineMarker(idx);
-            else if(_mode==='parish') _selectParishMarker(item);
-            else _selectRetreatMarker(item);
-            _showInfoCard(item, idx);
-            _focusMarkerAboveInfoCard(item);
-          }
-        }catch(e){}
-      }, 90);
-    }
-    return;
-  }
-
-  if($('info-card').classList.contains('open')){
-    closeInfoCard(); return;
-  }
-  if(_activeTab){
-    closeTab(_activeTab); return;
-  }
-  if(_screen==='map'){
-    goToCover(); return;
-  }
-  if(_screen==='cover'){
-    _showBackToast(); return;
-  }
-  _showBackToast();
-}
-
-// _exitReady, _exitTimer → AppState.exitReady / AppState.exitTimer (위 통합 참고)
 function _showBackToast(){
   if(_exitReady){
     _exitReady=false;
@@ -750,17 +733,17 @@ function attemptAppExit(){
   window._appExiting = true;
   // 토스트 즉시 제거
   const bt=$('_bt'); if(bt) bt.remove();
-  try{ sessionStorage.removeItem('catholic_core_return_v1'); }catch(e){}
-  try{ sessionStorage.removeItem('catholic_integrated_return_v2'); }catch(e){}
-  try{ sessionStorage.removeItem('oai_force_cover_after_reload'); }catch(e){}
+  try{ sessionStorage.removeItem('catholic_core_return_v1'); }catch(e){ console.warn("[클로드정리]", e); }
+  try{ sessionStorage.removeItem('catholic_integrated_return_v2'); }catch(e){ console.warn("[클로드정리]", e); }
+  try{ sessionStorage.removeItem('oai_force_cover_after_reload'); }catch(e){ console.warn("[클로드정리]", e); }
 
   // Cordova/WebView 계열에서는 네이티브 종료를 우선 시도한다.
-  try{ if(navigator.app && typeof navigator.app.exitApp === 'function'){ navigator.app.exitApp(); return; } }catch(e){}
+  try{ if(navigator.app && typeof navigator.app.exitApp === 'function'){ navigator.app.exitApp(); return; } }catch(e){ console.warn("[클로드정리]", e); }
 
   // 중요: 여기서 history.back()을 호출하면 외부사이트 방문 기록으로 되돌아갈 수 있다.
   // 따라서 종료 시도는 window.close까지만 하고, 히스토리 트랩은 다시 심지 않는다.
-  try{ window.open('', '_self'); window.close(); }catch(e){}
-  try{ document.documentElement.classList.add('app-exiting'); }catch(e){}
+  try{ window.open('', '_self'); window.close(); }catch(e){ console.warn("[클로드정리]", e); }
+  try{ document.documentElement.classList.add('app-exiting'); }catch(e){ console.warn("[클로드정리]", e); }
 }
 function closeExitDlg(){
   _exitReady=false;
@@ -784,10 +767,10 @@ function oaiEnterView(el){
     requestAnimationFrame(function(){
       el.classList.add('oai-enter-show');
       setTimeout(function(){
-        try{ el.classList.remove('oai-enter-ready','oai-enter-show'); }catch(e){}
+        try{ el.classList.remove('oai-enter-ready','oai-enter-show'); }catch(e){ console.warn("[클로드정리]", e); }
       }, 360);
     });
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 
@@ -799,7 +782,7 @@ function oaiShowCategoryEntryVeil(mode){
     document.documentElement.classList.add('oai-category-entering');
     clearTimeout(window.__oaiCategoryVeilTimer);
     window.__oaiCategoryVeilTimer=setTimeout(oaiHideCategoryEntryVeil, 3600);
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 function oaiHideCategoryEntryVeil(){
   try{
@@ -811,9 +794,9 @@ function oaiHideCategoryEntryVeil(){
       try{
         root.classList.remove('oai-category-entering');
         if(veil){ veil.style.opacity=''; veil.className=''; }
-      }catch(e){}
+      }catch(e){ console.warn("[클로드정리]", e); }
     }, 230);
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 function startApp(mode){
@@ -841,13 +824,13 @@ function startApp(mode){
    sm.innerHTML+=`<button class="sm-fb${i?'':' on'}" onclick="setSmDio('${v}',this)">${l}</button>`;
   });
  }  _screen='map';
-  try{ if(window._historyEnterMap) window._historyEnterMap(); }catch(e){}
+  try{ if(window._historyEnterMap) window._historyEnterMap(); }catch(e){ console.warn("[클로드정리]", e); }
   $('cover').style.display='none';
   document.documentElement.classList.add('app-active');
   document.documentElement.classList.toggle('parish-mode',mode==='parish');
   document.documentElement.classList.toggle('retreat-mode',mode==='retreat');
   if(mode==='shrine' || mode==='parish' || mode==='retreat'){
-    try{ oaiShowCategoryEntryVeil(mode); }catch(e){}
+    try{ oaiShowCategoryEntryVeil(mode); }catch(e){ console.warn("[클로드정리]", e); }
   }
   if(typeof oaiEnterView==='function') oaiEnterView(document.getElementById('app'));
   const _setTxt=(id,v)=>{const el=$(id);if(el)el.textContent=v;};
@@ -865,7 +848,7 @@ function startApp(mode){
 
 function _resetMapState(){
   // 지도 인스턴스 제거
-  if(_map){ try{_map=null;}catch(e){} }
+  if(_map){ try{_map=null;}catch(e){ console.warn("[클로드정리]", e); } }
   // 마커 배열 초기화
   _markers=[];
   _retreatMarkers=[];
@@ -873,6 +856,7 @@ function _resetMapState(){
   _dioOverlays={};
   _activeDio=null;
   _parishSysInited=false;
+  if(_parishIdleListener){ try{kakao.maps.event.removeListener(_parishIdleListener);}catch(e){ console.warn('[클로드정리]',e); } _parishIdleListener=null; }
   _paSelMkr=null;
   _myMkr=null;
   _myLat=null; _myLng=null;
@@ -886,11 +870,11 @@ function goToCover(){
   closeInfoCard();
   resetRoute();
   // 모든 마커 지도에서 제거
-  _markers.forEach(m=>{if(m)try{m.marker.setMap(null);}catch(e){}});
-  _retreatMarkers.forEach(o=>{try{o.marker.setMap(null);}catch(e){}});
-  Object.values(_dioMkrs).forEach(arr=>arr.forEach(mk=>{try{mk.setMap(null);}catch(e){}}));
-  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){} _paSelMkr=null;}
-  if(_myMkr){try{_myMkr.setMap(null);}catch(e){} _myMkr=null;}
+  _markers.forEach(m=>{if(m)try{m.marker.setMap(null);}catch(e){ console.warn("[클로드정리]", e); }});
+  _retreatMarkers.forEach(o=>{try{o.marker.setMap(null);}catch(e){ console.warn("[클로드정리]", e); }});
+  Object.values(_dioMkrs).forEach(arr=>arr.forEach(mk=>{try{mk.setMap(null);}catch(e){ console.warn("[클로드정리]", e); }}));
+  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); } _paSelMkr=null;}
+  if(_myMkr){try{_myMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); } _myMkr=null;}
   _screen='cover';
   document.documentElement.classList.remove('app-active','parish-mode','retreat-mode');
   const _coverEl=$('cover');
@@ -1021,7 +1005,7 @@ function closeTab(name){
   if(_activeTab===name) _activeTab=null;
   _updateTabBtns(null);
   if(name==='route'){
-    try{ resetRoute(); }catch(e){}
+    try{ resetRoute(); }catch(e){ console.warn("[클로드정리]", e); }
     _routeMode=false;
     if(_routeDest){
       const items = _getCurrentItems();
@@ -1045,7 +1029,7 @@ function closeTab(name){
             }
             _showInfoCard(item,idx);
             _focusMarkerAboveInfoCard(item);
-          }catch(e){}
+          }catch(e){ console.warn("[클로드정리]", e); }
         }, 90);
       }
     }
@@ -1116,7 +1100,7 @@ function _updateTabBtns(active){
     if(on) activeBtn = b;
   });
   if(activeBtn){
-    try{ activeBtn.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }catch(e){}
+    try{ activeBtn.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }catch(e){ console.warn("[클로드정리]", e); }
   }
 }
 
@@ -1140,7 +1124,7 @@ function _focusMarkerAboveInfoCard(item){
       if(newCenter){ _map.setCenter(newCenter); return; }
     }
     _map.setCenter(pos);
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 function selectItem(idx, opts={}){
@@ -1182,7 +1166,7 @@ function _fitInfoCardButtons(){
         btn.style.fontSize=size+'px';
       }
     });
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 function _showInfoCard(item, idx){
@@ -1231,7 +1215,7 @@ function _showInfoCard(item, idx){
       distCol.classList.add('ready');
      }
     }
-   }catch(e){}
+   }catch(e){ console.warn("[클로드정리]", e); }
   })();
   }
   const hp=$('ic-hp');
@@ -1264,13 +1248,13 @@ function closeInfoCard(){
   _curFromRegion=false;
   if(_mode==='shrine') _clearShrineMarkerSel();
   else {
-    if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){}  _paSelMkr=null;}
+    if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); }  _paSelMkr=null;}
   }
   // 인포카드를 닫으면 해당 마커 위치를 지도 중앙으로 복귀
   if(wasItem && wasItem.item && wasItem.item.lat && _map){
     try{
       _map.setCenter(new _LL(wasItem.item.lat, wasItem.item.lng));
-    }catch(e){}
+    }catch(e){ console.warn("[클로드정리]", e); }
   }
 }
 
@@ -1365,7 +1349,7 @@ function _setRouteMarkerZ(idx, role){
       const r=_retreatMarkers.find(o=>o && o.index===idx);
       if(r && r.marker) r.marker.setZIndex(role==='start'?340:330);
     }
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 function _clearRouteTmpMarkers(){
@@ -1464,7 +1448,7 @@ function _restoreAllCategoryMarkersForSelection(){
         m.marker.setMap(_map);
         m.marker.setImage(_mkrImg(_typeColor(m.shrine.type),false));
         m.marker.setZIndex(1);
-      }catch(e){}
+      }catch(e){ console.warn("[클로드정리]", e); }
     });
     _selIdx=-1;
     return;
@@ -1477,9 +1461,9 @@ function _restoreAllCategoryMarkersForSelection(){
         o.marker.setMap(_map);
         o.marker.setImage(_mkrImgRetreat('#2e7d32',false));
         o.marker.setZIndex(45);
-      }catch(e){}
+      }catch(e){ console.warn("[클로드정리]", e); }
     });
-    if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){} _paSelMkr=null;}
+    if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); } _paSelMkr=null;}
   }
 }
 
@@ -1513,10 +1497,10 @@ function _showItemsOnMap(items){
    if(s.lat&&s.lng) bounds.extend(new _LL(s.lat,s.lng));
   }
   });
-  try{_map.setBounds(bounds,60,60,60,60);}catch(e){}
+  try{_map.setBounds(bounds,60,60,60,60);}catch(e){ console.warn("[클로드정리]", e); }
 }
 function _selectParishMarker(p){
-  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){}  _paSelMkr=null;}
+  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); }  _paSelMkr=null;}
   if(!_map||!p.lat||!p.lng) return;
   // 해당 성당이 속한 교구 마커 활성화
   const codeMap={'서울대교구':'SE','인천교구':'IC','수원교구':'SW','의정부교구':'UJ',
@@ -1616,10 +1600,10 @@ function _buildParishDioSystem(){
 }
 
 function _showDioOverlays(){
-  Object.values(_dioOverlays).forEach(ov=>{ try{ov.setMap(_map);}catch(e){} });
+  Object.values(_dioOverlays).forEach(ov=>{ try{ov.setMap(_map);}catch(e){ console.warn("[클로드정리]", e); } });
 }
 function _hideDioOverlays(){
-  Object.values(_dioOverlays).forEach(ov=>{ try{ov.setMap(null);}catch(e){} });
+  Object.values(_dioOverlays).forEach(ov=>{ try{ov.setMap(null);}catch(e){ console.warn("[클로드정리]", e); } });
 }
 
 function _toggleParishDio(code){
@@ -1638,6 +1622,7 @@ function _toggleParishDio(code){
 }
 
 function _showParishDioMkrs(code){
+  // ── 마커 객체 최초 1회 생성 (setMap 없이) ──
   if(!_dioMkrs[code]){
     const cfg=_DIO_CFG[code]||{c:'#555'};
     const parishes=_PA_BY_DIO[code]||[];
@@ -1655,16 +1640,49 @@ function _showParishDioMkrs(code){
         if(_routeMode) _selectRouteItem(idx);
         else selectItem(idx,{fromNearby:false,fromRegion:false});
       });
-      mk.setMap(_map);
+      // setMap은 _updateParishViewport에서 뷰포트 기준으로 처리
       _dioMkrs[code].push(mk);
     });
-  } else {
-    _dioMkrs[code].forEach(mk=>mk.setMap(_map));
   }
+  // ── 현재 뷰포트 기준 첫 렌더링 ──
+  _updateParishViewport(code);
+  // ── 지도 이동/줌 시 뷰포트 재계산 (idle = pan+zoom 완료 후 1회 발화) ──
+  if(_parishIdleListener){
+    try{kakao.maps.event.removeListener(_parishIdleListener);}catch(e){ console.warn('[클로드정리]',e); }
+    _parishIdleListener=null;
+  }
+  _parishIdleListener=kakao.maps.event.addListener(_map,'idle',function(){
+    if(_activeDio===code) _updateParishViewport(code);
+  });
+}
+
+/* 현재 지도 뷰포트 안에 있는 성당 마커만 표시합니다.
+   줌 레벨 9 이상(광역 줌아웃)이면 전부 숨겨 저사양 기기 보호. */
+function _updateParishViewport(code){
+  const mkrs=_dioMkrs[code];
+  if(!mkrs||!_map) return;
+  const lvl=_map.getLevel();
+  if(lvl>=9){
+    // 너무 멀리 줌아웃 → 마커 전부 숨김 (교구 레이블만 표시)
+    mkrs.forEach(mk=>{ try{mk.setMap(null);}catch(e){ console.warn('[클로드정리]',e); } });
+    return;
+  }
+  const bounds=_map.getBounds();
+  mkrs.forEach(mk=>{
+    try{
+      if(bounds.contain(mk.getPosition())) mk.setMap(_map);
+      else mk.setMap(null);
+    }catch(e){ console.warn('[클로드정리]',e); }
+  });
 }
 
 function _hideParishDioMkrs(code){
-  (_dioMkrs[code]||[]).forEach(mk=>mk.setMap(null));
+  (_dioMkrs[code]||[]).forEach(mk=>{ try{mk.setMap(null);}catch(e){ console.warn('[클로드정리]',e); } });
+  // idle 리스너도 함께 제거
+  if(_parishIdleListener){
+    try{kakao.maps.event.removeListener(_parishIdleListener);}catch(e){ console.warn('[클로드정리]',e); }
+    _parishIdleListener=null;
+  }
 }
 function _buildRetreatMarkers(){
   if(!_map) return;
@@ -1688,7 +1706,7 @@ function _buildRetreatMarkers(){
 }
 function _clearRetreatMarkers(){
   _retreatMarkers.forEach(o=>o.marker.setMap(null));
-  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){} _paSelMkr=null;}
+  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); } _paSelMkr=null;}
 }
 function _restoreRetreatMarkers(){
   _retreatMarkers.forEach(o=>{
@@ -1698,7 +1716,7 @@ function _restoreRetreatMarkers(){
   });
 }
 function _selectRetreatMarker(p){
-  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){} _paSelMkr=null;}
+  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); } _paSelMkr=null;}
   if(!_map||!p.lat||!p.lng) return;
   _paSelMkr=new _MM({position:new _LL(p.lat,p.lng),image:_mkrImgRetreat('#FFE500',true),zIndex:180});
   _paSelMkr.setMap(_map);
@@ -1706,7 +1724,7 @@ function _selectRetreatMarker(p){
 // ──────────────────────────────────────────────────────────────────
 
 function _clearParishMarkers(){
-  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){}  _paSelMkr=null;}
+  if(_paSelMkr){try{_paSelMkr.setMap(null);}catch(e){ console.warn("[클로드정리]", e); }  _paSelMkr=null;}
   // 교구 마커 숨기기
   if(_activeDio){ _hideParishDioMkrs(_activeDio); _activeDio=null; }
   document.querySelectorAll('.dio-label').forEach(e=>e.style.transform='');
@@ -1756,7 +1774,7 @@ function _showCurrentParishDioIfIdle(){
     document.querySelectorAll('.dio-label').forEach(e=>{e.style.transform='';e.style.display='';});
     const clickedEl=_dioOverlays[code]?.getContent?.();
     if(clickedEl){clickedEl.style.display='none';}
-  }catch(e){}
+  }catch(e){ console.warn("[클로드정리]", e); }
 }
 function _setMyLoc(lat,lng){
   _myLat=lat;_myLng=lng;
@@ -1805,7 +1823,24 @@ function _loadNearby(){
   _setMyLoc(p.coords.latitude,p.coords.longitude);
   go(p.coords.latitude,p.coords.longitude);
   },err=>{
-  body.innerHTML=`<div style="padding:30px;text-align:center;color:#c0392b;font-size:13px">⚠️ ${err.code===1?'위치 권한을 허용해주세요':'위치를 가져올 수 없습니다'}</div>`;
+  if(err.code===1){
+    body.innerHTML=`<div style="padding:28px 20px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:12px">📍</div>
+      <div style="font-size:14px;font-weight:700;color:#c0392b;margin-bottom:8px">위치 권한이 거부되어 있습니다</div>
+      <div style="font-size:12px;color:#888;line-height:1.7;margin-bottom:18px">
+        브라우저 주소창 왼쪽의 🔒 아이콘을 탭한 뒤<br>
+        <b>위치</b> 권한을 <b>허용</b>으로 변경하고 새로고침하세요.
+      </div>
+      <button onclick="_loadNearby()" style="background:#0e1535;color:#d4aa6a;border:none;border-radius:20px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">↺ 다시 시도</button>
+    </div>`;
+  } else {
+    body.innerHTML=`<div style="padding:28px 20px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:12px">😔</div>
+      <div style="font-size:14px;font-weight:700;color:#c0392b;margin-bottom:8px">위치를 가져올 수 없습니다</div>
+      <div style="font-size:12px;color:#888;line-height:1.7;margin-bottom:18px">GPS 신호가 약하거나 네트워크 문제일 수 있습니다.<br>잠시 후 다시 시도해보세요.</div>
+      <button onclick="_loadNearby()" style="background:#0e1535;color:#d4aa6a;border:none;border-radius:20px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">↺ 다시 시도</button>
+    </div>`;
+  }
   },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
 }
 
@@ -1827,12 +1862,9 @@ function _loadNearbyWithDist(lat,lng,items,getIdx,getColor,getLabel){
   let done=0;
 
   prelim.forEach((x,i)=>{
-    fetch(`${_NAV}?origin=${lng},${lat}&destination=${x.p.lng},${x.p.lat}&priority=RECOMMEND`,_AH)
-    .then(r=>r.json()).then(data=>{
-      const route=data.routes?.[0];
-      if(route&&route.result_code===0) results[i]={km:route.summary.distance/1000,dur:route.summary.duration};
-      else results[i]={km:x.d*1.35,dur:null};
-    }).catch(()=>{ results[i]={km:x.d*1.35,dur:null}; })
+    _navFetch(`${lng},${lat}`,`${x.p.lng},${x.p.lat}`)
+    .then(val=>{ results[i]=val||{km:x.d*1.35,dur:null}; })
+    .catch(()=>{ results[i]={km:x.d*1.35,dur:null}; })
     .finally(()=>{
       done++;
       if(done===prelim.length){
@@ -1855,7 +1887,7 @@ function _renderNearbyDone(prelim,results,getIdx,getColor,getLabel,phase){
     const isEst=(phase==='est');
     const distTxt=isEst?`~${km}km`:`🚗${km}km`;
     const dur=(!isEst&&o.r.dur)?`<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(o.r.dur)}</span>`:'';
-    return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.p.name}</div><div class="nearby-addr">${o.x.p.addr.substring(0,26)}${o.x.p.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${lbl}</div><div class="nearby-dist" style="color:${isEst?'#aaa':''}">${distTxt}${dur}</div></div></div>`;
+    return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}!important">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.p.name}</div><div class="nearby-addr">${o.x.p.addr.substring(0,26)}${o.x.p.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18!important;color:${c}!important">${lbl}</div><div class="nearby-dist" style="color:${isEst?'#aaa':c}!important">${distTxt}${dur}</div></div></div>`;
   }).join('');
   if(phase==='final') body.scrollTop=scrollTop;
 }
@@ -1926,7 +1958,7 @@ function renderList(){
    d.className='list-item';
    d.innerHTML=`<div class="li-dot" style="background:${c}"></div>
     <div class="li-info"><div class="li-name">${s.name}</div><div class="li-sub">${s.addr.substring(0,28)}${s.addr.length>28?'…':''}</div></div>
-    <span class="li-badge" style="background:${c}18;color:${c}">${_mode==='shrine'?s.type:(_mode==='retreat'?'피정의 집':'성당')}</span>`;
+    <span class="li-badge" style="background:${c}18!important;color:${c}!important">${_mode==='shrine'?s.type:(_mode==='retreat'?'피정의 집':'성당')}</span>`;
    d.onclick=()=>selectItem(i);
    body.appendChild(d);
   });
@@ -2028,8 +2060,8 @@ function _showRegionResults(q,lat,lng,doc){
   $('region-body').innerHTML=infoCard+listHd+'<div id="rg-loading" style="text-align:center;padding:10px;font-size:12px;color:#888;">🚗 정확한 거리 계산 중입니다…</div><div id="rg-list" style="background:#fff"></div>';
   const results=new Array(prelim.length).fill(null);let done=0;
   prelim.forEach((x,i)=>{
-    fetch(`${_NAV}?origin=${lng},${lat}&destination=${x.s.lng},${x.s.lat}&priority=RECOMMEND`,_AH)
-    .then(r=>r.json()).then(data=>{const route=data.routes?.[0];if(route&&route.result_code===0)results[i]={km:route.summary.distance/1000,dur:route.summary.duration};else results[i]={km:x.d*1.35,dur:null};})
+    _navFetch(`${lng},${lat}`,`${x.s.lng},${x.s.lat}`)
+    .then(val=>{results[i]=val||{km:x.d*1.35,dur:null};})
     .catch(()=>{results[i]={km:x.d*1.35,dur:null};})
     .finally(()=>{ done++;
       if(done===prelim.length){
@@ -2042,7 +2074,7 @@ function _showRegionResults(q,lat,lng,doc){
         if(rgl) rgl.innerHTML=sorted.map((o,i)=>{
           const idx=items.indexOf(o.x.s);const c=_getModeMarkerColor(o.x.s);const lbl=_getModeTypeLabel(o.x.s);
           const km=o.r.km.toFixed(1);const dur=o.r.dur?`<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(o.r.dur)}</span>`:'';
-          return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.s.name}</div><div class="nearby-addr">${o.x.s.addr.substring(0,26)}${o.x.s.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${lbl}</div><div class="nearby-dist">🚗${km}km${dur}</div></div></div>`;
+          return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c}!important;width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${o.x.s.name}</div><div class="nearby-addr">${o.x.s.addr.substring(0,26)}${o.x.s.addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18!important;color:${c}!important">${lbl}</div><div class="nearby-dist" style="color:${c}!important">🚗${km}km${dur}</div></div></div>`;
         }).join('');
       }
     });
@@ -2074,9 +2106,9 @@ function _showRegionFallback(q){
   const idx=items2.indexOf(s);
   const c=_getModeMarkerColor(s);
   return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})">
-   <div class="nearby-num" style="background:${c};width:26px;height:26px;font-size:12px">${i+1}</div>
+   <div class="nearby-num" style="background:${c}!important;width:26px;height:26px;font-size:12px">${i+1}</div>
    <div class="nearby-info"><div class="nearby-name">${s.name}</div><div class="nearby-addr">${s.addr.substring(0,26)}…</div></div>
-   <div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${_mode==='shrine'?s.type:(_mode==='retreat'?'피정의 집':'성당')}</div></div>
+   <div class="nearby-meta"><div class="nearby-type" style="background:${c}18!important;color:${c}!important">${_mode==='shrine'?s.type:(_mode==='retreat'?'피정의 집':'성당')}</div></div>
   </div>`;
   }).join('');
   $('region-body').innerHTML=
@@ -2245,7 +2277,7 @@ function resetRoute(opts){
           else _selectRetreatMarker(_items[_idx]);
           _focusMarkerAboveInfoCard(_items[_idx]);
         }
-      }catch(e){}
+      }catch(e){ console.warn("[클로드정리]", e); }
     }
     return;
   }
@@ -2263,7 +2295,7 @@ function resetRoute(opts){
         _showInfoCard(_item, _idx);
         _focusMarkerAboveInfoCard(_item);
       }
-    }catch(e){}
+    }catch(e){ console.warn("[클로드정리]", e); }
   }
 }
 
@@ -2375,7 +2407,7 @@ function _drawLine(s1,s2,path){
   if(_endTmpMkr) bounds.extend(new _LL(s2.lat,s2.lng));
   const tabH=($('tabbar')?.offsetHeight)||54;
   const sheetH=Math.round(window.innerHeight*0.55);
-  try{_map.setBounds(bounds,tabH+10,40,sheetH,40);}catch(e){}
+  try{_map.setBounds(bounds,tabH+10,40,sheetH,40);}catch(e){ console.warn("[클로드정리]", e); }
   }
 }
 
@@ -2431,7 +2463,7 @@ function smSwitchTab(tab){
   $('sm-tab-place').classList.toggle('active',tab==='place');
   const activeSmTab = tab==='cat' ? $('sm-tab-cat') : $('sm-tab-place');
   if(activeSmTab){
-    try{ activeSmTab.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }catch(e){}
+    try{ activeSmTab.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'}); }catch(e){ console.warn("[클로드정리]", e); }
   }
   $('sm-body').style.display=tab==='cat'?'':'none';
   $('sm-body-place').style.display=tab==='place'?'':'none';
@@ -2500,7 +2532,7 @@ function openSearchModal(role){
   if($('sm-tab-cat')) $('sm-tab-cat').classList.add('active');
   if($('sm-tab-place')) $('sm-tab-place').classList.remove('active');
   requestAnimationFrame(function(){
-    try{ $('sm-tab-cat')?.scrollIntoView({behavior:'instant', block:'nearest', inline:'center'}); }catch(e){}
+    try{ $('sm-tab-cat')?.scrollIntoView({behavior:'instant', block:'nearest', inline:'center'}); }catch(e){ console.warn("[클로드정리]", e); }
   });
   if($('sm-body')) $('sm-body').style.display='';
   if($('sm-body-place')) {
@@ -2539,7 +2571,7 @@ function openSearchModal(role){
   $('srch-modal').classList.add('open');
 }
 
-function _blurAll(){ try{document.activeElement&&document.activeElement.blur();}catch(e){} }
+function _blurAll(){ try{document.activeElement&&document.activeElement.blur();}catch(e){ console.warn("[클로드정리]", e); } }
 function closeSearchModal(){
   $('srch-modal').classList.remove('open');
 }
@@ -2623,20 +2655,18 @@ function selectFromModal(idx){
 }
 
 function _fetchDist(lat,lng,iLat,iLng,distId){
- fetch(`${_NAV}?origin=${lng},${lat}&destination=${iLng},${iLat}&priority=RECOMMEND`,_AH)
- .then(r=>r.json()).then(data=>{
-  const route=data.routes?.[0];
-  if(route&&route.result_code===0){
-   const km=(route.summary.distance/1000).toFixed(1);
-   const el=$(distId);if(el)el.innerHTML=`🚗${km}km<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(route.summary.duration)}</span>`;
-  }
+ _navFetch(`${lng},${lat}`,`${iLng},${iLat}`)
+ .then(val=>{
+  if(!val) return;
+  const km=val.km.toFixed(1);
+  const el=$(distId);if(el)el.innerHTML=`🚗${km}km<span style="font-size:10px;color:#aaa;font-weight:400;margin-left:3px">${_fmtTime(val.dur)}</span>`;
  }).catch(()=>{});
 }
 function _nearbyHtml(idx,i,name,addr,c,tLabel,distId,estKm){
- return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div><div class="nearby-dist" id="${distId}">🚗${estKm}km</div></div></div>`;
+ return `<div class="nearby-item" onclick="selectItem(${idx},{fromNearby:true})"><div class="nearby-num" style="background:${c}!important">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18!important;color:${c}!important">${tLabel}</div><div class="nearby-dist" id="${distId}" style="color:${c}!important">🚗${estKm}km</div></div></div>`;
 }
 function _regionHtml(idx,i,name,addr,c,tLabel,distId,estKm){
- return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c};width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18;color:${c}">${tLabel}</div>${distId?`<div class="nearby-dist" id="${distId}">🚗${estKm}km</div>`:''}</div></div>`;
+ return `<div class="region-item" onclick="selectItem(${idx},{fromRegion:true})"><div class="nearby-num" style="background:${c}!important;width:28px;height:28px;font-size:12px">${i+1}</div><div class="nearby-info"><div class="nearby-name">${name}</div><div class="nearby-addr">${addr.substring(0,26)}${addr.length>26?'…':''}</div></div><div class="nearby-meta"><div class="nearby-type" style="background:${c}18!important;color:${c}!important">${tLabel}</div>${distId?`<div class="nearby-dist" id="${distId}" style="color:${c}!important">🚗${estKm}km</div>`:''}</div></div>`;
 }
 function _show(el,d){if(el)el.style.display=d||'flex';}
 function _hide(el){if(el)el.style.display='none';}
@@ -2744,3 +2774,135 @@ function _fmtTime(s){
   });
   _resetIdle();
 })();
+
+// ─── 이벤트 바인딩 ────────────────────────────────────────────────────────────
+// index.html 에서 분리된 인라인 onclick/oninput/onkeydown 핸들러를 한 곳에서 관리합니다.
+// 모든 바인딩은 DOMContentLoaded 이후 실행되므로 요소가 반드시 존재합니다.
+document.addEventListener('DOMContentLoaded', function bindEvents() {
+  function on(id, evt, fn, opts) {
+    var el = typeof id === 'string' ? document.getElementById(id) : id;
+    if (el) el.addEventListener(evt, fn, opts || false);
+  }
+  function onQ(sel, evt, fn) {
+    document.querySelectorAll(sel).forEach(function(el) { el.addEventListener(evt, fn); });
+  }
+
+  // ── 매일미사 ──
+  on('missa-close', 'click', function() { closeMissa(); });
+
+  // ── 종료 다이얼로그 ──
+  on('exit-cancel-btn', 'click', function() { closeExitDlg(); });
+  on('exit-ok-btn',     'click', function() { doExit(); });
+
+  // ── 교구 지도 ──
+  on('diocese-close-btn', 'click', function() {
+    if (typeof closeDioceseView === 'function') closeDioceseView();
+  });
+  on('diocese-frame', 'load', function() {
+    if (typeof dioceseLoaded === 'function') dioceseLoaded();
+  });
+
+  // ── 기도문 ──
+  on('prayer-close',  'click', function() { _closePrayerAndReturn(); });
+  on('prayer-search-inp', 'input', function() { prRenderList(); });
+  on('pr-sm-btn-1',   'click', function() { prAdjustFont(-1); });
+  on('pr-lg-btn-1',   'click', function() { prAdjustFont(1); });
+  on('pr-sm-btn-2',   'click', function() { prAdjustFont(-1); });
+  on('pr-lg-btn-2',   'click', function() { prAdjustFont(1); });
+  on('pr-detail-star','click', function(e) { prToggleDetailFav(e); });
+  on('pr-back-btn',   'click', function() { prCloseDetail(); });
+
+  // ── 커버 글자크기 ──
+  on('cover-sm-btn',  'click', function(e) { e.stopPropagation(); prAdjustFont(-1); });
+  on('cover-lg-btn',  'click', function(e) { e.stopPropagation(); prAdjustFont(1); });
+
+  // ── 커버 카드 ──
+  on('cc-1', 'click', function() { if (typeof openMissa === 'function') openMissa(); });
+  on('cc-2', 'click', function() { hideCoverAndRun(function() { if (typeof openPrayerBook === 'function') openPrayerBook(); else alert('기도문 기능이 연결되지 않았습니다.'); }); });
+  on('cc-3', 'click', function() { hideCoverAndRun(function() { if (typeof startApp === 'function') startApp('shrine'); }); });
+  on('cc-4', 'click', function() { hideCoverAndRun(function() { if (typeof startApp === 'function') startApp('parish'); }); });
+  on('cc-5', 'click', function() { hideCoverAndRun(function() { if (typeof startApp === 'function') startApp('retreat'); }); });
+  on('cc-6', 'click', function() { hideCoverAndRun(function() { if (typeof openTrailView === 'function') openTrailView(); }); });
+  on('cc-7', 'click', function() { hideCoverAndRun(function() { if (typeof openWebView === 'function') openWebView(); }); });
+  on('cc-8', 'click', function() { hideCoverAndRun(function() { openDioceseView(); }); });
+
+  // ── 커버 기타 ──
+  on('qna-cover-btn',  'click', function() { openQnaView(); });
+  on('pwa-install-btn','click', function() { triggerPwaInstall(); });
+
+  // ── 탭바 ──
+  on('tab-btn-nearby', 'click', function() { toggleTab('nearby'); });
+  on('tab-btn-list',   'click', function() { toggleTab('list'); });
+  on('tab-btn-region', 'click', function() { toggleTab('region'); });
+  on('tab-btn-route',  'click', function() { toggleTab('route'); });
+
+  // ── 내 위치 ──
+  on('loc-btn', 'click', function() { goMyLoc(); });
+
+  // ── 목록 검색 ──
+  on('list-srch-inp', 'input', function() { onListSearch(this.value); });
+  on('list-srch-x',   'click', function() { clearListSearch(); });
+
+  // ── 지역 검색 ──
+  on('region-inp', 'keydown', function(e) { if (e.key === 'Enter') doRegionSearch(); });
+  on('region-inp', 'input',   function() { onRegionInp(this.value); });
+  on('region-search-btn', 'click', function() {
+    if (document.activeElement) document.activeElement.blur();
+    doRegionSearch();
+  });
+
+  // ── 길찾기 ──
+  on('rs-start-box', 'click', function() { openSearchModal('start'); });
+  on('rs-end-box',   'click', function() { openSearchModal('end'); });
+  on('rs-myloc-btn', 'click', function(e) { e.stopPropagation(); setMyLocAsStart(); });
+  on('rs-end-x',     'click', function(e) { e.stopPropagation(); clearRoute('end'); });
+  on('rs-swap-btn',  'click', function() { swapRoute(); });
+  on('rs-search-btn','click', function() { doSearchRoute(); });
+  on('rs-kakao-btn', 'click', function() { doKakaoRoute(); });
+  on('rs-reset-btn', 'click', function() { resetRoute({ fromButton: true }); });
+
+  // ── 인포카드 ──
+  on('ic-close-btn', 'click', function() { closeInfoCard(); });
+  on('ic-route-btn', 'click', function() { openInAppRoute(); });
+  on('ic-guide',     'click', function() { if (typeof openShrineDetail === 'function') openShrineDetail(); });
+  on('ic-kakao-nav', 'click', function() { openKakaoNav(); });
+
+  // ── 검색 모달 ──
+  on('sm-close-btn', 'click', function() { closeSearchModal(); });
+  on('sm-inp', 'input', function() { onSmInp(this.value); });
+  on('sm-inp', 'keyup', function(e) { if (e.key === 'Enter') { if (typeof _blurAll === 'function') _blurAll(); } });
+
+  // ── 웹·순례길·Q&A 닫기 ──
+  on('web-close-btn', 'click', function() {
+    var v = document.getElementById('web-view');
+    if (v) v.classList.remove('open');
+    if (typeof goToCover === 'function') goToCover();
+  });
+  on('trail-close-btn', 'click', function() {
+    var v = document.getElementById('trail-view');
+    if (v) v.classList.remove('open');
+    if (typeof goToCover === 'function') goToCover();
+  });
+  on('qna-close-btn', 'click', function() {
+    var v = document.getElementById('qna-view');
+    if (v) v.classList.remove('open');
+    if (typeof goToCover === 'function') goToCover();
+  });
+
+  // ── 순례길 ──
+  on('trail-sh-close-btn', 'click', function() { trailCloseSheet(); });
+  on('trail-loc-btn',      'click', function() { trailMyLoc(); });
+  on('trail-tab-map',  'click', function() { trailSetView('map'); });
+  on('trail-tab-list', 'click', function() { trailSetView('list'); });
+
+  // ── Q&A 탭 ──
+  on('qna-tab-write',   'click', function() { qnaShowTab('write'); });
+  on('qna-tab-answers', 'click', function() { qnaShowTab('answers'); });
+
+  // ── 검색 모달 탭 ──
+  on('sm-tab-cat',   'click', function() { smSwitchTab('cat'); });
+  on('sm-tab-place', 'click', function() { smSwitchTab('place'); });
+
+  // ── 매일미사 iframe 로드 ──
+  on('missa-frame', 'load', function() { if (typeof missaLoaded === 'function') missaLoaded(); });
+});

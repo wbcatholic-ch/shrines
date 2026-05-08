@@ -1,6 +1,5 @@
 /* prayer.js — 기도문 모듈
-   카테고리/즐겨찾기/검색/상세보기/글자크기
-   원본 index.html Block C 뒷부분에서 분리 */
+   카테고리·즐겨찾기·검색·상세보기·글자크기 */
 
 
 /* ════════════════════════════════════════════════════════
@@ -180,7 +179,7 @@ function prLoadPrefs(){
   const idx = PR_FONT_SIZES.indexOf(saved);
   prFontIdx = idx >= 0 ? idx : 3;
 }
-function prSaveFavorites(){ try{ localStorage.setItem('pr_favorites', JSON.stringify(prFavorites)); }catch(e){} }
+function prSaveFavorites(){ try{ localStorage.setItem('pr_favorites', JSON.stringify(prFavorites)); }catch(e){ console.warn("[클로드정리]", e); } }
 
 function prApplyFont(){
   const px = PR_FONT_SIZES[prFontIdx];
@@ -191,7 +190,7 @@ function prApplyFont(){
   r.style.setProperty('--pr-detail-fs', (px+1)+'px');
   r.style.setProperty('--pr-icon-sz',   Math.max(34,Math.round(px*2.2))+'px');
   r.style.setProperty('--pr-icon-fs',   Math.max(17,Math.round(px*1.2))+'px');
-  try{ localStorage.setItem(PR_FONT_KEY, px); }catch(e){}
+  try{ localStorage.setItem(PR_FONT_KEY, px); }catch(e){ console.warn("[클로드정리]", e); }
 }
 
 window.prAdjustFont = function(delta){
@@ -274,11 +273,48 @@ window.prRenderList = function(){
       '<div class="pr-title">'+prayer.title+'</div>'+
       '</div>'+
       '<div class="pr-item-right">'+
-      '<button class="pr-star '+(isFav?'on':'')+'" onclick="prToggleFav(this.dataset.pid,event)" data-pid="'+prayer.id+'">'+
+      '<button type="button" class="pr-star '+(isFav?'on':'')+'" data-pid="'+prayer.id+'" aria-label="즐겨찾기">'+
         '<i class="fa-solid fa-star"></i></button>'+
       '<i class="fa-solid fa-chevron-right pr-chevron"></i>'+
       '</div>';
-    li.onclick = ()=> prOpenDetail(prayer);
+    const starBtn = li.querySelector('.pr-star');
+    let ignoreListClickUntil = 0;
+    if(starBtn){
+      let favHandledAt = 0;
+      function blockFavEvent(ev){
+        ignoreListClickUntil = Date.now() + 700;
+        li.dataset.favTouch = '1';
+        window.setTimeout(function(){
+          if(Date.now() > ignoreListClickUntil) delete li.dataset.favTouch;
+        }, 760);
+        if(ev){
+          if(typeof ev.preventDefault === 'function') ev.preventDefault();
+          if(typeof ev.stopPropagation === 'function') ev.stopPropagation();
+          if(typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+        }
+      }
+      function handleFavEvent(ev){
+        blockFavEvent(ev);
+        const now = Date.now();
+        if(now - favHandledAt < 350) return;
+        favHandledAt = now;
+        prToggleFav(prayer.id, ev);
+      }
+      ['pointerdown','mousedown','touchstart','pointerup','mouseup'].forEach(function(evtName){
+        starBtn.addEventListener(evtName, blockFavEvent, {capture:true, passive:false});
+      });
+      starBtn.addEventListener('touchend', handleFavEvent, {capture:true, passive:false});
+      starBtn.addEventListener('click', handleFavEvent, {capture:true, passive:false});
+    }
+    li.addEventListener('click', function(ev){
+      if(Date.now() < ignoreListClickUntil || li.dataset.favTouch === '1' ||
+         (ev.target && ev.target.closest && ev.target.closest('.pr-star'))){
+        if(typeof ev.preventDefault === 'function') ev.preventDefault();
+        if(typeof ev.stopPropagation === 'function') ev.stopPropagation();
+        return;
+      }
+      prOpenDetail(prayer);
+    });
     ul.appendChild(li);
   });
 };
@@ -289,7 +325,10 @@ function prGetCat(id){
 }
 
 window.prToggleFav = function(id, e){
-  e.stopPropagation();
+  if(e){
+    if(typeof e.preventDefault === 'function') e.preventDefault();
+    if(typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
   prFavorites = prFavorites.includes(id) ? prFavorites.filter(f=>f!==id) : [...prFavorites,id];
   prSaveFavorites();
   prRenderList();

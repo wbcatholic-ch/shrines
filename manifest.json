@@ -1,7 +1,7 @@
 {
-  "name": "클로드정리",
-  "short_name": "클로드정리",
-  "description": "가톨릭 앱 코드 정리 테스트 버전 (성지 167곳 · 성당 1697곳 · 순례길 · 기도문)",
+  "name": "가톨릭길동무",
+  "short_name": "가톨릭길동무",
+  "description": "가톨릭 신앙생활 종합 앱 (성지 167곳 · 성당 1697곳 · 순례길 · 기도문)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

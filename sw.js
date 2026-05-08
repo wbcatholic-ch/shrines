@@ -1,20 +1,20 @@
-/* 클로드정리 Service Worker - 20260506-sec1
+/* 가톨릭길동무 Service Worker - 20260508-v1
    캐시를 매번 삭제하지 않고, 버전 변경 시 오래된 캐시만 정리합니다.
    localStorage/사용자 설정은 건드리지 않습니다. */
-const CACHE_VERSION = 'catholic-app-20260506-sec1';
+const CACHE_VERSION = 'catholic-app-20260508-v1';
 const APP_SHELL = [
   './',
   './index.html',
   './diocese.html',
   './qa-firebase.html',
-  './parishes.js',
-  './config.js',       // API 키 설정 파일 — 오프라인 시에도 지도 동작에 필요
-  './style.css',       // 3단계 파일 분리: 인라인 CSS → 외부 파일
-  './app.js',          // 핵심 앱 로직 (지도·마커·탭·경로)
-  './web.js',          // 가톨릭 웹사이트 목록 모듈
-  './prayer.js',       // 기도문 모듈
-  './patches.js',      // 뒤로가기·스와이프·터치 UX 패치
-  './sw-update.js',    // 서비스워커 캐시 버전 관리
+  './parishes.js?v=20260508-v1',
+  './config.js',
+  './style.css?v=20260508-v1',
+  './app.js?v=20260508-v1',
+  './web.js?v=20260508-v1',
+  './prayer.js?v=20260508-v1',
+  './patches.js?v=20260508-v1',
+  './sw-update.js?v=20260508-v1',
   './manifest.json',
   './icon-192x192.png'
 ];
@@ -41,6 +41,13 @@ function sameOrigin(request) {
 function isHtmlRequest(request) {
   return request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
 }
+function isVersionedAsset(request) {
+  try {
+    const url = new URL(request.url);
+    return url.searchParams.has('v') ||
+      /parishes\.js|prayer\.js|app\.js|style\.css|web\.js|patches\.js|sw-update\.js/.test(url.pathname);
+  } catch (e) { return false; }
+}
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_VERSION);
   try {
@@ -50,6 +57,18 @@ async function networkFirst(request) {
   } catch (e) {
     const cached = await cache.match(request);
     return cached || cache.match('./index.html');
+  }
+}
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE_VERSION);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  try {
+    const fresh = await fetch(request);
+    if (fresh && fresh.ok) cache.put(request, fresh.clone()).catch(() => null);
+    return fresh;
+  } catch (e) {
+    return new Response('Offline', { status: 503 });
   }
 }
 async function staleWhileRevalidate(request) {
@@ -69,6 +88,10 @@ self.addEventListener('fetch', (event) => {
   if (!sameOrigin(request)) return;
   if (isHtmlRequest(request)) {
     event.respondWith(networkFirst(request));
+    return;
+  }
+  if (isVersionedAsset(request)) {
+    event.respondWith(cacheFirst(request));
     return;
   }
   event.respondWith(staleWhileRevalidate(request));
