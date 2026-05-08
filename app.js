@@ -180,7 +180,7 @@ function openDioceseView(opts){
       if(!restore) try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){ console.warn("[클로드정리]", e); }
       if(typeof dioceseLoaded==='function') dioceseLoaded();
     };
-    frame.src='diocese.html?v=20260508-v3-5';
+    frame.src='diocese.html?v=20260508-v4';
   }else if(!restore){
     try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){ console.warn("[클로드정리]", e); }
   }
@@ -777,7 +777,7 @@ function oaiEnterView(el){
       el.classList.add('oai-enter-show');
       setTimeout(function(){
         try{ el.classList.remove('oai-enter-ready','oai-enter-show'); }catch(e){ console.warn("[클로드정리]", e); }
-      }, 360);
+      }, 280);
     });
   }catch(e){ console.warn("[클로드정리]", e); }
 }
@@ -790,7 +790,7 @@ function oaiShowCategoryEntryVeil(mode){
     veil.className = mode || 'shrine';
     document.documentElement.classList.add('oai-category-entering');
     clearTimeout(window.__oaiCategoryVeilTimer);
-    window.__oaiCategoryVeilTimer=setTimeout(oaiHideCategoryEntryVeil, 3600);
+    window.__oaiCategoryVeilTimer=setTimeout(oaiHideCategoryEntryVeil, 700);
   }catch(e){ console.warn("[클로드정리]", e); }
 }
 function oaiHideCategoryEntryVeil(){
