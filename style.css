@@ -2122,7 +2122,7 @@ html:not(.app-active) #cover {
   height         : 100dvh !important;
   min-height     : 100dvh !important;
   max-height     : 100dvh !important;
-  padding-top    : calc(10vh + env(safe-area-inset-top,0px)) !important;
+  padding-top    : calc(clamp(30px, 6vh, 56px) + env(safe-area-inset-top,0px)) !important;
   padding-bottom : 0 !important;
   padding-left   : 0 !important;
   padding-right  : 0 !important;
@@ -2148,9 +2148,9 @@ html.app-active #cover {
   flex        : 1 1 0 !important;
   min-height  : 0 !important;
   width       : 100% !important;
-  max-width   : min(440px, calc(100vw - 32px)) !important;
+  max-width   : min(460px, calc(100vw - 12px)) !important;
   margin      : 0 auto !important;
-  padding     : 0 16px calc(7vh + env(safe-area-inset-bottom,0px)) !important;
+  padding     : 0 6px calc(clamp(34px, 5vh, 56px) + env(safe-area-inset-bottom,0px)) !important;
   display     : flex !important;
   flex-direction: column ;
   align-items : stretch !important;
@@ -2224,17 +2224,17 @@ html.app-active #qna-cover-btn { display: none !important; }
 
 /* 작은 화면 보정 */
 @media (max-height:650px) {
-  #cover { padding-top: calc(10vh + env(safe-area-inset-top,0px)) !important; }
+  #cover { padding-top: calc(clamp(24px, 4.5vh, 42px) + env(safe-area-inset-top,0px)) !important; }
   #cover .cover-header { padding-bottom: 4px !important; }
-  #cover .cover-header .cover-title { font-size: clamp(18px,5vw,24px) !important; }
-  #cover .cover-header .cover-subtitle { font-size: 10px !important; }
+  #cover .cover-header .cover-title { font-size: clamp(26px,7.6vw,34px) !important; }
+  #cover .cover-header .cover-subtitle { font-size: 13px !important; }
   #cover .cover-grid,#cover .cv-grid { row-gap: clamp(2px,0.5vh,4px) !important; }
   #cover .cover-card,#cover .cv-btn { padding: clamp(4px,0.8vh,8px) 6px !important; }
-  #cover .cover-emoji { font-size: 18px !important; }
-  #cover .cover-name,#cover .cv-btn-label { font-size: 12px !important; }
-  #cover #qna-cover-btn { min-height: 34px !important; font-size: 11px !important; }
+  #cover .cover-emoji { font-size: 28px !important; }
+  #cover .cover-name,#cover .cv-btn-label { font-size: 14px !important; }
+  #cover #qna-cover-btn { min-height: 38px !important; font-size: 12px !important; }
   #cover-main-block {
-    padding-bottom: calc(7vh + env(safe-area-inset-bottom,0px)) !important;
+    padding-bottom: calc(clamp(32px, 5vh, 52px) + env(safe-area-inset-bottom,0px)) !important;
   }
 }
 /* 7. 하단 안내 문구 — 레이아웃 계산에서 제외하고 화면 하단에 고정 */
