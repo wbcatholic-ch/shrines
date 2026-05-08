@@ -19,6 +19,9 @@ const PR_CAT_STYLE = {
   bong3:    { label:'십자가의 길', bg:'#FFF7ED', color:'#C2410C', icon:'✞',  accent:'#C2410C' },
 };
 
+// 기도문 목록에서 좌우 스와이프 직후 즐겨찾기 별 오작동을 막는 공통 차단 시간
+let prSwipeBlockUntil = 0;
+
 // 기도문 데이터 (항목 추가 시 여기에 추가)
 const PR_DATA = { 
 
@@ -283,9 +286,9 @@ window.prRenderList = function(){
       let favHandledAt = 0;
       let suppressClickUntil = 0;
       let favTouch = null;
-      const FAV_MOVE_X_LIMIT = 8;
-      const FAV_MOVE_Y_LIMIT = 10;
-      const FAV_MAX_TAP_MS = 650;
+      const FAV_MOVE_X_LIMIT = 5;
+      const FAV_MOVE_Y_LIMIT = 7;
+      const FAV_MAX_TAP_MS = 450;
 
       function markFavTouch(ms){
         ignoreListClickUntil = Date.now() + (ms || 700);
@@ -308,6 +311,7 @@ window.prRenderList = function(){
       }
       function runFavToggle(ev){
         const now = Date.now();
+        if(now < prSwipeBlockUntil) return;
         if(now - favHandledAt < 350) return;
         favHandledAt = now;
         prToggleFav(prayer.id, ev);
@@ -352,13 +356,13 @@ window.prRenderList = function(){
           Math.abs(pt.x - touch.x) > FAV_MOVE_X_LIMIT ||
           Math.abs(pt.y - touch.y) > FAV_MOVE_Y_LIMIT;
         const tooLong = now - touch.t > FAV_MAX_TAP_MS;
-        if(moved || tooLong) return;
+        if(moved || tooLong || now < prSwipeBlockUntil) return;
         runFavToggle(ev);
       }, {capture:true, passive:false});
 
       starBtn.addEventListener('click', function(ev){
         markFavTouch(700);
-        if(Date.now() < suppressClickUntil || Date.now() - favHandledAt < 350){
+        if(Date.now() < suppressClickUntil || Date.now() < prSwipeBlockUntil || Date.now() - favHandledAt < 350){
           stopFavEvent(ev, true);
           return;
         }
@@ -442,14 +446,20 @@ window.prSwitchCat = prSwitchCat;
 window.prOpenDetail = prOpenDetail;
 window.prCloseDetail = window.prCloseDetail;
 
-/* ── 기도문 좌우 스와이프 (순환) ── */
+/* ── 기도문 좌우 스와이프 (순환) — 웹사이트 기준 감도와 동일화 */
 (function(){
   var el = document.getElementById('prayer-list-view');
   if (!el) return;
-  var sx = 0, sy = 0, moved = false, locked = false;
+  var sx = 0, sy = 0;
   var THRESHOLD = 55;
+  var HORIZONTAL_RATIO = 1.2;
+  var SWIPE_BLOCK_MS = 650;
 
   function getIdx(cat) { return PR_CATS.indexOf(cat); }
+  function blockFavAfterSwipe(){ prSwipeBlockUntil = Date.now() + SWIPE_BLOCK_MS; }
+  function isHorizontalSwipe(dx, dy){
+    return Math.abs(dx) >= THRESHOLD && Math.abs(dx) >= Math.abs(dy) * HORIZONTAL_RATIO;
+  }
   function goNext() {
     var idx = getIdx(prCurCat);
     var next = (idx + 1) % PR_CATS.length; // 순환
@@ -464,24 +474,22 @@ window.prCloseDetail = window.prCloseDetail;
   }
 
   el.addEventListener('touchstart', function(e) {
+    if(!e.touches || !e.touches[0]) return;
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
-    moved = false; locked = false;
   }, { passive: true });
   el.addEventListener('touchmove', function(e) {
-    if (locked) return;
+    if(!e.touches || !e.touches[0]) return;
     var dx = e.touches[0].clientX - sx;
     var dy = e.touches[0].clientY - sy;
-    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-      locked = true;
-      var angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
-      moved = (angle < 30 || angle > 150); // 수평 스와이프
-    }
+    if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.15) blockFavAfterSwipe();
   }, { passive: true });
   el.addEventListener('touchend', function(e) {
-    if (!moved) return;
+    if (!e.changedTouches || !e.changedTouches[0]) return;
     var dx = e.changedTouches[0].clientX - sx;
-    if (Math.abs(dx) < THRESHOLD) return;
+    var dy = e.changedTouches[0].clientY - sy;
+    if(Math.abs(dx) > 18 && Math.abs(dx) > Math.abs(dy) * 1.1) blockFavAfterSwipe();
+    if (!isHorizontalSwipe(dx, dy)) return;
     if (dx < 0) goNext(); else goPrev();
   }, { passive: true });
 })();

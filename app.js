@@ -67,37 +67,46 @@ function oaiResetExternalPopupResidue(kind){
   }catch(e){ console.warn("[클로드정리]", e); }
   try{ document.body.getBoundingClientRect(); }catch(e){ console.warn("[클로드정리]", e); }
 }
+var __oaiExternalReturnLockUntil = 0;
+var __oaiExternalReturnClearTimer = null;
 function applyExternalReturnStabilize(forceKind){
-  try{ document.documentElement.classList.remove('oai-navigating-out'); var v=document.getElementById('oai-nav-veil'); if(v) v.classList.remove('show'); }catch(e){ console.warn("[클로드정리]", e); }
+  var now = Date.now ? Date.now() : new Date().getTime();
   var kind=forceKind||'';
   try{
     if(!kind){
       kind=sessionStorage.getItem('oai_external_return_stabilize') || '';
-      sessionStorage.removeItem('oai_external_return_stabilize');
+      if(kind) sessionStorage.removeItem('oai_external_return_stabilize');
     }
   }catch(e){ console.warn("[클로드정리]", e); }
+
+  // 이동 중 베일 정리는 가볍게 항상 수행하되, 실제 화면 안정화는 복귀 표시가 있을 때만 1회 실행한다.
+  try{ document.documentElement.classList.remove('oai-navigating-out'); var v=document.getElementById('oai-nav-veil'); if(v) v.classList.remove('show'); }catch(e){ console.warn("[클로드정리]", e); }
   if(!kind) return;
+  if(!forceKind && now < __oaiExternalReturnLockUntil) return;
+  __oaiExternalReturnLockUntil = now + 1600;
+
   try{
+    if(__oaiExternalReturnClearTimer) clearTimeout(__oaiExternalReturnClearTimer);
     document.documentElement.classList.add('oai-external-return-stabilize');
-    if(kind==='missa') document.documentElement.classList.add('oai-missa-return-stabilize');
+    document.documentElement.classList.toggle('oai-missa-return-stabilize', kind==='missa');
     oaiResetExternalPopupResidue(kind);
     if(!document.documentElement.classList.contains('app-active')) window.scrollTo(0,0);
     var cv=document.getElementById('cover');
     if(cv && !document.documentElement.classList.contains('app-active')) cv.scrollTop=0;
   }catch(e){ console.warn("[클로드정리]", e); }
-  setTimeout(function(){
+  __oaiExternalReturnClearTimer = setTimeout(function(){
     try{ document.documentElement.classList.remove('oai-external-return-stabilize','oai-missa-return-stabilize'); }catch(e){ console.warn("[클로드정리]", e); }
     try{ document.documentElement.style.scrollBehavior=''; document.body.style.scrollBehavior=''; }catch(e){ console.warn("[클로드정리]", e); }
-  }, 1200);
+  }, 900);
 }
 window.addEventListener('pageshow', function(){ applyExternalReturnStabilize(); }, true);
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState==='visible') applyExternalReturnStabilize();
 }, true);
 window.addEventListener('focus', function(){
+  // 일부 모바일 브라우저는 pageshow/visibilitychange 없이 focus만 오는 경우가 있어 예비 경로로만 둔다.
   try{
-    var kind=sessionStorage.getItem('oai_external_return_stabilize') || '';
-    if(kind) applyExternalReturnStabilize();
+    if(sessionStorage.getItem('oai_external_return_stabilize')) applyExternalReturnStabilize();
   }catch(e){ console.warn("[클로드정리]", e); }
 }, true);
 
@@ -171,7 +180,7 @@ function openDioceseView(opts){
       if(!restore) try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){ console.warn("[클로드정리]", e); }
       if(typeof dioceseLoaded==='function') dioceseLoaded();
     };
-    frame.src='diocese.html?v=20260508-v1';
+    frame.src='diocese.html?v=20260508-v3-2';
   }else if(!restore){
     try{ frame.contentWindow && frame.contentWindow.resetDioceseFirstPage && frame.contentWindow.resetDioceseFirstPage(); }catch(e){ console.warn("[클로드정리]", e); }
   }
