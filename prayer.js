@@ -281,30 +281,90 @@ window.prRenderList = function(){
     let ignoreListClickUntil = 0;
     if(starBtn){
       let favHandledAt = 0;
-      function blockFavEvent(ev){
-        ignoreListClickUntil = Date.now() + 700;
+      let suppressClickUntil = 0;
+      let favTouch = null;
+      const FAV_MOVE_X_LIMIT = 8;
+      const FAV_MOVE_Y_LIMIT = 10;
+      const FAV_MAX_TAP_MS = 650;
+
+      function markFavTouch(ms){
+        ignoreListClickUntil = Date.now() + (ms || 700);
         li.dataset.favTouch = '1';
         window.setTimeout(function(){
           if(Date.now() > ignoreListClickUntil) delete li.dataset.favTouch;
-        }, 760);
-        if(ev){
-          if(typeof ev.preventDefault === 'function') ev.preventDefault();
-          if(typeof ev.stopPropagation === 'function') ev.stopPropagation();
-          if(typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
-        }
+        }, (ms || 700) + 80);
       }
-      function handleFavEvent(ev){
-        blockFavEvent(ev);
+      function stopFavEvent(ev, preventDefault){
+        if(!ev) return;
+        if(preventDefault && typeof ev.preventDefault === 'function') ev.preventDefault();
+        if(typeof ev.stopPropagation === 'function') ev.stopPropagation();
+        if(typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+      }
+      function favTouchPoint(ev){
+        const t = ev && ev.changedTouches && ev.changedTouches[0] ? ev.changedTouches[0] :
+                  ev && ev.touches && ev.touches[0] ? ev.touches[0] : ev;
+        return { x: t && typeof t.clientX === 'number' ? t.clientX : 0,
+                 y: t && typeof t.clientY === 'number' ? t.clientY : 0 };
+      }
+      function runFavToggle(ev){
         const now = Date.now();
         if(now - favHandledAt < 350) return;
         favHandledAt = now;
         prToggleFav(prayer.id, ev);
       }
-      ['pointerdown','mousedown','touchstart','pointerup','mouseup'].forEach(function(evtName){
-        starBtn.addEventListener(evtName, blockFavEvent, {capture:true, passive:false});
-      });
-      starBtn.addEventListener('touchend', handleFavEvent, {capture:true, passive:false});
-      starBtn.addEventListener('click', handleFavEvent, {capture:true, passive:false});
+
+      starBtn.addEventListener('touchstart', function(ev){
+        const pt = favTouchPoint(ev);
+        favTouch = {x:pt.x, y:pt.y, t:Date.now(), moved:false};
+        markFavTouch(700);
+        stopFavEvent(ev, false);
+      }, {capture:true, passive:false});
+
+      starBtn.addEventListener('touchmove', function(ev){
+        if(favTouch){
+          const pt = favTouchPoint(ev);
+          if(Math.abs(pt.x - favTouch.x) > FAV_MOVE_X_LIMIT ||
+             Math.abs(pt.y - favTouch.y) > FAV_MOVE_Y_LIMIT){
+            favTouch.moved = true;
+          }
+        }
+        markFavTouch(700);
+        stopFavEvent(ev, false);
+      }, {capture:true, passive:false});
+
+      starBtn.addEventListener('touchcancel', function(ev){
+        favTouch = null;
+        suppressClickUntil = Date.now() + 450;
+        markFavTouch(700);
+        stopFavEvent(ev, false);
+      }, {capture:true, passive:false});
+
+      starBtn.addEventListener('touchend', function(ev){
+        const now = Date.now();
+        const touch = favTouch;
+        favTouch = null;
+        markFavTouch(700);
+        suppressClickUntil = now + 450;
+        stopFavEvent(ev, true);
+        if(!touch) return;
+        const pt = favTouchPoint(ev);
+        const moved = touch.moved ||
+          Math.abs(pt.x - touch.x) > FAV_MOVE_X_LIMIT ||
+          Math.abs(pt.y - touch.y) > FAV_MOVE_Y_LIMIT;
+        const tooLong = now - touch.t > FAV_MAX_TAP_MS;
+        if(moved || tooLong) return;
+        runFavToggle(ev);
+      }, {capture:true, passive:false});
+
+      starBtn.addEventListener('click', function(ev){
+        markFavTouch(700);
+        if(Date.now() < suppressClickUntil || Date.now() - favHandledAt < 350){
+          stopFavEvent(ev, true);
+          return;
+        }
+        stopFavEvent(ev, true);
+        runFavToggle(ev);
+      }, {capture:true, passive:false});
     }
     li.addEventListener('click', function(ev){
       if(Date.now() < ignoreListClickUntil || li.dataset.favTouch === '1' ||
