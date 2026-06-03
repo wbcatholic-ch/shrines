@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>순례 스탬프 | 가톨릭길동무</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --d:    #1F2A44;
+    --bg:   #EDE8E0;
+    --card: #FFFBF2;
+    --card-sub: #F5F0E8;
+    --bdr:  #DDD5C8;
+    --gold: #d4aa6a;
+    --gold-l: #fdf6e8;
+    --green: #2A8040;
+    --green-l: #F0FDF4;
+    --green-b: #BBF7D0;
+    --gray-400: #94A3B8;
+    --gray-500: #64748B;
+    --gray-700: #374151;
+    --gray-900: #0F172A;
+    --radius: 14px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --stamp-top-gap: env(safe-area-inset-top, 0px);
+    --header-h: 70px;
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    height: 100dvh; min-height: 100dvh;
+    width: 100%; max-width: 720px;
+    margin: 0 auto; color: var(--gray-900);
+    -webkit-tap-highlight-color: transparent;
+    display: flex; flex-direction: column;
+  }
+
+  /* ── 헤더 ── */
+  #header {
+    width: 100%; box-sizing: border-box;
+    background: var(--d); color: #fff;
+    height: calc(var(--header-h) + var(--stamp-top-gap));
+    min-height: calc(var(--header-h) + var(--stamp-top-gap));
+    padding: var(--stamp-top-gap) 16px 0;
+    display: flex; align-items: center; gap: 10px;
+    flex: 0 0 auto; z-index: 100;
+  }
+  #stamp-icon {
+    width: 35px; height: 35px; min-width: 35px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; line-height: 1;
+  }
+  #header-texts { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+  #header-texts .title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -.03em; }
+  #header-texts .sub   { font-size: 10px; font-weight: 500; color: rgba(255,255,255,.75); letter-spacing: .02em; }
+  #close-btn {
+    width: 40px; height: 40px; min-width: 40px;
+    border-radius: 50%; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22);
+    color: rgba(212,170,106,.95); font-size: 28px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── 탭 바 ── */
+  #tab-bar {
+    display: flex; background: var(--card);
+    border-bottom: 2px solid var(--bdr);
+    flex: 0 0 auto; z-index: 90;
+  }
+  .tab-btn {
+    flex: 1; height: 48px; border: none; background: none;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    color: var(--gray-500); cursor: pointer; position: relative;
+    letter-spacing: -.03em; -webkit-tap-highlight-color: transparent;
+  }
+  .tab-btn.active { color: var(--d); font-weight: 700; }
+  .tab-btn.active::after {
+    content: ''; position: absolute; bottom: -2px; left: 10%; width: 80%; height: 2.5px;
+    background: var(--d); border-radius: 2px;
+  }
+
+  /* ── 필터 ── */
+  #filter-bar {
+    display: flex; gap: 6px; padding: 10px 14px 0;
+    overflow-x: auto; scrollbar-width: none; flex: 0 0 auto;
+  }
+  #filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0; height: 32px; padding: 0 14px;
+    border-radius: 16px; border: 1.5px solid var(--bdr);
+    background: var(--card); color: var(--gray-500);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .filter-chip.active { background: var(--d); color: #fff; border-color: transparent; }
+
+  /* ── 메인 스크롤 ── */
+  #main-scroll {
+    flex: 1 1 auto; min-height: 0;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 14px 14px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── 요약 카드 ── */
+  #summary-card {
+    background: var(--d); color: #fff;
+    border-radius: var(--radius); padding: 18px 20px 16px;
+    margin-bottom: 14px; box-shadow: 0 4px 16px rgba(31,42,68,.22);
+  }
+  .summary-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .summary-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.7); letter-spacing: .04em; }
+  .summary-count { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
+  .summary-count span { font-size: 16px; font-weight: 500; color: rgba(255,255,255,.6); margin-left: 2px; }
+  .summary-percent { font-size: 13px; font-weight: 600; color: var(--gold); }
+  .progress-bar-wrap { background: rgba(255,255,255,.18); border-radius: 6px; height: 8px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--gold); border-radius: 6px; transition: width .6s ease; }
+  .summary-sub { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 8px; }
+
+  /* ── 교구별 진행률 ── */
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--gray-500);
+    letter-spacing: .04em; margin: 16px 0 8px;
+  }
+  .diocese-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .diocese-card {
+    background: var(--card); border: 1px solid var(--bdr);
+    border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow);
+  }
+  .diocese-name { font-size: 13px; font-weight: 700; color: var(--d); margin-bottom: 6px; }
+  .diocese-prog-wrap { background: var(--bdr); border-radius: 4px; height: 5px; overflow: hidden; margin-bottom: 5px; }
+  .diocese-prog-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width .5s ease; }
+  .diocese-count { font-size: 11px; color: var(--gray-500); font-weight: 600; }
+
+  /* ── 성지 목록 ── */
+  .shrine-list { display: flex; flex-direction: column; gap: 8px; }
+  .shrine-item {
+    background: var(--card); border: 1px solid var(--bdr);
+    border-radius: 12px; padding: 13px 15px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: var(--shadow); cursor: pointer;
+    animation: fadeUp .2s ease both;
+    transition: transform .12s;
+  }
+  .shrine-item:active { transform: scale(.98); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stamp-circle {
+    width: 36px; height: 36px; min-width: 36px;
+    border-radius: 50%; border: 2px solid var(--bdr);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; background: var(--card-sub);
+    transition: all .2s;
+  }
+  .stamp-circle.stamped { background: var(--green-l); border-color: var(--green); }
+  .shrine-info { flex: 1; min-width: 0; }
+  .shrine-name {
+    font-size: 14px; font-weight: 700; color: var(--d);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
+  }
+  .shrine-name.stamped { color: var(--green); }
+  .shrine-meta { font-size: 11px; color: var(--gray-400); }
+  .visit-date { font-size: 10px; color: var(--green); font-weight: 600; margin-top: 1px; }
+  .shrine-type-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; flex-shrink: 0;
+  }
+  .type-A { background: #FEE2E2; color: #991B1B; }
+  .type-B { background: #DBEAFE; color: #1E3A8A; }
+  .type-C { background: #D1FAE5; color: #065F46; }
+
+  /* ── 안내 박스 ── */
+  .no-stamp-guide {
+    background: var(--gold-l); border: 1px solid #E7D5B3;
+    border-radius: 12px; padding: 14px 16px;
+    font-size: 13px; color: #5B4630; line-height: 1.65;
+    margin-bottom: 14px; font-weight: 500;
+  }
+  .no-stamp-guide strong { font-weight: 700; }
+
+  /* ── 빈 화면 ── */
+  .empty-box { text-align: center; padding: 50px 20px; color: var(--gray-400); }
+  .empty-box .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-box .empty-txt  { font-size: 14px; line-height: 1.7; }
+
+  @media (max-width: 380px) {
+    #header-texts .title { font-size: 18px; }
+    .diocese-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="stamp-icon">🕊</div>
+  <div id="header-texts">
+    <div class="title">순례 스탬프</div>
+    <div class="sub">가톨릭길동무</div>
+  </div>
+  <button id="close-btn" onclick="handleBack()" aria-label="닫기">×</button>
+</div>
+
+<div id="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')" id="tab-overview">순례 현황</button>
+  <button class="tab-btn" onclick="switchTab('list')" id="tab-list">성지 목록</button>
+</div>
+
+<div id="filter-bar" style="display:none;">
+  <button class="filter-chip active" onclick="setFilter('all')" data-filter="all">전체</button>
+  <button class="filter-chip" onclick="setFilter('stamped')" data-filter="stamped">✅ 방문완료</button>
+  <button class="filter-chip" onclick="setFilter('A')" data-filter="A">성지</button>
+  <button class="filter-chip" onclick="setFilter('B')" data-filter="B">순례지</button>
+  <button class="filter-chip" onclick="setFilter('C')" data-filter="C">순교사적지</button>
+</div>
+
+<div id="main-scroll"></div>
+
+<script src="shrines.js?v=V2"></script>
+<script>
+/* ── 상수 ── */
+var STAMP_KEY = 'catholic_stamp_visited_v1';  // app.js와 동일한 키
+
+var DIOCESE = {
+  SE:'서울대교구', SW:'수원교구', DG:'대구대교구', DJ:'대전교구',
+  GJ:'광주대교구', IC:'인천교구', BS:'부산교구', JJ:'전주교구',
+  UJ:'의정부교구', CJ:'청주교구', MS:'마산교구', CC:'춘천교구',
+  WJ:'원주교구', AD:'안동교구', JE:'제주교구', ML:'군종교구'
+};
+
+var TYPE_LABEL = { A:'성지', B:'순례지', C:'순교사적지' };
+
+/* ── 상태 ── */
+var _tab    = 'overview';
+var _filter = 'all';
+var _shrines = [];
+
+/* ── localStorage 헬퍼 ── */
+function getVisited() {
+  try { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveVisited(v) {
+  try { localStorage.setItem(STAMP_KEY, JSON.stringify(v)); } catch(e) {}
+}
+
+/* ── 초기화 ── */
+function init() {
+  _shrines = (window._SH_RAW || []).filter(function(s){ return s.stamp; });
+  render();
+}
+
+/* ── 탭/필터 ── */
+function switchTab(tab) {
+  _tab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('filter-bar').style.display = tab === 'list' ? 'flex' : 'none';
+  render();
+}
+function setFilter(f) {
+  _filter = f;
+  document.querySelectorAll('.filter-chip').forEach(function(c){
+    c.classList.toggle('active', c.dataset.filter === f);
+  });
+  render();
+}
+
+/* ── 스탬프 토글 ── */
+function toggleStamp(seq) {
+  var v = getVisited();
+  if (v[seq]) { delete v[seq]; }
+  else { v[seq] = new Date().toISOString().slice(0, 10); }
+  saveVisited(v);
+  render();
+}
+
+/* ── 렌더링 ── */
+function render() {
+  var scroll = document.getElementById('main-scroll');
+  scroll.innerHTML = _tab === 'overview' ? renderOverview() : renderList();
+}
+
+function renderOverview() {
+  var visited = getVisited();
+  var total   = _shrines.length;
+  var done    = _shrines.filter(function(s){ return visited[s.seq]; }).length;
+  var pct     = total ? Math.round(done / total * 100) : 0;
+
+  // 교구별 집계
+  var dioMap = {};
+  _shrines.forEach(function(s){
+    if (!dioMap[s.diocese]) dioMap[s.diocese] = { total:0, done:0 };
+    dioMap[s.diocese].total++;
+    if (visited[s.seq]) dioMap[s.diocese].done++;
+  });
+
+  var dioHtml = Object.keys(dioMap)
+    .sort(function(a,b){ return dioMap[b].done - dioMap[a].done || dioMap[b].total - dioMap[a].total; })
+    .map(function(code){
+      var d = dioMap[code];
+      var p = Math.round(d.done / d.total * 100);
+      return '<div class="diocese-card">'
+        + '<div class="diocese-name">' + (DIOCESE[code]||code) + '</div>'
+        + '<div class="diocese-prog-wrap"><div class="diocese-prog-fill" style="width:'+p+'%"></div></div>'
+        + '<div class="diocese-count">' + d.done + ' / ' + d.total + '곳 (' + p + '%)</div>'
+        + '</div>';
+    }).join('');
+
+  var guide = done === 0
+    ? '<div class="no-stamp-guide">🗺 <strong>성지 지도</strong>에서 성지를 선택하고<br><strong>방문 인증</strong> 버튼을 누르면 스탬프가 찍혀요.<br>또는 아래 <strong>성지 목록</strong> 탭에서 직접 체크할 수 있어요.</div>'
+    : '';
+
+  return guide
+    + '<div id="summary-card">'
+    +   '<div class="summary-top">'
+    +     '<div><div class="summary-label">순례 완료</div>'
+    +     '<div class="summary-count">' + done + '<span> / ' + total + '곳</span></div></div>'
+    +     '<div class="summary-percent">' + pct + '%</div>'
+    +   '</div>'
+    +   '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:'+pct+'%"></div></div>'
+    +   '<div class="summary-sub">스탬프북 ' + total + '개 성지 기준</div>'
+    + '</div>'
+    + '<div class="section-title">교구별 진행률</div>'
+    + '<div class="diocese-grid">' + dioHtml + '</div>';
+}
+
+function renderList() {
+  var visited = getVisited();
+  var items = _shrines.slice();
+  if (_filter === 'stamped') items = items.filter(function(s){ return visited[s.seq]; });
+  else if (_filter === 'A' || _filter === 'B' || _filter === 'C') {
+    items = items.filter(function(s){ return s.type === _filter; });
+  }
+
+  if (!items.length) {
+    return '<div class="empty-box"><div class="empty-icon">🕊</div><div class="empty-txt">해당하는 성지가 없습니다.</div></div>';
+  }
+
+  return '<div class="shrine-list">' + items.map(function(s, i){
+    var isV = !!visited[s.seq];
+    return '<div class="shrine-item" style="animation-delay:' + Math.min(i,15)*0.03 + 's" onclick="toggleStamp(\'' + s.seq + '\')">'
+      + '<div class="stamp-circle' + (isV ? ' stamped' : '') + '">' + (isV ? '✅' : '○') + '</div>'
+      + '<div class="shrine-info">'
+      +   '<div class="shrine-name' + (isV ? ' stamped' : '') + '">' + escHtml(s.name) + '</div>'
+      +   '<div class="shrine-meta">' + (DIOCESE[s.diocese]||s.diocese) + '</div>'
+      +   (isV ? '<div class="visit-date">방문 ' + visited[s.seq] + '</div>' : '')
+      + '</div>'
+      + '<span class="shrine-type-badge type-' + s.type + '">' + (TYPE_LABEL[s.type]||s.type) + '</span>'
+      + '</div>';
+  }).join('') + '</div>';
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── 뒤로가기 ── */
+function handleBack() {
+  try {
+    sessionStorage.setItem('oai_internal_return_no_effect_once','1');
+    sessionStorage.setItem('oai_internal_return_no_effect_until', String(Date.now() + 7000));
+    sessionStorage.setItem('oai_internal_page_nav','stamp');
+    ['oai_external_nav_started_at','oai_external_nav_pagehide','oai_external_nav_kind',
+     'oai_external_nav_pending','oai_external_nav_hold_until','oai_external_nav_force_release_at',
+     'oai_refresh_veil_until','oai_refresh_veil_hold_ms','oai_refresh_veil_reason',
+     'oai_refresh_veil_visible_until'].forEach(function(k){ sessionStorage.removeItem(k); });
+  } catch(e) {}
+  if (document.referrer && document.referrer.indexOf(location.hostname) >= 0) { history.back(); }
+  else { location.href = 'index.html'; }
+}
+
+window.addEventListener('pagehide', function(){
+  try {
+    sessionStorage.setItem('oai_internal_return_no_effect_once','1');
+    sessionStorage.setItem('oai_internal_return_no_effect_until', String(Date.now() + 7000));
+  } catch(e) {}
+}, true);
+
+/* ── 시작 ── */
+init();
+</script>
+</body>
+</html>
