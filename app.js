@@ -5,9 +5,9 @@
    ════════════════════════════════════════════════════════════ */
 'use strict';
 
-
 /* ── §0 설정 ──────────────────────────────────────────────── */
 const VER          = 'V1';
+const KAKAO_KEY    = '07f7989e29fdfb425fff924f36fb3ec0';
 const STAMP_KEY    = 'catholic_stamp_visited_v1';
 const STAMP_RADIUS = 300;        // 방문 인증 반경 (m)
 const MAP_CENTER   = { lat: 36.5, lng: 127.8 };
@@ -358,13 +358,29 @@ function showMap() {
   document.getElementById('map-view').classList.add('active');
   history.pushState({ v: 'map' }, '');
 
-  if (!_map) {
-    kakao.maps.load(initMap);
-  } else {
-    // 스탬프 상태 변경 반영
+  if (_map) {
     refreshMarkers();
     if (_curShrine) updateStampBtn(_curShrine);
+    return;
   }
+
+  // Kakao SDK가 이미 로드됐으면 바로 초기화
+  if (typeof kakao !== 'undefined' && kakao.maps) {
+    kakao.maps.load(initMap);
+    return;
+  }
+
+  // 처음 지도를 열 때 동적으로 SDK 로드 (blocking 방지)
+  const sc = document.createElement('script');
+  sc.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + KAKAO_KEY
+           + '&autoload=false&libraries=services,clusterer';
+  sc.onerror = function() {
+    const el = document.getElementById('map-loading');
+    if (el) el.innerHTML = '<div style="padding:20px;text-align:center;color:#888">'
+      + '카카오맵을 불러올 수 없습니다.<br>인터넷 연결을 확인해 주세요.</div>';
+  };
+  sc.onload = function() { kakao.maps.load(initMap); };
+  document.head.appendChild(sc);
 }
 
 // 외부 페이지(stamp.html 등) → index.html 복귀 시 지도 복원
