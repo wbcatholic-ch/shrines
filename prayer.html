@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1F2A44">
+<title>기도문 — 가톨릭길동무</title>
+<style>
+/* ─── 변수 ────────────────────────────── */
+:root {
+  --d:       #1F2A44;
+  --bg:      #F5F3EF;
+  --card:    #FFFFFF;
+  --bdr:     #E8E3D9;
+  --gray:    #8B8477;
+  --gray2:   #B5AFA7;
+  --gold:    #C8962A;
+  --gold-l:  #FEF3D8;
+  --shadow:  0 2px 10px rgba(31,42,68,.10);
+  --radius:  14px;
+  --safe-t:  env(safe-area-inset-top, 0px);
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+  /* prayer.js font variables (defaults before prApplyFont) */
+  --pr-item-fs:   15px;
+  --pr-body-fs:   15px;
+  --pr-detail-fs: 15px;
+  --pr-icon-sz:   34px;
+  --pr-icon-fs:   18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --d:    #E8E4DC;
+    --bg:   #1A1E2A;
+    --card: #252B3B;
+    --bdr:  #343B4F;
+    --gray: #8B91A0;
+    --gray2:#5C6278;
+    --shadow: 0 2px 10px rgba(0,0,0,.30);
+  }
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--d);
+  font-family: 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  -webkit-tap-highlight-color: transparent; }
+
+/* ─── 전체 레이아웃 ───────────────────── */
+#prayer-view {
+  display: flex; flex-direction: column;
+  height: 100%; overflow: hidden;
+}
+
+/* ─── 헤더 바 ────────────────────────── */
+.pr-bar {
+  display: flex; align-items: center; gap: 4px;
+  padding: calc(var(--safe-t) + 8px) 12px 8px;
+  background: var(--d); flex-shrink: 0;
+}
+.pr-bar-back {
+  background: none; border: none; color: rgba(255,255,255,.8);
+  font-size: 22px; cursor: pointer; padding: 4px 6px; line-height: 1;
+  flex-shrink: 0;
+}
+.pr-bar-title {
+  flex: 1; font-size: 17px; font-weight: 800; color: #fff;
+  letter-spacing: -.04em;
+}
+.pr-bar-sub {
+  font-size: 10px; color: rgba(255,255,255,.5); font-weight: 600;
+  letter-spacing: .05em; display: block; margin-top: 1px;
+}
+.pr-font-btns { display: flex; gap: 4px; }
+.pr-font-btn {
+  background: rgba(255,255,255,.12); border: none; color: #fff;
+  border-radius: 7px; padding: 5px 9px; font-family: inherit;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.pr-font-btn:active { background: rgba(255,255,255,.25); }
+#goodnews-prayer-btn {
+  font-size: 11px; color: rgba(255,255,255,.55); text-decoration: none;
+  padding: 5px 8px; flex-shrink: 0; font-weight: 600;
+  background: rgba(255,255,255,.08); border-radius: 7px;
+}
+
+/* ─── 검색바 ──────────────────────────── */
+.pr-search-bar {
+  padding: 8px 12px; background: var(--d); flex-shrink: 0;
+}
+.pr-search-inner {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.12); border-radius: 10px; padding: 0 12px;
+}
+#prayer-search-inp {
+  flex: 1; height: 36px; background: none; border: none; outline: none;
+  font-family: inherit; font-size: 13px; color: #fff;
+}
+#prayer-search-inp::placeholder { color: rgba(255,255,255,.4); }
+.pr-search-ico { font-size: 15px; color: rgba(255,255,255,.5); }
+
+/* ─── 탭 바 ───────────────────────────── */
+#prayer-tabs {
+  display: flex; overflow-x: auto; gap: 6px;
+  padding: 8px 12px; background: var(--card);
+  border-bottom: 1px solid var(--bdr);
+  flex-shrink: 0; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#prayer-tabs::-webkit-scrollbar { display: none; }
+.pr-tab {
+  white-space: nowrap; border: none; border-radius: 20px;
+  padding: 5px 13px; font-family: inherit; font-size: 12px;
+  font-weight: 700; cursor: pointer; flex-shrink: 0;
+  background: var(--bg); color: var(--gray);
+  transition: background .12s, color .12s;
+}
+.pr-tab.on {
+  background: var(--d); color: #fff;
+}
+
+/* ─── 기도문 목록 ─────────────────────── */
+#prayer-list-view {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+}
+#pr-list-ul { list-style: none; padding: 8px 0; }
+
+.pr-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-bottom: 1px solid var(--bdr);
+  border-left: 3px solid transparent;
+  background: var(--card); cursor: pointer;
+}
+.pr-item:active { background: var(--bg); }
+.pr-item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.pr-icon-dot {
+  width:  var(--pr-icon-sz);
+  height: var(--pr-icon-sz);
+  min-width: var(--pr-icon-sz);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--pr-icon-fs);
+}
+.pr-title { font-size: var(--pr-item-fs); font-weight: 600; color: var(--d);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-item-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.pr-star { background: none; border: none; font-size: 20px; cursor: pointer;
+  color: var(--gray2); line-height: 1; padding: 4px; }
+.pr-star.on { color: var(--gold); }
+.pr-chevron { color: var(--gray2); font-size: 20px; }
+.pr-empty { padding: 40px 20px; text-align: center; font-size: 14px; color: var(--gray); }
+
+/* ─── 기도문 상세 ─────────────────────── */
+#prayer-detail {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.32,.72,0,1);
+  z-index: 100;
+}
+#prayer-detail.show { transform: translateX(0); }
+
+#prayer-detail-hd {
+  display: flex; align-items: center; gap: 8px;
+  padding: calc(var(--safe-t) + 8px) 12px 10px;
+  background: var(--d); flex-shrink: 0;
+}
+.pr-detail-back {
+  background: none; border: none; color: rgba(255,255,255,.8);
+  font-size: 22px; cursor: pointer; padding: 4px 6px; line-height: 1;
+  flex-shrink: 0;
+}
+#prayer-detail-ttl {
+  flex: 1; font-size: 16px; font-weight: 800; color: #fff;
+  letter-spacing: -.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#pr-detail-star {
+  background: none; border: none; font-size: 24px; cursor: pointer;
+  color: rgba(255,255,255,.4); flex-shrink: 0; padding: 4px;
+}
+#pr-detail-star.on { color: var(--gold); }
+
+#prayer-detail-body {
+  flex: 1; overflow-y: auto; padding: calc(var(--safe-b) + 16px) 18px 48px;
+  -webkit-overflow-scrolling: touch;
+}
+.pr-content-card { line-height: 1.85; }
+.pr-body-title {
+  font-size: calc(var(--pr-detail-fs) + 2px); font-weight: 800;
+  color: var(--d); margin-bottom: 18px; letter-spacing: -.03em;
+}
+.pr-content-card p {
+  font-size: var(--pr-detail-fs); color: var(--d);
+  margin-bottom: 4px; word-break: keep-all;
+}
+.pr-content-card p.new_line { margin-bottom: 10px; }
+.pr-content-card font { color: #B35C00; }
+.pr-content-card u   { text-decoration: underline; text-underline-offset: 3px; }
+.pr-content-card strong { font-weight: 800; }
+.pr-symbol { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div id="prayer-view">
+  <!-- 헤더 -->
+  <div class="pr-bar">
+    <button class="pr-bar-back" id="pr-back-btn" aria-label="뒤로">←</button>
+    <div>
+      <div class="pr-bar-title">기도문</div>
+      <span class="pr-bar-sub">CATHOLIC PRAYERS</span>
+    </div>
+    <div class="pr-font-btns">
+      <button class="pr-font-btn" onclick="window.prAdjustFont && window.prAdjustFont(-1)">가<small>-</small></button>
+      <button class="pr-font-btn" onclick="window.prAdjustFont && window.prAdjustFont(+1)">가<small>+</small></button>
+    </div>
+    <a id="goodnews-prayer-btn"
+       href="https://maria.catholic.or.kr/mobile/prayer/"
+       target="_blank" rel="noopener" aria-label="굿뉴스 기도문">굿뉴스</a>
+  </div>
+
+  <!-- 검색 -->
+  <div class="pr-search-bar">
+    <div class="pr-search-inner">
+      <span class="pr-search-ico" aria-hidden="true">🔍</span>
+      <input type="text" id="prayer-search-inp"
+             placeholder="기도문 검색" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+  </div>
+
+  <!-- 카테고리 탭 (prayer.js가 동적으로 생성) -->
+  <div id="prayer-tabs"></div>
+
+  <!-- 기도문 목록 -->
+  <div id="prayer-list-view">
+    <ul class="pr-list" id="pr-list-ul"></ul>
+  </div>
+
+  <!-- 상세 보기 (prayer.js가 .show 토글) -->
+  <div id="prayer-detail">
+    <div id="prayer-detail-hd">
+      <button class="pr-detail-back" onclick="window.prCloseDetail && window.prCloseDetail()">←</button>
+      <div id="prayer-detail-ttl">기도문</div>
+      <button id="pr-detail-star" class="pr-star"
+              aria-label="즐겨찾기" onclick="window.prToggleDetailFav && window.prToggleDetailFav(event)">
+        <span aria-hidden="true">★</span>
+      </button>
+    </div>
+    <div id="prayer-detail-body">
+      <div class="pr-content-card" id="prayer-detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<script src="prayer.js?v=V1"></script>
+<script>
+/* ── 뒤로가기 (간단) ──────────────────────────────── */
+history.replaceState({ v: 'prayer-list' }, '');
+
+/* prayer.js의 상세 open hook → history state 추가 */
+window._oaiPrayerPushDetailState = function() {
+  history.pushState({ v: 'prayer-detail' }, '');
+};
+/* 버튼으로 상세 닫을 때 — popstate 없이 history 복원 */
+window._oaiPrayerReplaceListState = function(reason) {
+  if (reason !== 'prayer-detail-button-to-list') return;
+  history.replaceState({ v: 'prayer-list' }, '');
+};
+
+window.addEventListener('popstate', function(e) {
+  var v = e.state && e.state.v;
+  if (v === 'prayer-detail') {
+    if (typeof window.prCloseDetail === 'function') window.prCloseDetail({ skipTrap: true });
+    history.pushState({ v: 'prayer-list' }, '');
+  }
+  // v === 'prayer-list': 브라우저가 index.html로 돌아감 (자연스러운 뒤로가기)
+});
+
+document.getElementById('pr-back-btn').addEventListener('click', function() {
+  var detail = document.getElementById('prayer-detail');
+  if (detail && detail.classList.contains('show')) {
+    if (typeof window.prCloseDetail === 'function') window.prCloseDetail();
+  } else {
+    history.back();
+  }
+});
+
+/* 검색 입력 시 실시간 렌더 */
+document.getElementById('prayer-search-inp').addEventListener('input', function() {
+  if (typeof window.prRenderList === 'function') window.prRenderList();
+});
+
+/* ── 초기화 ───────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof window.initPrayerView === 'function') window.initPrayerView();
+});
+</script>
+</body>
+</html>
