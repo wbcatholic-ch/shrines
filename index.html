@@ -9,291 +9,79 @@
 <title>가톨릭길동무</title>
 <link rel="manifest" href="../manifest.json">
 <style>
-/* ─── CSS 변수 ─────────────────────────────────── */
 :root {
-  --d:       #1F2A44;
-  --gold:    #C8962A;
-  --gold-l:  #FEF3D8;
-  --green:   #2A8040;
-  --green-l: #E8F5EC;
-  --bg:      #F5F3EF;
-  --card:    #FFFFFF;
-  --bdr:     #E8E3D9;
-  --gray:    #8B8477;
-  --gray2:   #B5AFA7;
-  --shadow:  0 2px 10px rgba(31,42,68,.10);
-  --radius:  14px;
-  --safe-t:  env(safe-area-inset-top, 0px);
-  --safe-b:  env(safe-area-inset-bottom, 0px);
+  --d:#1F2A44; --gold:#C8962A; --gold-l:#FEF3D8;
+  --bg:#F5F3EF; --card:#FFFFFF; --bdr:#E8E3D9;
+  --gray:#8B8477; --shadow:0 2px 10px rgba(31,42,68,.10);
+  --radius:14px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --d:      #E8E4DC;
-    --bg:     #1A1E2A;
-    --card:   #252B3B;
-    --bdr:    #343B4F;
-    --gray:   #8B91A0;
-    --gray2:  #5C6278;
-    --shadow: 0 2px 10px rgba(0,0,0,.30);
-  }
+@media(prefers-color-scheme:dark){
+  :root{--d:#E8E4DC;--bg:#1A1E2A;--card:#252B3B;--bdr:#343B4F;--gray:#8B91A0;}
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);color:var(--d);
+  font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  -webkit-tap-highlight-color:transparent;}
+body{padding:calc(var(--safe-t) + 20px) 20px calc(var(--safe-b) + 24px);}
 
-/* ─── 기본 ─────────────────────────────────────── */
-*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
-html,body { height: 100%; overflow: hidden; background: var(--bg); color: var(--d);
-  font-family: 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; -webkit-tap-highlight-color: transparent; }
+.cover-head{display:flex;align-items:center;gap:12px;padding:8px 0 28px;}
+.cover-logo{width:48px;height:48px;border-radius:12px;background:var(--d);
+  display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.cover-title{font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--d);}
+.cover-sub{font-size:12px;color:var(--gray);margin-top:2px;}
 
-/* ─── 화면 전환 ─────────────────────────────────── */
-.screen { position: fixed; inset: 0; display: none; flex-direction: column; }
-.screen.active { display: flex; }
-
-/* ─── 커버 ─────────────────────────────────────── */
-#cover {
-  background: var(--bg);
-  padding: calc(var(--safe-t) + 20px) 20px calc(var(--safe-b) + 20px);
-  overflow-y: auto;
-}
-.cover-head {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 0 28px;
-}
-.cover-logo {
-  width: 48px; height: 48px; border-radius: 12px;
-  background: var(--d); display: flex; align-items: center; justify-content: center;
-  font-size: 24px; flex-shrink: 0;
-}
-.cover-title { font-size: 22px; font-weight: 800; letter-spacing: -.04em; color: var(--d); }
-.cover-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
-
-.cover-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-}
-.cc {
-  background: var(--card); border: 1px solid var(--bdr);
-  border-radius: var(--radius); padding: 18px 16px;
-  box-shadow: var(--shadow); cursor: pointer;
-  display: flex; flex-direction: column; gap: 8px;
-  transition: transform .12s, box-shadow .12s;
-  -webkit-tap-highlight-color: transparent; border: none;
-  text-align: left;
-}
-.cc:active { transform: scale(.96); box-shadow: none; }
-.cc.cc-wide { grid-column: span 2; flex-direction: row; align-items: center; gap: 14px; padding: 16px 18px; }
-.cc-icon { font-size: 28px; line-height: 1; }
-.cc-wide .cc-icon { font-size: 24px; }
-.cc-name { font-size: 15px; font-weight: 700; color: var(--d); letter-spacing: -.03em; }
-.cc-desc { font-size: 11px; color: var(--gray); font-weight: 600; }
-.cc-wide .cc-body { flex: 1; }
-.cc-badge {
-  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
-  background: var(--gold-l); color: var(--gold); display: inline-block; margin-top: 2px;
-}
-.cover-version { text-align: center; font-size: 10px; color: var(--gray2); margin-top: 24px; }
-
-/* ─── 지도 화면 ─────────────────────────────────── */
-#map-view { background: #e8e4dc; }
-
-#kakao-map { flex: 1; width: 100%; }
-
-/* 상단 바 (뒤로가기 + 검색) */
-#map-top-bar {
-  position: absolute; top: calc(var(--safe-t) + 8px); left: 12px; right: 12px;
-  display: flex; gap: 8px; z-index: 10;
-}
-.map-bar-btn {
-  background: var(--card); border: none; border-radius: 10px;
-  box-shadow: var(--shadow); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px; flex-shrink: 0; font-size: 18px;
-}
-#map-search-input {
-  flex: 1; height: 42px; padding: 0 14px;
-  background: var(--card); border: none; border-radius: 10px;
-  box-shadow: var(--shadow); font-family: inherit;
-  font-size: 14px; color: var(--d); outline: none;
-}
-#map-search-input::placeholder { color: var(--gray2); }
-
-/* 검색 결과 */
-#search-results {
-  position: absolute; top: calc(var(--safe-t) + 58px); left: 12px; right: 12px;
-  background: var(--card); border-radius: var(--radius);
-  box-shadow: var(--shadow); max-height: 260px; overflow-y: auto;
-  z-index: 10; display: none;
-}
-.search-item {
-  padding: 11px 14px; border-bottom: 1px solid var(--bdr); cursor: pointer;
-  display: flex; align-items: center; gap: 10px;
-}
-.search-item:last-child { border-bottom: none; }
-.search-item:active { background: var(--bg); }
-.si-visited { color: var(--green); font-size: 14px; flex-shrink: 0; }
-.si-name { font-size: 14px; font-weight: 700; color: var(--d); }
-.si-addr { font-size: 11px; color: var(--gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* 우측 FAB */
-#map-fabs {
-  position: absolute; right: 14px; bottom: calc(var(--safe-b) + 180px);
-  display: flex; flex-direction: column; gap: 8px; z-index: 10;
-}
-.fab {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: var(--card); border: none; box-shadow: var(--shadow);
-  cursor: pointer; font-size: 20px;
-  display: flex; align-items: center; justify-content: center;
-}
-
-/* 인포카드 */
-#info-card {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  background: var(--card);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -4px 24px rgba(31,42,68,.14);
-  padding: 0 0 calc(var(--safe-b) + 8px);
-  transform: translateY(100%);
-  transition: transform .28s cubic-bezier(.32,.72,0,1);
-  z-index: 20; max-height: 70vh; overflow-y: auto;
-}
-#info-card.open { transform: translateY(0); }
-
-.ic-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: var(--bdr); margin: 10px auto 14px;
-}
-.ic-header { padding: 0 16px 12px; display: flex; align-items: flex-start; gap: 10px; }
-.ic-name-wrap { flex: 1; }
-.ic-name { font-size: 18px; font-weight: 800; letter-spacing: -.04em; color: var(--d); }
-.ic-type {
-  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
-  background: var(--gold-l); color: var(--gold); display: inline-block; margin-top: 4px;
-}
-.ic-close {
-  background: none; border: none; font-size: 20px; color: var(--gray); cursor: pointer;
-  padding: 0; line-height: 1; flex-shrink: 0;
-}
-.ic-divider { height: 1px; background: var(--bdr); margin: 0 16px 12px; }
-.ic-row {
-  padding: 0 16px; font-size: 13px; color: var(--gray);
-  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;
-}
-.ic-row-icon { flex-shrink: 0; }
-.ic-row a { color: var(--d); font-weight: 600; text-decoration: none; }
-.ic-btns { display: flex; gap: 8px; padding: 8px 16px 4px; }
-.ic-btn {
-  flex: 1; height: 44px; border: none; border-radius: 10px;
-  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.ic-btn-nav  { background: #FEE500; color: #3C1E1E; }
-.ic-btn-stamp{ background: var(--d); color: #fff; transition: background .15s; }
-.ic-btn-stamp.visited { background: var(--green); }
-.ic-btn-stamp:disabled { opacity: .6; }
-
-/* 지도 로딩 오버레이 */
-#map-loading {
-  position: absolute; inset: 0; background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: var(--gray); z-index: 5; flex-direction: column; gap: 12px;
-}
-.loading-spinner {
-  width: 32px; height: 32px; border: 3px solid var(--bdr);
-  border-top-color: var(--d); border-radius: 50%;
-  animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cc{background:var(--card);border:1px solid var(--bdr);border-radius:var(--radius);
+  padding:18px 16px;box-shadow:var(--shadow);cursor:pointer;
+  display:flex;flex-direction:column;gap:8px;text-decoration:none;
+  -webkit-tap-highlight-color:transparent;transition:transform .12s;}
+.cc:active{transform:scale(.96);}
+.cc-icon{font-size:28px;line-height:1;}
+.cc-name{font-size:15px;font-weight:700;color:var(--d);letter-spacing:-.03em;}
+.cc-desc{font-size:11px;color:var(--gray);font-weight:600;}
+.cover-ver{text-align:center;font-size:10px;color:var(--bdr);margin-top:24px;}
 </style>
 </head>
 <body>
-
-<!-- ══ 커버 ══════════════════════════════════════════ -->
-<div id="cover" class="screen active">
-  <div class="cover-head">
-    <div class="cover-logo">🕊</div>
-    <div>
-      <div class="cover-title">가톨릭길동무</div>
-      <div class="cover-sub">성지순례 인증 앱</div>
-    </div>
-  </div>
-
-  <div class="cover-grid">
-    <button class="cc" id="cc-map">
-      <div class="cc-icon">🗺</div>
-      <div class="cc-name">성지 지도</div>
-      <div class="cc-desc">167개 성지 지도 찾기</div>
-    </button>
-
-    <button class="cc" id="cc-stamp">
-      <div class="cc-icon">📍</div>
-      <div class="cc-name">순례 스탬프</div>
-      <div class="cc-desc">방문 인증 · 코스 추천</div>
-    </button>
-
-    <button class="cc" id="cc-prayer">
-      <div class="cc-icon">📖</div>
-      <div class="cc-name">기도문</div>
-      <div class="cc-desc">주요 가톨릭 기도문</div>
-    </button>
-
-    <button class="cc" id="cc-route">
-      <div class="cc-icon">🚶</div>
-      <div class="cc-name">순례길</div>
-      <div class="cc-desc">도보 순례 경로 안내</div>
-    </button>
-  </div>
-
-  <div class="cover-version" id="cover-ver"></div>
-</div>
-
-<!-- ══ 지도 화면 ════════════════════════════════════ -->
-<div id="map-view" class="screen">
-  <div id="kakao-map"></div>
-  <div id="map-loading"><div class="loading-spinner"></div>지도를 불러오는 중...</div>
-
-  <!-- 상단 바 -->
-  <div id="map-top-bar">
-    <button class="map-bar-btn" id="btn-back" aria-label="뒤로">←</button>
-    <input id="map-search-input" type="search" placeholder="성지 이름 검색" autocomplete="off">
-    <button class="map-bar-btn" id="btn-search-clear" aria-label="검색 지우기" style="display:none">✕</button>
-  </div>
-  <div id="search-results"></div>
-
-  <!-- FAB 버튼 -->
-  <div id="map-fabs">
-    <button class="fab" id="btn-my-loc" aria-label="내 위치">📍</button>
-    <button class="fab" id="btn-stamp-page" aria-label="스탬프 현황" title="스탬프">🎖</button>
-  </div>
-
-  <!-- 인포카드 -->
-  <div id="info-card">
-    <div class="ic-handle"></div>
-    <div class="ic-header">
-      <div class="ic-name-wrap">
-        <div class="ic-name" id="ic-name">-</div>
-        <span class="ic-type" id="ic-type"></span>
-      </div>
-      <button class="ic-close" id="ic-close">✕</button>
-    </div>
-    <div class="ic-divider"></div>
-    <div class="ic-row" id="ic-addr-row">
-      <span class="ic-row-icon">📍</span>
-      <span id="ic-addr"></span>
-    </div>
-    <div class="ic-row" id="ic-tel-row">
-      <span class="ic-row-icon">📞</span>
-      <a id="ic-tel" href="#"></a>
-    </div>
-    <div class="ic-row" id="ic-links-row">
-      <span class="ic-row-icon">🔗</span>
-      <span id="ic-links"></span>
-    </div>
-    <div class="ic-btns">
-      <button class="ic-btn ic-btn-nav"   id="ic-btn-nav">🧭 카카오맵</button>
-      <button class="ic-btn ic-btn-stamp" id="ic-btn-stamp">🕊 방문 인증</button>
-    </div>
+<div class="cover-head">
+  <div class="cover-logo">🕊</div>
+  <div>
+    <div class="cover-title">가톨릭길동무</div>
+    <div class="cover-sub">성지순례 인증 앱</div>
   </div>
 </div>
 
-<script src="shrines.js?v=V2"></script>
-<script src="app.js?v=V1"></script>
+<div class="cover-grid">
+  <a href="map.html" class="cc">
+    <div class="cc-icon">🗺</div>
+    <div class="cc-name">성지 지도</div>
+    <div class="cc-desc">167개 성지 찾기</div>
+  </a>
+  <a href="stamp.html" class="cc">
+    <div class="cc-icon">📍</div>
+    <div class="cc-name">순례 스탬프</div>
+    <div class="cc-desc">방문 인증 · 코스 추천</div>
+  </a>
+  <a href="prayer.html" class="cc">
+    <div class="cc-icon">📖</div>
+    <div class="cc-name">기도문</div>
+    <div class="cc-desc">주요 가톨릭 기도문</div>
+  </a>
+  <a href="route.html" class="cc">
+    <div class="cc-icon">🚶</div>
+    <div class="cc-name">순례길</div>
+    <div class="cc-desc">도보 순례 경로 안내</div>
+  </a>
+</div>
+
+<div class="cover-ver">가톨릭길동무 V1</div>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('../sw.js').catch(function(){});
+}
+</script>
 </body>
 </html>
