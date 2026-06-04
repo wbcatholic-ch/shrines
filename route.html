@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1F2A44">
+<title>순례길 — 가톨릭길동무</title>
+<style>
+:root {
+  --d:      #1F2A44;
+  --bg:     #F5F3EF;
+  --card:   #FFFFFF;
+  --bdr:    #E8E3D9;
+  --gray:   #8B8477;
+  --gold:   #C8962A;
+  --green:  #2A8040;
+  --route:  #1B7FD8;
+  --shadow: 0 2px 10px rgba(31,42,68,.12);
+  --radius: 14px;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --d:#E8E4DC; --bg:#1A1E2A; --card:#252B3B; --bdr:#343B4F; --gray:#8B91A0; --shadow:0 2px 10px rgba(0,0,0,.3); }
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--d);
+  font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; -webkit-tap-highlight-color:transparent; }
+
+/* ── 레이아웃 ── */
+#app { display:flex; flex-direction:column; height:100%; }
+#kakao-map { flex:1; width:100%; }
+
+/* ── 상단 바 ── */
+#top-bar {
+  position:absolute; top:calc(var(--safe-t)+8px); left:12px; right:12px;
+  display:flex; align-items:center; gap:8px; z-index:20;
+}
+.bar-btn {
+  background:var(--card); border:none; border-radius:10px;
+  box-shadow:var(--shadow); width:42px; height:42px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; flex-shrink:0;
+}
+#route-title-box {
+  flex:1; background:var(--card); border-radius:10px;
+  box-shadow:var(--shadow); padding:6px 12px;
+}
+#route-title-box .rt-title { font-size:13px; font-weight:800; color:var(--d); letter-spacing:-.03em; }
+#route-title-box .rt-sub   { font-size:10px; color:var(--gray); font-weight:600; }
+
+/* ── FAB ── */
+#fabs {
+  position:absolute; right:14px;
+  bottom:calc(var(--safe-b)+170px);
+  display:flex; flex-direction:column; gap:8px; z-index:20;
+}
+.fab {
+  width:44px; height:44px; border-radius:12px;
+  background:var(--card); border:none; box-shadow:var(--shadow);
+  font-size:20px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.fab.active-gps { background:var(--route); color:#fff; }
+
+/* ── 하단 패널 ── */
+#bottom-panel {
+  position:absolute; left:0; right:0;
+  bottom:0;
+  background:var(--card);
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -4px 20px rgba(31,42,68,.12);
+  padding:10px 16px calc(var(--safe-b)+10px);
+  z-index:20;
+}
+.panel-handle { width:36px; height:4px; background:var(--bdr); border-radius:2px; margin:0 auto 10px; }
+.panel-info { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.pi-no {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:var(--route); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:800;
+}
+.pi-name { font-size:15px; font-weight:700; color:var(--d); }
+.pi-dist { font-size:11px; color:var(--gray); margin-top:2px; }
+.panel-stats { display:flex; gap:8px; }
+.stat-chip {
+  flex:1; background:var(--bg); border-radius:10px; padding:8px 10px;
+  text-align:center;
+}
+.sc-label { font-size:10px; color:var(--gray); font-weight:600; }
+.sc-val   { font-size:13px; font-weight:800; color:var(--d); margin-top:2px; }
+
+/* ── 경유지 목록 ── */
+#waypoint-list {
+  display:none; max-height:220px; overflow-y:auto; margin-top:8px;
+}
+.wl-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px solid var(--bdr); cursor:pointer;
+}
+.wl-item:last-child { border-bottom:none; }
+.wl-no {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:var(--route); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:800;
+}
+.wl-no.visited { background:var(--green); }
+.wl-name { font-size:13px; font-weight:600; color:var(--d); }
+.wl-addr { font-size:10px; color:var(--gray); }
+.panel-toggle {
+  width:100%; background:none; border:none; font-family:inherit;
+  font-size:12px; color:var(--gray); font-weight:600;
+  padding:6px 0 0; cursor:pointer; text-align:center;
+}
+
+/* ── 로딩 ── */
+#loading {
+  position:absolute; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; z-index:30;
+}
+.spinner { width:32px; height:32px; border:3px solid var(--bdr); border-top-color:var(--route);
+  border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="kakao-map"></div>
+  <div id="loading"><div class="spinner"></div><span style="font-size:13px;color:var(--gray)">지도를 불러오는 중...</span></div>
+
+  <div id="top-bar">
+    <button class="bar-btn" id="btn-back">←</button>
+    <div id="route-title-box">
+      <div class="rt-title" id="rt-title">-</div>
+      <div class="rt-sub"  id="rt-sub">-</div>
+    </div>
+    <button class="bar-btn" id="btn-list" title="경유지 목록">≡</button>
+  </div>
+
+  <div id="fabs">
+    <button class="fab" id="btn-gps" title="내 위치">📍</button>
+    <button class="fab" id="btn-fit" title="전체 경로 보기">🗺</button>
+  </div>
+
+  <div id="bottom-panel">
+    <div class="panel-handle"></div>
+    <div class="panel-info">
+      <div class="pi-no" id="pi-no">-</div>
+      <div>
+        <div class="pi-name" id="pi-name">GPS를 켜면 현재 위치를 안내해 드려요</div>
+        <div class="pi-dist" id="pi-dist"></div>
+      </div>
+    </div>
+    <div class="panel-stats">
+      <div class="stat-chip"><div class="sc-label">총 거리</div><div class="sc-val" id="sc-dist">-</div></div>
+      <div class="stat-chip"><div class="sc-label">소요시간</div><div class="sc-val" id="sc-time">-</div></div>
+      <div class="stat-chip"><div class="sc-label">경유지</div><div class="sc-val" id="sc-wps">-</div></div>
+    </div>
+    <button class="panel-toggle" id="btn-toggle">▲ 경유지 목록 보기</button>
+    <div id="waypoint-list"></div>
+  </div>
+</div>
+
+<script src="shrines.js?v=V2"></script>
+<script src="routes.js?v=V1"></script>
+<script>
+'use strict';
+const KAKAO_KEY = '07f7989e29fdfb425fff924f36fb3ec0';
+const NEAR_DIST_M = 60; // 경유지 도착 인정 거리
+
+let _map, _route, _myMarker, _watchId, _followGps = false;
+let _wpMarkers = [];
+let _byseq = {};
+
+/* ── 초기화 ─────────────────────────────────────────── */
+function init() {
+  (window._SH_RAW || []).forEach(function(s) { _byseq[s.seq] = s; });
+
+  // URL 파라미터로 코스 선택 (기본: 첫 번째)
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id') || ((window._ROUTES || [])[0] || {}).id;
+  _route = (window._ROUTES || []).find(function(r) { return r.id === id; })
+           || (window._ROUTES || [])[0];
+
+  if (!_route) {
+    document.getElementById('loading').innerHTML = '<div style="padding:20px;color:#888;text-align:center">등록된 순례길이 없습니다.</div>';
+    return;
+  }
+
+  // 헤더
+  document.getElementById('rt-title').textContent = _route.title;
+  document.getElementById('rt-sub').textContent   = _route.subtitle;
+  document.getElementById('sc-dist').textContent  = _route.distance;
+  document.getElementById('sc-time').textContent  = _route.duration;
+  document.getElementById('sc-wps').textContent   = _route.waypoints.length + '곳';
+
+  // 경유지 목록 렌더
+  renderWaypointList();
+
+  // Kakao SDK 로드
+  const sc = document.createElement('script');
+  sc.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + KAKAO_KEY + '&autoload=false&libraries=services';
+  sc.onerror = function() {
+    document.getElementById('loading').innerHTML = '<div style="padding:20px;color:#888;text-align:center">카카오맵을 불러올 수 없습니다.<br>인터넷 연결을 확인해 주세요.</div>';
+  };
+  sc.onload = function() { kakao.maps.load(initMap); };
+  document.head.appendChild(sc);
+}
+
+/* ── 지도 초기화 ────────────────────────────────────── */
+function initMap() {
+  const el = document.getElementById('kakao-map');
+  _map = new kakao.maps.Map(el, {
+    center: new kakao.maps.LatLng(_route.path[0][0], _route.path[0][1]),
+    level: 6
+  });
+  document.getElementById('loading').style.display = 'none';
+
+  drawRoute();
+  drawWaypoints();
+  fitRoute();
+}
+
+/* ── 경로 폴리라인 ──────────────────────────────────── */
+function drawRoute() {
+  const points = _route.path.map(function(c) {
+    return new kakao.maps.LatLng(c[0], c[1]);
+  });
+  new kakao.maps.Polyline({
+    map:           _map,
+    path:          points,
+    strokeWeight:  5,
+    strokeColor:   _route.color || '#1B7FD8',
+    strokeOpacity: 0.88,
+    strokeStyle:   'solid'
+  });
+  // 경유지 사이 점선 없이 깔끔하게 — 폴리라인이 경로 선 전부
+}
+
+/* ── 경유지 마커 ────────────────────────────────────── */
+function wpSvg(no, color) {
+  const c = encodeURIComponent(color || '#1B7FD8');
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="42">'
+    + '<path d="M17 41 C17 41 2 26 2 17 a15 15 0 1 1 30 0 C32 26 17 41 17 41Z" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>'
+    + '<circle cx="17" cy="17" r="9" fill="#fff"/>'
+    + '<text x="17" y="21" text-anchor="middle" font-size="10" font-weight="800" fill="'+color+'" font-family="Apple SD Gothic Neo,sans-serif">'+no+'</text>'
+    + '</svg>'
+  );
+}
+
+function drawWaypoints() {
+  _wpMarkers = [];
+  _route.waypoints.forEach(function(wp) {
+    const s = _byseq[wp.seq];
+    if (!s || !s.lat || !s.lng) return;
+
+    const img = new kakao.maps.MarkerImage(
+      wpSvg(wp.no, _route.color || '#1B7FD8'),
+      new kakao.maps.Size(34, 42),
+      { offset: new kakao.maps.Point(17, 42) }
+    );
+    const marker = new kakao.maps.Marker({
+      map:      _map,
+      position: new kakao.maps.LatLng(s.lat, s.lng),
+      image:    img,
+      title:    wp.no + '. ' + (s.name || wp.label)
+    });
+    kakao.maps.event.addListener(marker, 'click', function() {
+      showWaypointInfo(wp, s);
+    });
+    _wpMarkers.push({ marker, wp, shrine: s });
+  });
+}
+
+function showWaypointInfo(wp, s) {
+  document.getElementById('pi-no').textContent   = wp.no;
+  document.getElementById('pi-name').textContent = s.name || wp.label;
+  document.getElementById('pi-dist').textContent = s.addr || '';
+  _map.panTo(new kakao.maps.LatLng(s.lat, s.lng));
+}
+
+/* ── 전체 경로 맞춤 보기 ────────────────────────────── */
+function fitRoute() {
+  const bounds = new kakao.maps.LatLngBounds();
+  _route.path.forEach(function(c) { bounds.extend(new kakao.maps.LatLng(c[0], c[1])); });
+  _map.setBounds(bounds, 40);
+}
+
+/* ── 경유지 목록 렌더 ───────────────────────────────── */
+function renderWaypointList() {
+  const ul = document.getElementById('waypoint-list');
+  ul.innerHTML = _route.waypoints.map(function(wp) {
+    const s = _byseq[wp.seq] || {};
+    return '<div class="wl-item" data-seq="' + wp.seq + '">'
+      + '<div class="wl-no">' + wp.no + '</div>'
+      + '<div>'
+      +   '<div class="wl-name">' + (s.name || wp.label) + '</div>'
+      +   '<div class="wl-addr">' + (s.addr || '') + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  ul.querySelectorAll('.wl-item').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const seq = this.dataset.seq;
+      const s = _byseq[seq];
+      if (s && _map) _map.panTo(new kakao.maps.LatLng(s.lat, s.lng));
+    });
+  });
+}
+
+/* ── GPS 추적 ───────────────────────────────────────── */
+function startGps() {
+  if (!navigator.geolocation) { alert('위치 기능을 사용할 수 없습니다.'); return; }
+  document.getElementById('btn-gps').classList.add('active-gps');
+  _followGps = true;
+
+  _watchId = navigator.geolocation.watchPosition(
+    function(pos) {
+      const la = pos.coords.latitude, ln = pos.coords.longitude;
+      const latlng = new kakao.maps.LatLng(la, ln);
+
+      // 내 위치 마커
+      if (!_myMarker) {
+        const mySvg = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18">'
+          + '<circle cx="9" cy="9" r="7" fill="#2A8040" stroke="#fff" stroke-width="2.5"/>'
+          + '</svg>'
+        );
+        _myMarker = new kakao.maps.Marker({
+          map: _map,
+          image: new kakao.maps.MarkerImage(mySvg, new kakao.maps.Size(18, 18), { offset: new kakao.maps.Point(9, 9) })
+        });
+      }
+      _myMarker.setPosition(latlng);
+      if (_followGps) _map.setCenter(latlng);
+
+      // 가장 가까운 경유지 찾기
+      let nearIdx = 0, nearDist = Infinity;
+      _route.waypoints.forEach(function(wp, i) {
+        const s = _byseq[wp.seq];
+        if (!s) return;
+        const d = haversineM(la, ln, s.lat, s.lng);
+        if (d < nearDist) { nearDist = d; nearIdx = i; }
+      });
+      const nearWp = _route.waypoints[nearIdx];
+      const nearS  = _byseq[nearWp.seq] || {};
+      document.getElementById('pi-no').textContent   = nearWp.no;
+      document.getElementById('pi-name').textContent = nearS.name || nearWp.label;
+      const distTxt = nearDist < 1000 ? Math.round(nearDist) + 'm' : (nearDist/1000).toFixed(1) + 'km';
+      document.getElementById('pi-dist').textContent = nearDist < NEAR_DIST_M ? '✅ 도착!' : '📍 거리 ' + distTxt;
+    },
+    function(err) {
+      const msg = { 1:'위치 권한이 거부되었습니다.', 2:'위치를 찾을 수 없습니다.', 3:'시간이 초과되었습니다.' };
+      alert(msg[err.code] || '위치를 가져오지 못했습니다.');
+      document.getElementById('btn-gps').classList.remove('active-gps');
+      _followGps = false;
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 4000 }
+  );
+}
+
+function stopGps() {
+  if (_watchId != null) navigator.geolocation.clearWatch(_watchId);
+  _watchId = null; _followGps = false;
+  document.getElementById('btn-gps').classList.remove('active-gps');
+}
+
+function haversineM(la1, lo1, la2, lo2) {
+  const R = 6371000, f1 = la1*Math.PI/180, f2 = la2*Math.PI/180;
+  const df = (la2-la1)*Math.PI/180, dl = (lo2-lo1)*Math.PI/180;
+  const a  = Math.sin(df/2)**2 + Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* ── 이벤트 ─────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('btn-back').addEventListener('click', function() { history.back(); });
+
+  document.getElementById('btn-gps').addEventListener('click', function() {
+    if (_followGps) { stopGps(); } else { if (_map) startGps(); }
+  });
+
+  document.getElementById('btn-fit').addEventListener('click', function() {
+    _followGps = false;
+    document.getElementById('btn-gps').classList.remove('active-gps');
+    if (_map) fitRoute();
+  });
+
+  let listOpen = false;
+  document.getElementById('btn-toggle').addEventListener('click', function() {
+    listOpen = !listOpen;
+    document.getElementById('waypoint-list').style.display = listOpen ? 'block' : 'none';
+    this.textContent = listOpen ? '▼ 경유지 목록 닫기' : '▲ 경유지 목록 보기';
+  });
+
+  document.getElementById('btn-list').addEventListener('click', function() {
+    listOpen = !listOpen;
+    document.getElementById('waypoint-list').style.display = listOpen ? 'block' : 'none';
+    document.getElementById('btn-toggle').textContent = listOpen ? '▼ 경유지 목록 닫기' : '▲ 경유지 목록 보기';
+  });
+
+  // 지도 드래그 시 GPS 자동 따라가기 해제
+  if (typeof kakao !== 'undefined') {
+    kakao.maps.event.addListener(_map, 'drag', function() { _followGps = false; });
+  }
+
+  history.replaceState({ v: 'route' }, '');
+  init();
+});
+</script>
+</body>
+</html>
