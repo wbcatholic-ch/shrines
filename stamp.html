@@ -330,11 +330,27 @@ var REGION_ORDER = ['UJ','SE','IC','SW','CC','WJ','CJ','DJ','JJ','GJ','AD','DG',
 
 /* ── localStorage 헬퍼 ── */
 function getVisited() {
-  try { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); } catch(e) { return {}; }
+  try {
+    var v = JSON.parse(localStorage.getItem(STAMP_KEY) || '{}');
+    /* 구형 string → 배열 자동 마이그레이션 */
+    var changed = false;
+    Object.keys(v).forEach(function(seq) {
+      if (typeof v[seq] === 'string') { v[seq] = [v[seq]]; changed = true; }
+    });
+    if (changed) saveVisited(v);
+    return v;
+  } catch(e) { return {}; }
 }
 function saveVisited(v) {
   try { localStorage.setItem(STAMP_KEY, JSON.stringify(v)); } catch(e) {}
 }
+
+/* 날짜 배열 헬퍼 */
+function _today() { return new Date().toISOString().slice(0, 10); }
+function _dates(v, seq) { return Array.isArray(v[seq]) ? v[seq] : []; }
+function _cnt(v, seq)   { return _dates(v, seq).length; }
+function _last(v, seq)  { var d = _dates(v, seq); return d.length ? d[d.length-1] : ''; }
+function _hasDate(v, seq, date) { return _dates(v, seq).indexOf(date) !== -1; }
 
 /* ── 초기화 ── */
 function init() {
@@ -362,11 +378,33 @@ function setFilter(f) {
   render();
 }
 
-/* ── 스탬프 토글 ── */
-function toggleStamp(seq) {
+/* ── 스탬프 토글 (수동) ── */
+function toggleStamp(seq, e) {
+  if (e) e.stopPropagation();
   var v = getVisited();
-  if (v[seq]) { delete v[seq]; }
-  else { v[seq] = new Date().toISOString().slice(0, 10); }
+  var dates = _dates(v, seq);
+  if (dates.length) {
+    /* 이미 방문 → 마지막 기록 삭제 또는 재방문 추가 선택 */
+    var choice = confirm(
+      '이미 방문한 성지입니다. (' + _cnt(v,seq) + '회)\n마지막 방문: ' + _last(v,seq)
+      + '\n\n확인: 재방문 날짜 추가\n취소: 마지막 기록 삭제'
+    );
+    if (choice) {
+      /* 날짜 입력 */
+      var date = prompt('방문 날짜를 입력하세요 (YYYY-MM-DD)', _today());
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+      if (_hasDate(v, seq, date)) { alert('이미 등록된 날짜입니다.'); return; }
+      dates.push(date); dates.sort(); v[seq] = dates;
+    } else {
+      dates.pop();
+      if (dates.length) v[seq] = dates; else delete v[seq];
+    }
+  } else {
+    /* 첫 방문 — 날짜 입력 */
+    var date2 = prompt('방문 날짜를 입력하세요 (YYYY-MM-DD)', _today());
+    if (!date2 || !/^\d{4}-\d{2}-\d{2}$/.test(date2)) return;
+    v[seq] = [date2];
+  }
   saveVisited(v);
   render();
 }
@@ -382,15 +420,15 @@ function render() {
 function renderOverview() {
   var visited = getVisited();
   var total   = _shrines.length;
-  var done    = _shrines.filter(function(s){ return visited[s.seq]; }).length;
+  var done    = _shrines.filter(function(s){ return _cnt(visited, s.seq) > 0; }).length;
+  var totalVisits = _shrines.reduce(function(acc,s){ return acc + _cnt(visited, s.seq); }, 0);
   var pct     = total ? Math.round(done / total * 100) : 0;
 
-  // 교구별 집계
   var dioMap = {};
   _shrines.forEach(function(s){
     if (!dioMap[s.diocese]) dioMap[s.diocese] = { total:0, done:0 };
     dioMap[s.diocese].total++;
-    if (visited[s.seq]) dioMap[s.diocese].done++;
+    if (_cnt(visited, s.seq) > 0) dioMap[s.diocese].done++;
   });
 
   var dioHtml = Object.keys(dioMap)
@@ -414,7 +452,9 @@ function renderOverview() {
     +   '<div class="summary-top">'
     +     '<div><div class="summary-label">순례 완료</div>'
     +     '<div class="summary-count">' + done + '<span> / ' + total + '곳</span></div></div>'
-    +     '<div class="summary-percent">' + pct + '%</div>'
+    +     '<div style="text-align:right"><div class="summary-percent">' + pct + '%</div>'
+    +     (totalVisits > done ? '<div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">누적 ' + totalVisits + '회 방문</div>' : '')
+    +   '</div>'
     +   '</div>'
     +   '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:'+pct+'%"></div></div>'
     +   '<div class="summary-sub">스탬프북 ' + total + '개 성지 기준</div>'
@@ -436,13 +476,15 @@ function renderList() {
   }
 
   return '<div class="shrine-list">' + items.map(function(s, i){
-    var isV = !!visited[s.seq];
-    return '<div class="shrine-item" style="animation-delay:' + Math.min(i,15)*0.03 + 's" onclick="toggleStamp(\'' + s.seq + '\')">'
+    var cnt  = _cnt(visited, s.seq);
+    var last = _last(visited, s.seq);
+    var isV  = cnt > 0;
+    return '<div class="shrine-item" style="animation-delay:' + Math.min(i,15)*0.03 + 's" onclick="toggleStamp(\'' + s.seq + '\',event)">'
       + '<div class="stamp-circle' + (isV ? ' stamped' : '') + '">' + (isV ? '✅' : '○') + '</div>'
       + '<div class="shrine-info">'
       +   '<div class="shrine-name' + (isV ? ' stamped' : '') + '">' + escHtml(s.name) + '</div>'
       +   '<div class="shrine-meta">' + (DIOCESE[s.diocese]||s.diocese) + '</div>'
-      +   (isV ? '<div class="visit-date">방문 ' + visited[s.seq] + '</div>' : '')
+      +   (isV ? '<div class="visit-date">' + cnt + '회 방문 · 최근 ' + last + '</div>' : '')
       + '</div>'
       + '<span class="shrine-type-badge type-' + s.type + '">' + (TYPE_LABEL[s.type]||s.type) + '</span>'
       + '</div>';
@@ -470,7 +512,7 @@ function renderCourseList() {
     if (!list.length) return;
     html += '<div class="course-region-title">' + (DIOCESE[code] || code) + '</div>';
     list.forEach(function(c){
-      var done = c.seqs.filter(function(q){ return visited[q]; }).length;
+      var done = c.seqs.filter(function(q){ return _cnt(visited, q) > 0; }).length;
       var isOver = c.type === '1박2일';
       html += '<div class="course-card" onclick="openCourse(\'' + c.id + '\')">'
         + '<div class="course-card-top">'
@@ -489,20 +531,21 @@ function renderCourseList() {
 
 function renderCourseDetail(c) {
   var visited = getVisited();
-  var done = c.seqs.filter(function(q){ return visited[q]; }).length;
+  var done = c.seqs.filter(function(q){ return _cnt(visited, q) > 0; }).length;
   var isOver = c.type === '1박2일';
 
   var steps = c.seqs.map(function(seq, i){
     var s = _byseq[seq];
     if (!s) return '';
-    var isV = !!visited[seq];
+    var isV = _cnt(visited, seq) > 0;
+    var visitInfo = isV ? _cnt(visited,seq) + '회 · ' + _last(visited,seq) : '';
     var navUrl = _kakaoToLink(s);
     return '<div class="cstep">'
       + '<div class="cstep-num' + (isV ? ' done' : '') + '">' + (isV ? '✓' : (i + 1)) + '</div>'
       + '<div class="cstep-info">'
       +   '<div class="cstep-name' + (isV ? ' done' : '') + '">' + escHtml(s.name) + '</div>'
       +   '<div class="cstep-addr">' + escHtml(s.addr || '') + '</div>'
-      +   (isV ? '<div class="cstep-date">방문 ' + visited[seq] + '</div>' : '')
+      +   (isV ? '<div class="cstep-date">방문 ' + visitInfo + '</div>' : '')
       + '</div>'
       + '<a class="cstep-nav" href="' + navUrl + '" aria-label="카카오맵 길찾기">🧭</a>'
       + '</div>';

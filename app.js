@@ -126,13 +126,22 @@ function hideInfoCard() {
   _curShrine = null; _curMarker = null;
 }
 function updateStampBtn(s) {
-  const btn = document.getElementById('ic-btn-stamp');
+  var btn = document.getElementById('ic-btn-stamp');
   btn.disabled = false;
   if (!s.stamp) { btn.style.display = 'none'; return; }
   btn.style.display = '';
-  const v = getVisited()[s.seq];
-  if (v) { btn.textContent = '✅ 방문 완료 · ' + v; btn.classList.add('visited'); btn.onclick = function() { promptUnstamp(s); }; }
-  else   { btn.textContent = '🕊 방문 인증 (GPS)'; btn.classList.remove('visited'); btn.onclick = function() { verifyAndStamp(s); }; }
+  var v    = getVisited();
+  var cnt  = _visitCount(v, s.seq);
+  var last = _lastVisit(v, s.seq);
+  if (cnt > 0) {
+    btn.textContent = '✅ ' + cnt + '회 방문 · ' + last;
+    btn.classList.add('visited');
+    btn.onclick = function() { promptUnstamp(s); };
+  } else {
+    btn.textContent = '🕊 방문 인증 (GPS)';
+    btn.classList.remove('visited');
+    btn.onclick = function() { verifyAndStamp(s); };
+  }
 }
 
 /* §5 내위치 */
@@ -189,42 +198,72 @@ function runSearch(q) {
 }
 
 /* §7 스탬프 */
-function getVisited() { try { return JSON.parse(localStorage.getItem(STAMP_KEY)||'{}'); } catch(e) { return {}; } }
-function saveVisited(v) { try { localStorage.setItem(STAMP_KEY, JSON.stringify(v)); } catch(e) {} }
-function haversineM(la1,lo1,la2,lo2) {
-  const R=6371000,f1=la1*Math.PI/180,f2=la2*Math.PI/180,df=(la2-la1)*Math.PI/180,dl=(lo2-lo1)*Math.PI/180;
-  const a=Math.sin(df/2)**2+Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+function getVisited() {
+  try {
+    var v = JSON.parse(localStorage.getItem(STAMP_KEY) || '{}');
+    /* 마이그레이션: 구형 string → 배열로 자동 변환 */
+    var changed = false;
+    Object.keys(v).forEach(function(seq) {
+      if (typeof v[seq] === 'string') { v[seq] = [v[seq]]; changed = true; }
+    });
+    if (changed) saveVisited(v);
+    return v;
+  } catch(e) { return {}; }
 }
+function saveVisited(v) { try { localStorage.setItem(STAMP_KEY, JSON.stringify(v)); } catch(e) {} }
+
+/* 날짜 배열 헬퍼 */
+function _today() { return new Date().toISOString().slice(0, 10); }
+function _visitDates(v, seq)  { return Array.isArray(v[seq]) ? v[seq] : []; }
+function _lastVisit(v, seq)   { var d = _visitDates(v, seq); return d.length ? d[d.length-1] : null; }
+function _visitCount(v, seq)  { return _visitDates(v, seq).length; }
+function _isVisitedToday(v, seq) { return _visitDates(v, seq).indexOf(_today()) !== -1; }
+
 function verifyAndStamp(s) {
   if (!s || !s.lat || !s.lng) return;
-  const btn = document.getElementById('ic-btn-stamp');
-  const orig = btn.textContent;
+  var v = getVisited();
+  if (_isVisitedToday(v, s.seq)) {
+    alert('오늘 이미 방문 인증하셨습니다.\n(' + _today() + ')');
+    return;
+  }
+  var btn = document.getElementById('ic-btn-stamp');
+  var orig = btn.textContent;
   btn.disabled = true; btn.textContent = '📍 위치 확인 중…';
   navigator.geolocation.getCurrentPosition(
     function(pos) {
-      const d = haversineM(pos.coords.latitude, pos.coords.longitude, s.lat, s.lng);
+      var d = haversineM(pos.coords.latitude, pos.coords.longitude, s.lat, s.lng);
       if (d <= STAMP_RADIUS) {
-        const v = getVisited(); v[s.seq] = new Date().toISOString().slice(0,10); saveVisited(v);
+        var v2 = getVisited();
+        var dates = _visitDates(v2, s.seq);
+        dates.push(_today());
+        v2[s.seq] = dates;
+        saveVisited(v2);
         updateStampBtn(s); refreshMarkers();
-        alert('🕊 ' + s.name + '\n방문이 인증되었습니다!');
+        var cnt = _visitCount(v2, s.seq);
+        alert('🕊 ' + s.name + '\n방문이 인증되었습니다!' + (cnt > 1 ? '\n(누적 ' + cnt + '회 방문)' : ''));
       } else {
         btn.disabled = false; btn.textContent = orig;
-        const km = d>=1000?(d/1000).toFixed(1)+'km':Math.round(d)+'m';
-        alert('성지에서 약 ' + km + ' 떨어져 있습니다.\n반경 ' + STAMP_RADIUS + 'm 안에서 다시 시도해 주세요.');
+        var km = d >= 1000 ? (d/1000).toFixed(1)+'km' : Math.round(d)+'m';
+        alert('성지에서 약 ' + km + ' 떨어져 있습니다.\n반경 ' + STAMP_RADIUS + 'm 안에서 시도해 주세요.');
       }
     },
     function(err) {
       btn.disabled = false; btn.textContent = orig;
-      const m={1:'위치 권한이 거부되었습니다.',2:'위치를 찾을 수 없습니다.',3:'시간이 초과되었습니다.'};
-      alert(m[err.code]||'위치를 가져오지 못했습니다.');
+      var m = {1:'위치 권한이 거부되었습니다.',2:'위치를 찾을 수 없습니다.',3:'시간이 초과되었습니다.'};
+      alert(m[err.code] || '위치를 가져오지 못했습니다.');
     },
-    { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 }
+
 function promptUnstamp(s) {
-  if (!confirm(s.name + '\n방문 인증을 취소할까요?')) return;
-  const v = getVisited(); delete v[s.seq]; saveVisited(v);
+  var v = getVisited();
+  var dates = _visitDates(v, s.seq);
+  var msg = s.name + '\n방문 이력: ' + dates.join(', ') + '\n\n마지막 기록을 삭제할까요?';
+  if (!confirm(msg)) return;
+  dates.pop();
+  if (dates.length) v[s.seq] = dates; else delete v[s.seq];
+  saveVisited(v);
   updateStampBtn(s); refreshMarkers();
 }
 
