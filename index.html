@@ -78,10 +78,6 @@ body{padding:calc(var(--safe-t) + 20px) 20px calc(var(--safe-b) + 24px);}
 
 <div class="cover-ver">가톨릭길동무 V1</div>
 
-<script>
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('../sw.js').catch(function(){});
-}
-</script>
+<script src="sw-update.js?v=V1"></script>
 </body>
 </html>
