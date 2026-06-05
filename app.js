@@ -6,8 +6,9 @@
 'use strict';
 
 /* §0 설정 */
-const KAKAO_KEY    = '07f7989e29fdfb425fff924f36fb3ec0';
-const STAMP_KEY    = 'catholic_stamp_visited_v1';
+const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
+const KAKAO_REST_KEY = '86a3b86e6c1b0210b8e4aba5f6c83b00';
+const STAMP_KEY      = 'catholic_stamp_visited_v1';
 const STAMP_RADIUS = 300;
 const MAP_CENTER   = { lat: 36.5, lng: 127.8 };
 const MAP_LEVEL    = 12;
@@ -22,7 +23,8 @@ const DIOCESE      = {
 /* §1 상태 */
 let _map, _clusterer, _markers = [], _myMarker = null;
 let _curShrine = null, _curMarker = null, _cardOpen = false;
-let _shrines = [];
+let _shrines = [], _byseq = {};
+let _courseMode = false, _courseShrines = [], _coursePolyline = null;
 
 /* §2 지도 */
 function initMap() {
@@ -252,6 +254,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-loc').addEventListener('click', function() { if (_map) getMyLocation(); });
   document.getElementById('btn-stamp').addEventListener('click', function() { location.href = 'stamp.html'; });
 
+  /* 코스 내비 버튼 */
+  var cpNavi = document.getElementById('cp-navi');
+  if (cpNavi) cpNavi.addEventListener('click', startCourseNavi);
+
   let _t = null;
   document.getElementById('search-input').addEventListener('input', function() {
     clearTimeout(_t); _t = setTimeout(function() { runSearch(document.getElementById('search-input').value); }, 200);
@@ -268,6 +274,199 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('map-loading').innerHTML =
       '<div style="padding:20px;text-align:center;color:#888">카카오맵을 불러올 수 없습니다.<br>인터넷 연결을 확인해 주세요.</div>';
   };
-  sc.onload = function() { kakao.maps.load(initMap); };
+  sc.onload = function() {
+    kakao.maps.load(function() {
+      initMap();
+      /* 코스 모드: URL에 ?course=ID 있으면 실행 */
+      var params   = new URLSearchParams(location.search);
+      var courseId = params.get('course');
+      if (courseId) {
+        /* byseq 맵 생성 */
+        _shrines.forEach(function(s) { _byseq[s.seq] = s; });
+        /* 상단 바에 코스 이름 표시 */
+        var si = document.getElementById('search-input');
+        if (si) { si.placeholder = ''; si.style.display = 'none'; }
+        var bsrx = document.getElementById('btn-srch-x');
+        if (bsrx) bsrx.style.display = 'none';
+        loadCourseMode(courseId);
+        /* navi=1 이면 지도 로드 후 자동으로 내비 시작 */
+        if (params.get('navi') === '1') {
+          setTimeout(startCourseNavi, 2000);
+        }
+      }
+    });
+  };
   document.head.appendChild(sc);
 });
+
+/* ══ 코스 모드 ═════════════════════════════════════════════════
+   URL 파라미터: map.html?course=SE-1[&navi=1]
+   - 코스 성지를 번호 마커로 표시
+   - Kakao 경로 API로 실제 도로 경로 그리기 (실패 시 직선)
+   - 카카오내비 앱 연동
+   ════════════════════════════════════════════════════════════ */
+
+/* 코스 번호 마커 이미지 */
+function courseMkImg(no, visited) {
+  var bg = visited ? '#2A8040' : '#1B7FD8';
+  var svg = encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="42">'
+    + '<path d="M17 41 C17 41 2 26 2 17 a15 15 0 1 1 30 0 C32 26 17 41 17 41Z"'
+    + ' fill="' + bg + '" stroke="#fff" stroke-width="1.5"/>'
+    + '<circle cx="17" cy="17" r="9" fill="#fff"/>'
+    + '<text x="17" y="22" text-anchor="middle" font-size="11" font-weight="800"'
+    + ' fill="' + bg + '" font-family="sans-serif">' + no + '</text>'
+    + '</svg>'
+  );
+  return new kakao.maps.MarkerImage(
+    'data:image/svg+xml,' + svg,
+    new kakao.maps.Size(34, 42),
+    { offset: new kakao.maps.Point(17, 42) }
+  );
+}
+
+/* Kakao Mobility API로 실제 도로 경로 가져오기 */
+async function fetchRouteFromKakao(shrines) {
+  if (shrines.length < 2) return null;
+  try {
+    var origin      = shrines[0];
+    var destination = shrines[shrines.length - 1];
+    var waypoints   = shrines.slice(1, -1).map(function(s) {
+      return { name: s.name, x: String(s.lng), y: String(s.lat) };
+    });
+
+    var body = {
+      origin:      { x: String(origin.lng),      y: String(origin.lat) },
+      destination: { x: String(destination.lng), y: String(destination.lat) },
+      priority:    'RECOMMEND'
+    };
+    if (waypoints.length) body.waypoints = waypoints;
+
+    var res = await fetch('https://apis-navi.kakaomobility.com/v1/waypoints/directions', {
+      method:  'POST',
+      headers: {
+        'Authorization': 'KakaoAK ' + KAKAO_REST_KEY,
+        'Content-Type':  'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) throw new Error('API ' + res.status);
+    var data  = await res.json();
+    var route = data.routes && data.routes[0];
+    if (!route || route.result_code !== 0) throw new Error('no route');
+
+    /* vertexes: [lng, lat, lng, lat, ...] → LatLng 배열 */
+    var pts = [];
+    route.sections.forEach(function(sec) {
+      sec.roads.forEach(function(road) {
+        var v = road.vertexes;
+        for (var i = 0; i < v.length; i += 2) {
+          pts.push(new kakao.maps.LatLng(v[i + 1], v[i]));
+        }
+      });
+    });
+    return pts;
+  } catch (e) {
+    console.warn('[코스경로] API 실패 → 직선 표시:', e.message);
+    return null;
+  }
+}
+
+/* 코스 모드 진입 */
+async function loadCourseMode(courseId) {
+  var courses  = window._COURSES || [];
+  var course   = courses.find(function(c) { return c.id === courseId; });
+  if (!course) return;
+
+  _courseMode = true;
+  var visited  = getVisited();
+
+  /* 기존 마커 숨김 */
+  _markers.forEach(function(x) { x.marker.setMap(null); });
+  if (_clusterer) _clusterer.clear();
+
+  /* 코스 성지 로드 */
+  _courseShrines = course.seqs.map(function(seq) {
+    return _byseq[seq];
+  }).filter(Boolean);
+
+  /* 번호 마커 생성 */
+  var bounds = new kakao.maps.LatLngBounds();
+  _courseShrines.forEach(function(s, i) {
+    var isV = !!visited[s.seq];
+    var mk  = new kakao.maps.Marker({
+      map:      _map,
+      position: new kakao.maps.LatLng(s.lat, s.lng),
+      image:    courseMkImg(i + 1, isV),
+      title:    (i + 1) + '. ' + s.name,
+      zIndex:   10
+    });
+    kakao.maps.event.addListener(mk, 'click', function() { showInfoCard(s, mk); });
+    bounds.extend(new kakao.maps.LatLng(s.lat, s.lng));
+  });
+  _map.setBounds(bounds, 60);
+
+  /* 코스 패널 표시 */
+  var panel = document.getElementById('course-panel');
+  if (panel) {
+    document.getElementById('cp-title').textContent = course.title;
+    document.getElementById('cp-meta').textContent  =
+      course.type + ' · ' + course.seqs.length + '곳 · 총 이동 약 ' + course.km + 'km';
+    panel.style.display = 'block';
+
+    /* FAB 위치 올리기 (패널이 생겼으므로) */
+    var fabs = document.getElementById('fabs');
+    if (fabs) fabs.style.bottom = 'calc(env(safe-area-inset-bottom,0px) + 170px)';
+  }
+
+  /* 경로 그리기: Kakao API 시도 → 실패 시 직선 */
+  var routePts = await fetchRouteFromKakao(_courseShrines);
+  if (_coursePolyline) { _coursePolyline.setMap(null); _coursePolyline = null; }
+
+  if (routePts && routePts.length) {
+    _coursePolyline = new kakao.maps.Polyline({
+      map: _map, path: routePts,
+      strokeWeight: 5, strokeColor: '#1B7FD8', strokeOpacity: 0.88
+    });
+  } else {
+    /* 직선 fallback (점선) */
+    var fallbackPts = _courseShrines.map(function(s) {
+      return new kakao.maps.LatLng(s.lat, s.lng);
+    });
+    _coursePolyline = new kakao.maps.Polyline({
+      map: _map, path: fallbackPts,
+      strokeWeight: 4, strokeColor: '#1B7FD8',
+      strokeOpacity: 0.55, strokeStyle: 'dashed'
+    });
+  }
+}
+
+/* 카카오내비 시작 */
+function startCourseNavi() {
+  if (!_courseShrines.length) return;
+
+  /* Kakao JS SDK 초기화 */
+  if (window.Kakao && !Kakao.isInitialized()) {
+    Kakao.init(KAKAO_KEY);
+  }
+
+  var dest = _courseShrines[_courseShrines.length - 1];
+  var via  = _courseShrines.slice(0, -1).map(function(s) {
+    return { name: s.name, x: String(s.lng), y: String(s.lat) };
+  });
+
+  try {
+    Kakao.Navi.start({
+      name:       dest.name,
+      x:          String(dest.lng),
+      y:          String(dest.lat),
+      coordType:  'wgs84',
+      viaPoints:  via
+    });
+  } catch (e) {
+    /* 내비 앱 없으면 카카오맵으로 */
+    location.href = 'https://map.kakao.com/link/to/' +
+      encodeURIComponent(dest.name) + ',' + dest.lat + ',' + dest.lng;
+  }
+}

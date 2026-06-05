@@ -222,6 +222,14 @@
     cursor: pointer; padding: 0; margin-bottom: 10px;
     -webkit-tap-highlight-color: transparent;
   }
+  .cd-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+  .cd-btn {
+    flex: 1; height: 42px; border: none; border-radius: 10px;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .cd-btn-map  { background: var(--card-sub); color: var(--d); border: 1px solid var(--bdr); }
+  .cd-btn-navi { background: var(--d); color: #fff; }
   .course-detail-head {
     background: var(--d); color: #fff; border-radius: var(--radius);
     padding: 16px 18px; margin-bottom: 14px;
@@ -501,6 +509,10 @@ function renderCourseDetail(c) {
   }).join('');
 
   return '<button class="course-back" onclick="closeCourse()">← 코스 목록</button>'
+    + '<div class="cd-actions">'
+    +   '<button class="cd-btn cd-btn-map" onclick="location.href=\'map.html?course=' + c.id + '\'">🗺 지도에서 보기</button>'
+    +   '<button class="cd-btn cd-btn-navi" onclick="location.href=\'map.html?course=' + c.id + '&navi=1\'">🧭 내비 시작</button>'
+    + '</div>'
     + '<div class="course-detail-head">'
     +   '<div class="cd-title">' + escHtml(c.title) + '</div>'
     +   '<div class="cd-meta">' + c.type + ' · ' + c.seqs.length + '곳 · 총 이동 약 ' + c.km + 'km'

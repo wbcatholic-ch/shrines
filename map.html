@@ -87,6 +87,17 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--d);
 .spinner{width:32px;height:32px;border:3px solid var(--bdr);border-top-color:var(--d);
   border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+/* 코스 패널 */
+#course-panel{display:none;position:fixed;left:0;right:0;bottom:0;
+  background:var(--card);border-radius:18px 18px 0 0;
+  box-shadow:0 -4px 20px rgba(31,42,68,.14);
+  padding:10px 16px calc(var(--safe-b)+12px);z-index:20;}
+.cp-handle{width:36px;height:4px;background:var(--bdr);border-radius:2px;margin:0 auto 10px;}
+.cp-title{font-size:16px;font-weight:800;color:var(--d);letter-spacing:-.03em;margin-bottom:4px;}
+.cp-meta{font-size:12px;color:var(--gray);margin-bottom:12px;}
+.cp-navi{width:100%;height:46px;background:var(--d);color:#fff;border:none;
+  border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -103,6 +114,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--d);
 <div id="fabs">
   <button class="fab" id="btn-loc" aria-label="내 위치">📍</button>
   <button class="fab" id="btn-stamp" aria-label="스탬프">🎖</button>
+</div>
+
+<!-- 코스 모드 하단 패널 -->
+<div id="course-panel">
+  <div class="cp-handle"></div>
+  <div class="cp-title" id="cp-title"></div>
+  <div class="cp-meta"  id="cp-meta"></div>
+  <button class="cp-navi" id="cp-navi">🧭 카카오내비 시작</button>
 </div>
 
 <div id="info-card">
@@ -125,6 +144,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--d);
 </div>
 
 <script src="shrines.js?v=V2"></script>
+<script src="courses.js?v=V1b"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
 <script src="app.js?v=V1"></script>
 </body>
 </html>
