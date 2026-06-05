@@ -144,6 +144,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--d);
 .spinner{width:32px;height:32px;border:3px solid var(--bdr);border-top-color:var(--d);
   border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+/* GPS 자동 인증 토스트 */
+#stamp-toast{
+  position:fixed;bottom:calc(var(--safe-b)+100px);left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:rgba(31,42,68,.95);color:#fff;
+  padding:11px 22px;border-radius:24px;
+  font-size:14px;font-weight:700;white-space:nowrap;
+  opacity:0;transition:opacity .3s,transform .3s;
+  pointer-events:none;z-index:99;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+#stamp-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -228,6 +241,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--d);
     <button class="ic-btn ic-btn-stamp" id="ic-btn-stamp">🕊 방문 인증</button>
   </div>
 </div>
+
+<div id="stamp-toast"></div>
 
 <script src="shrines.js?v=V2"></script>
 <script src="courses.js?v=V1b"></script>

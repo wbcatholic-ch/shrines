@@ -7,7 +7,7 @@
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
 const KAKAO_REST_KEY = '86a3b86e6c1b0210b8e4aba5f6c83b00';
 const STAMP_KEY      = 'catholic_stamp_visited_v1';
-const STAMP_RADIUS   = 300;
+const STAMP_RADIUS   = 500;   /* GPS 자동 인증 반경 */
 
 /* 타입 매핑: A=성지(빨강), B=순례지(파랑), C=순교사적지(초록) */
 const _TY  = { A:'성지', B:'순례지', C:'순교 사적지' };
@@ -26,6 +26,8 @@ let _rS = null, _rVia = [], _rE = null;  /* 출발 / 경유[] / 도착 */
 let _routePolyline = null;
 let _courseMode = false, _courseShrines = [], _coursePolyline = null;
 let _byseqBuilt = false;
+let _gpsWatchId = null;
+let _lastAutoStampPos = null;   /* 마지막 자동 인증 위치 (연속 중복 방지) */
 
 /* §2 지도 · 마커 ─────────────────────────────────── */
 
@@ -87,6 +89,7 @@ function initMap() {
 
   document.getElementById('map-loading').style.display = 'none';
   buildMarkers();
+  startGpsWatch();   /* GPS 자동 인증 시작 */
 
   /* 코스 모드 확인 */
   const params = new URLSearchParams(location.search);
@@ -161,7 +164,72 @@ function _showRegionMarker(lat, lng, name) {
   _regionMarker.setMap(_map);
 }
 
-/* §3 인포카드 ─────────────────────────────────────── */
+/* GPS 자동 인증 ── watchPosition으로 반경 500m 진입 시 자동 스탬프 */
+function startGpsWatch() {
+  if (!navigator.geolocation || _gpsWatchId !== null) return;
+  _gpsWatchId = navigator.geolocation.watchPosition(
+    function(pos) {
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      if (_map) _showMyLoc(lat, lng);
+      _autoStampCheck(lat, lng);
+    },
+    function() { /* 권한 거부 등 — 조용히 무시 */ },
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 15000 }
+  );
+}
+
+function stopGpsWatch() {
+  if (_gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(_gpsWatchId);
+    _gpsWatchId = null;
+  }
+}
+
+function _autoStampCheck(lat, lng) {
+  /* 위치가 크게 바뀌지 않으면 스캔 생략 (배터리 절약) */
+  if (_lastAutoStampPos) {
+    const moved = _haversineM(lat, lng, _lastAutoStampPos.lat, _lastAutoStampPos.lng);
+    if (moved < 20) return;   /* 20m 미만 이동 시 재확인 생략 */
+  }
+  _lastAutoStampPos = { lat, lng };
+
+  const today = _today();
+  const v = getVisited();
+  let changed = false;
+
+  _shrines.forEach(function(s) {
+    if (!s.stamp || !s.lat || !s.lng) return;
+    if (_isVisitedToday(v, s.seq)) return;           /* 오늘 이미 인증 */
+    if (_haversineM(lat, lng, s.lat, s.lng) > STAMP_RADIUS) return;
+
+    /* 자동 스탬프 */
+    const dates = Array.isArray(v[s.seq]) ? v[s.seq].slice() : [];
+    dates.push(today);
+    v[s.seq] = dates;
+    changed = true;
+
+    /* 토스트 알림 */
+    showStampToast(s.name, dates.length);
+
+    /* 인포카드 열려있으면 즉시 반영 */
+    if (_curShrine && _curShrine.seq === s.seq) updateStampBtn(_curShrine);
+  });
+
+  if (changed) saveVisited(v);
+}
+
+function showStampToast(name, cnt) {
+  const t = document.getElementById('stamp-toast');
+  if (!t) return;
+  t.textContent = '🕊 ' + name + ' 방문 인증!' + (cnt > 1 ? ' (' + cnt + '회째)' : '');
+  t.classList.add('show');
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(function() { t.classList.remove('show'); }, 3500);
+}
+
+/* 페이지 숨김/복귀 시 GPS 관리 */
+window.addEventListener('pagehide', stopGpsWatch);
+window.addEventListener('pageshow', function() { if (_map) startGpsWatch(); });
 
 function showInfoCard(idx) {
   if (_selIdx >= 0 && _selIdx !== idx) _setSelMarker(_selIdx, false);
@@ -546,13 +614,17 @@ function updateStampBtn(s) {
   const v = getVisited();
   const cnt = _visitCnt(v, s.seq), last = _lastVisit(v, s.seq);
   if (cnt > 0) {
-    btn.textContent = '✅ ' + cnt + '회 · ' + last;
+    btn.textContent = '✅ ' + cnt + '회 방문 · ' + last;
     btn.classList.add('visited');
+    btn.style.cssText = '';
+    btn.disabled = false;
     btn.onclick = function() { _promptUnstamp(s); };
   } else {
-    btn.textContent = '🕊 방문 인증 (GPS)';
+    btn.textContent = '📍 반경 ' + STAMP_RADIUS + 'm 진입 시 자동 인증';
     btn.classList.remove('visited');
-    btn.onclick = function() { _verifyAndStamp(s); };
+    btn.style.cssText = 'background:var(--bg);color:var(--gray);border:1px solid var(--bdr);font-size:11px;';
+    btn.disabled = true;
+    btn.onclick = null;
   }
 }
 

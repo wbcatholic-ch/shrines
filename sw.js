@@ -1,56 +1,71 @@
-/* 가톨릭길동무 Service Worker - V3-S
-   캐시를 매번 삭제하지 않고, 버전 변경 시 오래된 캐시만 정리합니다.
-   localStorage/사용자 설정은 건드리지 않습니다. */
-const CACHE_VERSION = 'catholic-way-V2-115';
-/* 다이어트 1: 첫 실행에 꼭 필요한 앱 셸만 선캐시합니다.
-   성당/성지/피정의집/기도문/관구교구/문의 페이지는 versioned fetch 시 cacheFirst로 저장됩니다. */
+/* 가톨릭길동무 Service Worker — 성지순례 앱 V1
+   구 catholic-way-V2-xxx 캐시를 자동 삭제하고 새 캐시로 전환합니다. */
+'use strict';
+
+const CACHE_VERSION = 'catholic-pilgrim-V1';
+
+/* 앱 셸: 첫 실행에 필요한 파일 전부 선캐시 */
 const APP_SHELL = [
   './',
   './index.html',
-  './constants.js?v=V2-115',
-  './core.js?v=V2-115',
-  './style.css?v=V2-115',
-  './app.js?v=V2-115',
-  './web.js?v=V2-115',
-  './patches.js?v=V2-115',
-  './sw-update.js?v=V2-115',
-  './manifest.json?v=V2-115',
-  './intro-cross-jesus.jpg?v=V2-115',
-'./icon-192x192.png',
+  './map.html',
+  './stamp.html',
+  './prayer.html',
+  './route.html',
+  './app.js?v=V1',
+  './shrines.js?v=V2',
+  './courses.js?v=V1b',
+  './routes.js?v=V2',
+  './prayer.js?v=V1',
+  './sw-update.js?v=V1',
+  './manifest.json',
+  './intro-cross-jesus.jpg?v=V2-113',
+  './icon-192x192.png',
   './icon-512x512.png',
   './icon-512x512-maskable.png',
 ];
 
-
+/* ── 설치: 앱 셸 선캐시 ── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
-      .then((cache) => Promise.all(APP_SHELL.map((url) => cache.add(url).catch(() => null))))
+      .then((cache) => Promise.all(
+        APP_SHELL.map((url) => cache.add(url).catch(() => null))
+      ))
       .then(() => self.skipWaiting())
   );
 });
 
+/* ── 활성화: 구버전 캐시(catholic-way-V2-*) 전부 삭제 ── */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.map((key) => key === CACHE_VERSION ? null : caches.delete(key))))
+      .then((keys) => Promise.all(
+        keys.map((key) => key === CACHE_VERSION ? null : caches.delete(key))
+      ))
       .then(() => self.clients.claim())
   );
 });
 
+/* ── 헬퍼 ── */
 function sameOrigin(request) {
-  try { return new URL(request.url).origin === self.location.origin; } catch (e) { return false; }
+  try { return new URL(request.url).origin === self.location.origin; }
+  catch (e) { return false; }
 }
 function isHtmlRequest(request) {
-  return request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
+  return request.mode === 'navigate' ||
+    (request.headers.get('accept') || '').includes('text/html');
 }
 function isVersionedAsset(request) {
   try {
     const url = new URL(request.url);
+    /* ?v= 파라미터 있거나, 새 앱의 주요 JS/HTML 파일 */
     return url.searchParams.has('v') ||
-      /parishes(?:-[a-z-]+)?\.js|prayer\.js|retreats\.js|shrines\.js|diocese\.html|qa-firebase\.html|app\.js|style\.css|web\.js|patches\.js|sw-update\.js/.test(url.pathname);
+      /app\.js|shrines\.js|courses\.js|routes\.js|prayer\.js|sw-update\.js|map\.html|stamp\.html|prayer\.html|route\.html/.test(url.pathname);
   } catch (e) { return false; }
 }
+
+/* ── 전략 ── */
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_VERSION);
   try {
@@ -83,19 +98,21 @@ async function staleWhileRevalidate(request) {
       return fresh;
     })
     .catch(() => null);
-  return cached || freshPromise || fetch(request);
+  return cached || freshPromise;
 }
+
+/* ── fetch 인터셉트 ── */
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
-  if (!sameOrigin(request)) return;
+  if (!sameOrigin(request)) return;          /* 외부(카카오맵SDK 등) 제외 */
   if (isHtmlRequest(request)) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(networkFirst(request)); /* HTML: 항상 최신 시도 */
     return;
   }
   if (isVersionedAsset(request)) {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(cacheFirst(request));   /* 버전 자산: 캐시 우선 */
     return;
   }
-  event.respondWith(staleWhileRevalidate(request));
+  event.respondWith(staleWhileRevalidate(request)); /* 이미지 등: stale-while-revalidate */
 });
