@@ -27,7 +27,15 @@ let _shrines = [], _byseq = {};
 let _courseMode = false, _courseShrines = [], _coursePolyline = null;
 
 /* §2 지도 */
+let IMG_N, IMG_V, IMG_X, IMG_A;   /* Kakao SDK 로드 후 initMap()에서 초기화 */
+
 function initMap() {
+  /* 마커 이미지: SDK 로드 완료 후 여기서 생성 */
+  IMG_N = mkImg('#1F2A44', 28);
+  IMG_V = mkImg('#2A8040', 28);
+  IMG_X = mkImg('#B5AFA7', 24);
+  IMG_A = mkImg('#C8962A', 34);
+
   const el = document.getElementById('kakao-map');
   _map = new kakao.maps.Map(el, {
     center: new kakao.maps.LatLng(MAP_CENTER.lat, MAP_CENTER.lng),
@@ -60,10 +68,6 @@ function mkImg(color, size) {
     { offset: new kakao.maps.Point(size / 2, size * 1.4) }
   );
 }
-const IMG_N = mkImg('#1F2A44', 28);
-const IMG_V = mkImg('#2A8040', 28);
-const IMG_X = mkImg('#B5AFA7', 24);
-const IMG_A = mkImg('#C8962A', 34);
 
 function getImg(s) {
   if (!s.stamp) return IMG_X;
