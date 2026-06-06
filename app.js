@@ -115,7 +115,6 @@ function _resizeMk(idx,big) {
 
 /* §5 탭 전환 */
 function switchTab(tab) {
-  /* 같은 탭 재클릭 → 닫기 */
   if (_activeTab === tab) { _closeTab(); return; }
   _closeCard();
   _activeTab = tab;
@@ -123,6 +122,10 @@ function switchTab(tab) {
   document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
   const sheet = document.getElementById('sheet-' + tab);
   if (sheet) sheet.classList.add('open');
+
+  /* 길찾기 가이드 툴팁 */
+  const tip = document.getElementById('rs-guide-tip');
+  if (tip) tip.style.display = (tab === 'route') ? '' : 'none';
 
   if (tab === 'nearby') _loadNearby();
   if (tab === 'list')   _renderList('');
@@ -132,6 +135,8 @@ function _closeTab() {
   _activeTab = '';
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
+  const tip = document.getElementById('rs-guide-tip');
+  if (tip) tip.style.display = 'none';
   _showAll();
 }
 
@@ -165,16 +170,30 @@ function _loadNearby() {
     _map.setCenter(new _LL(lat, lng));
 
     if (!list.length) {
-      body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">주변 50km 내 성지가 없습니다.</div>';
+      body.innerHTML = '<div style="padding:24px;text-align:center;color:#bbb;font-size:13px">주변 50km 내 성지가 없습니다.</div>';
       return;
     }
+    /* 제목 업데이트 */
+    const titleEl = document.getElementById('nearby-title');
+    if (titleEl) titleEl.textContent = `내 주변 성지 ${list.length}곳`;
+
+    const TYPE_LBL = { A:'성지', B:'순례지', C:'순교 사적지' };
     body.innerHTML = list.map((o,n) => {
-      const s=_shrines[o.i], c=_CLR[s.type];
-      const dt = o.d<1000 ? Math.round(o.d)+'m' : (o.d/1000).toFixed(1)+'km';
+      const s = _shrines[o.i], c = _CLR[s.type];
+      const km  = (o.d / 1000 * 1.35).toFixed(1);
+      const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
+      const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
       return `<div class="li" data-i="${o.i}">
         <div class="li-num" style="background:${c}">${n+1}</div>
-        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc(_DIOCESE[s.diocese]||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
-        <div class="li-dist">${dt}</div>
+        <div class="li-main">
+          <div class="li-name">${_esc(s.name)}</div>
+          <div class="li-sub">${_esc(_DIOCESE[s.diocese]||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div>
+        </div>
+        <div class="li-right">
+          <span class="li-badge badge-${s.type}">${TYPE_LBL[s.type]||''}</span>
+          <span class="li-dist">🚗${km}km</span>
+          <span class="li-dur">${dur}</span>
+        </div>
       </div>`;
     }).join('');
     body.querySelectorAll('[data-i]').forEach(el =>
@@ -186,22 +205,45 @@ function _loadNearby() {
 }
 
 /* §7 성지찾기 */
-function _renderList(q) {
-  const v = _getV();
-  const res = q ? _shrines.reduce((a,s,i)=>{ if(s.name.includes(q)||(s.addr&&s.addr.includes(q)))a.push(i); return a; },[]) : _shrines.map((_,i)=>i);
-  _showOnly(res);
+const TYPE_LBL = { A:'성지', B:'순례지', C:'순교 사적지' };
+const DIO_ORDER = ['SE','IC','SW','UJ','CC','WJ','DJ','CJ','DG','AD','BS','MS','GJ','JJ','JE','ML'];
+let _filterDio = 'all';
+
+function _renderList(kw) {
   const body = document.getElementById('list-body');
-  if (!res.length) { body.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색 결과가 없습니다.</div>'; return; }
-  body.innerHTML = res.map(i=>{
-    const s=_shrines[i], c=_CLR[s.type];
-    const cnt = (_getV()[s.seq]||[]).length;
-    return `<div class="li" data-i="${i}">
-      <div class="li-dot" style="background:${c}"></div>
-      <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc(_DIOCESE[s.diocese]||s.diocese||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
-      ${cnt?`<div class="li-badge" style="background:${c}18;color:${c}">✞${cnt}</div>`:`<div class="li-badge" style="background:#f0f0f0;color:#ccc;font-size:9px">${s.type||''}</div>`}
-    </div>`;
-  }).join('');
-  body.querySelectorAll('[data-i]').forEach(el=>el.addEventListener('click',()=>_openCard(+el.dataset.i)));
+  const q = (kw||'').trim();
+  let items = _shrines.map((s,i) => ({i,s}));
+  if (_filterDio !== 'all') items = items.filter(o => o.s.diocese === _filterDio);
+  if (q) items = items.filter(o => o.s.name.includes(q) || (o.s.addr||'').includes(q));
+  _showOnly(items.map(o => o.i));
+  if (!items.length) {
+    body.innerHTML = '<div style="padding:32px;text-align:center;color:#bbb;font-size:13px">검색 결과가 없습니다.</div>';
+    return;
+  }
+  /* 교구별 그룹 — 구 앱 동일 */
+  const groups = {};
+  DIO_ORDER.forEach(d => groups[d] = []);
+  items.forEach(o => { if (groups[o.s.diocese]) groups[o.s.diocese].push(o); });
+  let html = '';
+  DIO_ORDER.forEach(dioc => {
+    const g = groups[dioc]; if (!g||!g.length) return;
+    html += `<div class="dio-hdr">${_DIOCESE[dioc]||dioc}</div>`;
+    g.forEach(({i,s}) => {
+      const c = _CLR[s.type];
+      html += `<div class="li" data-i="${i}">
+        <div class="li-dot" style="background:${c};width:12px;height:12px;border-radius:50%;flex-shrink:0"></div>
+        <div class="li-main">
+          <div class="li-name">${_esc(s.name)}</div>
+          <div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
+        </div>
+        <span class="li-badge badge-${s.type}">${TYPE_LBL[s.type]||''}</span>
+      </div>`;
+    });
+  });
+  body.innerHTML = html;
+  body.querySelectorAll('[data-i]').forEach(el =>
+    el.addEventListener('click', () => _openCard(+el.dataset.i))
+  );
 }
 
 /* §8 지역검색
@@ -271,17 +313,30 @@ function _regionShowShrines(lat, lng, placeName) {
     return;
   }
 
-  /* 결과 렌더 */
   body.innerHTML =
-    `<div style="padding:12px 14px 4px;font-size:13px;font-weight:800;color:#1f2937">📍 ${_esc(placeName)}</div>
-     <div style="padding:0 14px 8px;font-size:11px;font-weight:700;color:#aaa">✝ 근처 성지 · 자동차 거리순 10곳</div>` +
+    `<div style="background:var(--navy);color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+       <div>
+         <div style="font-size:15px;font-weight:800">📍 ${_esc(placeName)}</div>
+       </div>
+       <button onclick="if(_regionMk)_map.setCenter(_regionMk.getPosition())" style="padding:6px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.85);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">지도 보기</button>
+     </div>
+     <div style="padding:7px 14px 4px;font-size:11px;font-weight:700;color:#c0392b">† 근처 성지 · 자동차 거리순 ${sorted.length}곳</div>` +
     sorted.map((o,n) => {
       const s=_shrines[o.i], c=_CLR[s.type];
-      const km = (o.d / 1000 * 1.35).toFixed(1);
+      const km  = (o.d / 1000 * 1.35).toFixed(1);
+      const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
+      const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
       return `<div class="li" data-i="${o.i}">
         <div class="li-num" style="background:${c}">${n+1}</div>
-        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc(_DIOCESE[s.diocese]||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
-        <div class="li-dist">🚗${km}km</div>
+        <div class="li-main">
+          <div class="li-name">${_esc(s.name)}</div>
+          <div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
+        </div>
+        <div class="li-right">
+          <span class="li-badge badge-${s.type}">${TYPE_LBL[s.type]||''}</span>
+          <span class="li-dist">🚗${km}km</span>
+          <span class="li-dur">${dur}</span>
+        </div>
       </div>`;
     }).join('');
 
@@ -778,12 +833,39 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   /* 성지찾기 */
-  _q('#list-inp').addEventListener('input',e=>{clearTimeout(_listTimer);_listTimer=setTimeout(()=>_renderList(e.target.value.trim()),220);});
-  _q('#list-inp-x').addEventListener('click',()=>{_q('#list-inp').value='';_renderList('');});
+  /* 성지찾기 필터 pill */
+  _q('#list-filter-bar').addEventListener('click', e => {
+    const pill = e.target.closest('[data-dio]');
+    if (!pill) return;
+    _filterDio = pill.dataset.dio;
+    _q('#list-filter-bar').querySelectorAll('.filter-pill').forEach(p =>
+      p.classList.toggle('active', p === pill)
+    );
+    _renderList(_q('#list-inp').value);
+  });
+  _q('#list-inp').addEventListener('input', e => {
+    clearTimeout(_listTimer);
+    _listTimer = setTimeout(() => _renderList(e.target.value), 220);
+  });
+  _q('#list-inp-x').addEventListener('click', () => { _q('#list-inp').value = ''; _renderList(''); });
 
   /* 지역검색 */
-  _q('#region-inp').addEventListener('keydown',e=>{if(e.key==='Enter')_regionSearch(e.target.value);});
-  _q('#region-inp-x').addEventListener('click',()=>{_q('#region-inp').value='';_q('#region-body').innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색할 지역명을 입력하세요</div>';if(_regionMk){_regionMk.setMap(null);_regionMk=null;}_showAll();});
+  _q('#region-inp').addEventListener('keydown', e => { if(e.key==='Enter') _regionSearch(_q('#region-inp').value); });
+  _q('#region-srch-btn').addEventListener('click', () => _regionSearch(_q('#region-inp').value));
+  _q('#region-inp-x').addEventListener('click', () => {
+    _q('#region-inp').value = '';
+    _q('#region-body').innerHTML = '<div style="padding:32px;text-align:center;color:#bbb;font-size:13px;line-height:1.9">🏞 여행지나 숙소 지역을 검색하면<br>근처 성지 목록이 나타납니다</div>';
+    if (_regionMk) { _regionMk.setMap(null); _regionMk = null; }
+    _showAll();
+  });
+
+  /* 길찾기 스왑 버튼 */
+  _q('#rs-swap-btn').addEventListener('click', () => {
+    const tmpS = _rS, tmpE = _rE;
+    if (tmpS) _setEnd(tmpS); else _clearEnd();
+    if (tmpE) _setStart(tmpE); else _clearStart();
+    if (_rS && _rE) _tryRoute();
+  });
 
   /* 길찾기 */
   _q('#rs-myloc').addEventListener('click',_setGpsStart);
