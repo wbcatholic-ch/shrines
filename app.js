@@ -506,9 +506,9 @@ function _toast(msg){
 }
 function _updateStamp(s) {
   const btn = _q('#ic-stamp');
-  btn.style.display = ''; btn.style.cssText = '';
-  const arr = Array.isArray(_getV()[s.seq]) ? _getV()[s.seq] : [];
+  const arr  = Array.isArray(_getV()[s.seq]) ? _getV()[s.seq] : [];
   if (arr.length) {
+    btn.style.display = ''; btn.style.cssText = '';
     btn.textContent = `✞ ${arr.length}회 순례 · ${arr[arr.length-1]}`;
     btn.className = 'ic-stamp-btn stamped'; btn.disabled = false;
     btn.onclick = () => {
@@ -517,10 +517,8 @@ function _updateStamp(s) {
       a.pop(); if (a.length) v[s.seq] = a; else delete v[s.seq]; _saveV(v); _updateStamp(s);
     };
   } else {
-    btn.textContent = '📍 반경 500m 진입 시 자동 순례 기록';
-    btn.className = 'ic-stamp-btn'; btn.disabled = true;
-    btn.style.background = '#f0f0f0'; btn.style.color = '#aaa'; btn.style.fontSize = '11px';
-    btn.onclick = null;
+    /* 방문 기록 없음 — 안내 문구 없이 완전히 숨김 */
+    btn.style.display = 'none'; btn.onclick = null;
   }
 }
 function _showMyLoc(lat,lng){

@@ -4,7 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1F2A44">
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="길동무">
+<link rel="apple-touch-icon" href="icon-192x192.png">
+<meta name="theme-color" content="#1f2a44">
 <title>순례길 — 가톨릭길동무</title>
 <style>
 :root{
@@ -223,6 +230,11 @@ function escHtml(s) {
 
 history.replaceState({v:'list'}, '');
 renderList();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
 </script>
 </body>
 </html>

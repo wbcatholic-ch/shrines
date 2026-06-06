@@ -2,7 +2,7 @@
    구 catholic-way-V2-xxx 캐시를 자동 삭제하고 새 캐시로 전환합니다. */
 'use strict';
 
-const CACHE_VERSION = 'catholic-pilgrim-V1';
+const CACHE_VERSION = 'catholic-pilgrim-V2';
 
 /* 앱 셸: 첫 실행에 필요한 파일 전부 선캐시 */
 const APP_SHELL = [
@@ -13,16 +13,16 @@ const APP_SHELL = [
   './prayer.html',
   './route.html',
   './app.js?v=V1',
-  './shrines.js?v=V2',
+  './shrines.js?v=V3',
   './courses.js?v=V1b',
   './routes.js?v=V2',
   './prayer.js?v=V1',
   './sw-update.js?v=V1',
   './manifest.json',
-  './intro-cross-jesus.jpg?v=V2-113',
   './icon-192x192.png',
   './icon-512x512.png',
   './icon-512x512-maskable.png',
+  './intro-cross-jesus.jpg?v=V2-113',
 ];
 
 /* ── 설치: 앱 셸 선캐시 ── */
