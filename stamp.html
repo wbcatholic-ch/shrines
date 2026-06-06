@@ -723,11 +723,13 @@ function renderList() {
     var last = _last(visited, s.seq);
     var isV  = cnt > 0;
     var no   = allSeqs.indexOf(s.seq) + 1;
-    var cbckUrl = s.seq ? 'https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq : '';
-    var mapUrl  = (s.lat && s.lng)
-      ? 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng
-      : 'https://map.kakao.com/?q=' + encodeURIComponent((s.addr || '') + ' ' + s.name);
-    var hpUrl   = _hpUrl(s.hp);
+    var cbckUrl = s.cbck || (s.seq ? 'https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq : '');
+    var mapUrl  = s.kurl
+      ? s.kurl
+      : (s.lat && s.lng)
+        ? 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng
+        : 'https://map.kakao.com/?q=' + encodeURIComponent((s.addr || '') + ' ' + s.name);
+    var hpUrl   = s.hp || '';
     var dioc    = DIOCESE[s.diocese] || s.diocese || '';
     return '<div class="sh-card type-' + t + '">'
       + '<span class="sh-no">' + no + '</span>'

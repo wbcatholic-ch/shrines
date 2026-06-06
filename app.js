@@ -443,27 +443,29 @@ function _openCard(idx) {
   const links = _q('#ic-links');
 
   if (s.hp) {
-    hp.href = _hpUrl(s.hp);
+    hp.href = s.hp;          /* 이미 https:// 포함 */
     hp.style.display = '';
   } else {
     hp.style.display = 'none';
   }
 
-  if (s.seq) {
-    /* 참고 파일과 동일한 CBCK 정식 URL */
-    guide.href = 'https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq;
+  if (s.cbck || s.seq) {
+    /* cbck = 전체 CBCK URL (diocese 파라미터 포함), 없으면 seq로 구성 */
+    guide.href = s.cbck || ('https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq);
     guide.style.display = '';
   } else {
     guide.style.display = 'none';
   }
 
-  links.style.display = (s.hp || s.seq) ? '' : 'none';
+  links.style.display = (s.hp || s.cbck || s.seq) ? '' : 'none';
 
-  /* 카카오맵 — kw 있으면 키워드 검색, 없으면 좌표 링크 */
+  /* 카카오맵 — kurl(place 직링크) 우선, 없으면 kw 검색, 최후 좌표 링크 */
   _q('#ic-kakao-nav').onclick = () => {
-    const url = s.kw
-      ? 'https://map.kakao.com/link/search/' + encodeURIComponent(s.kw)
-      : 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng;
+    const url = s.kurl
+      ? s.kurl
+      : s.kw
+        ? 'https://map.kakao.com/link/search/' + encodeURIComponent(s.kw)
+        : 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng;
     location.href = url;
   };
 
