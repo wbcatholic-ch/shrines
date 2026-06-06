@@ -215,7 +215,93 @@
   .course-sub .done { color: var(--green); }
 
   /* 코스 상세 */
-  .course-back {
+  /* 순례 카드 */
+  .vc-section-title {
+    font-size: 13px; font-weight: 700; color: var(--gray);
+    letter-spacing: .04em; margin: 18px 0 10px;
+  }
+  .vc-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px;
+  }
+  .vc-card {
+    position: relative; overflow: hidden; border-radius: 14px;
+    background: linear-gradient(180deg, #fffdf8 0%, #f1e5d3 100%);
+    border: 1px solid rgba(126,104,74,.22);
+    box-shadow: 0 3px 9px rgba(47,41,33,.10);
+    cursor: pointer;
+    transition: transform .12s, filter .12s;
+  }
+  .vc-card:active { transform: translateY(4px) scale(.977); filter: brightness(.96); }
+  .vc-strip { height: 3px; width: 100%; flex-shrink: 0; }
+  .vc-body { padding: 10px 10px 10px; }
+  .vc-name {
+    font-size: 14px; font-weight: 800; color: var(--d);
+    letter-spacing: -.03em; line-height: 1.3; margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .vc-addr {
+    font-size: 10px; color: var(--gray); line-height: 1.4; margin-bottom: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .vc-foot { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+  .vc-count {
+    font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px;
+    color: #fff; flex-shrink: 0;
+  }
+  .vc-last { font-size: 9px; color: var(--gray); text-align: right; line-height: 1.4; }
+
+  /* 상세 패널 */
+  #visit-detail {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    background: var(--card); border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 24px rgba(31,42,68,.16);
+    transform: translateY(100%); transition: transform .28s cubic-bezier(.32,.72,0,1);
+    max-height: 72vh; display: flex; flex-direction: column;
+    padding-bottom: calc(var(--safe-b) + 8px);
+  }
+  #visit-detail.open { transform: none; }
+  .vd-drag { width: 38px; height: 4px; background: var(--bdr); border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
+  .vd-head {
+    display: flex; align-items: flex-start; gap: 8px; padding: 14px 16px 10px; flex-shrink: 0;
+  }
+  .vd-title-wrap { flex: 1; min-width: 0; }
+  .vd-name { font-size: 18px; font-weight: 800; color: var(--d); letter-spacing: -.04em; }
+  .vd-type {
+    display: inline-block; margin-top: 4px; font-size: 9px; font-weight: 800;
+    padding: 2px 8px; border-radius: 6px; color: #fff;
+  }
+  .vd-close { background: none; border: none; font-size: 20px; color: var(--gray); cursor: pointer; padding: 0; flex-shrink: 0; }
+  .vd-divider { height: 1px; background: var(--bdr); margin: 0 16px 2px; flex-shrink: 0; }
+  .vd-body { overflow-y: auto; padding: 0 16px 8px; }
+  .vd-count-label { font-size: 12px; font-weight: 700; color: var(--gray); padding: 10px 0 6px; }
+  .vd-date-row {
+    display: flex; align-items: center; gap: 8px; padding: 9px 0;
+    border-bottom: 1px solid var(--bdr);
+  }
+  .vd-date-row:last-of-type { border-bottom: none; }
+  .vd-date-icon { font-size: 14px; flex-shrink: 0; }
+  .vd-date-txt { flex: 1; font-size: 14px; font-weight: 600; color: var(--d); }
+  .vd-date-del {
+    background: none; border: 1px solid var(--bdr); border-radius: 6px;
+    color: var(--gray); font-size: 11px; padding: 3px 8px; cursor: pointer;
+    font-family: inherit; font-weight: 600;
+  }
+  .vd-add-btn {
+    width: 100%; margin-top: 10px; height: 40px;
+    background: none; border: 1.5px dashed var(--bdr); border-radius: 10px;
+    font-family: inherit; font-size: 13px; color: var(--gray); cursor: pointer;
+    font-weight: 700;
+  }
+  .vd-map-btn {
+    width: 100%; margin-top: 8px; height: 44px;
+    background: var(--d); color: #fff; border: none; border-radius: 12px;
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .vd-backdrop {
+    position: fixed; inset: 0; z-index: 59; background: rgba(0,0,0,.3);
+    display: none; backdrop-filter: blur(1px);
+  }
+  .vd-backdrop.open { display: block; }
     display: inline-flex; align-items: center; gap: 4px;
     border: none; background: none; font-family: inherit;
     font-size: 13px; font-weight: 700; color: var(--gray-500);
@@ -460,7 +546,114 @@ function renderOverview() {
     +   '<div class="summary-sub">스탬프북 ' + total + '개 성지 기준</div>'
     + '</div>'
     + '<div class="section-title">교구별 진행률</div>'
-    + '<div class="diocese-grid">' + dioHtml + '</div>';
+    + '<div class="diocese-grid">' + dioHtml + '</div>'
+    + renderVisitCards(visited);
+}
+
+function renderVisitCards(visited) {
+  /* 방문한 성지만, 최근 날짜 순 정렬 */
+  var list = _shrines
+    .filter(function(s) { return _cnt(visited, s.seq) > 0; })
+    .map(function(s) {
+      var dates = Array.isArray(visited[s.seq]) ? visited[s.seq] : [];
+      return { s: s, dates: dates.slice().sort(), cnt: dates.length };
+    })
+    .sort(function(a, b) {
+      return (b.dates[b.dates.length-1] || '').localeCompare(a.dates[a.dates.length-1] || '');
+    });
+
+  if (!list.length) return '';
+
+  var clr = { '성지':'#c0392b', '순례지':'#1565c0', '순교 사적지':'#1b7a3e' };
+  var cards = list.map(function(o) {
+    var s = o.s, c = clr[s.type] || '#888';
+    var last = o.dates[o.dates.length-1] || '';
+    return '<div class="vc-card" onclick="openVisitDetail(\'' + s.seq + '\')">'
+      + '<div class="vc-strip" style="background:' + c + '"></div>'
+      + '<div class="vc-body">'
+      +   '<div class="vc-name">' + escHtml(s.name) + '</div>'
+      +   '<div class="vc-addr">' + escHtml((s.addr || '').split(' ').slice(0, 3).join(' ')) + '</div>'
+      +   '<div class="vc-foot">'
+      +     '<span class="vc-count" style="background:' + c + '">' + o.cnt + '회 순례</span>'
+      +     '<span class="vc-last">' + (DIOCESE[s.diocese] || s.diocese) + '<br>' + last + '</span>'
+      +   '</div>'
+      + '</div></div>';
+  }).join('');
+
+  return '<div class="vc-section-title">순례한 성지 · ' + list.length + '곳</div>'
+    + '<div class="vc-grid">' + cards + '</div>';
+}
+
+function openVisitDetail(seq) {
+  var s = _shrines.find(function(x) { return x.seq === seq; });
+  if (!s) return;
+  var clr = { '성지':'#c0392b', '순례지':'#1565c0', '순교 사적지':'#1b7a3e' };
+  var c = clr[s.type] || '#888';
+
+  document.getElementById('vd-name').textContent = s.name;
+  var tb = document.getElementById('vd-type');
+  tb.textContent = s.type || ''; tb.style.background = c;
+
+  _renderVdDates(seq);
+
+  document.getElementById('vd-add-btn').onclick = function() {
+    var d = prompt('방문 날짜를 입력하세요 (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    var v = getVisited(), arr = Array.isArray(v[seq]) ? v[seq] : [];
+    if (arr.indexOf(d) >= 0) { alert('이미 등록된 날짜입니다.'); return; }
+    arr.push(d); arr.sort(); v[seq] = arr; saveVisited(v);
+    _renderVdDates(seq); render();
+  };
+  document.getElementById('vd-map-btn').onclick = function() {
+    location.href = 'map.html';
+  };
+
+  document.getElementById('visit-detail').classList.add('open');
+  document.getElementById('vd-backdrop').classList.add('open');
+}
+
+function _renderVdDates(seq) {
+  var v = getVisited(), arr = Array.isArray(v[seq]) ? v[seq].slice().sort().reverse() : [];
+  var body = document.getElementById('vd-body');
+  var rows = arr.map(function(d, i) {
+    return '<div class="vd-date-row">'
+      + '<span class="vd-date-icon">✝</span>'
+      + '<span class="vd-date-txt">' + d + '</span>'
+      + '<button class="vd-date-del" onclick="removeVisitDate(\'' + seq + '\',' + i + ')">삭제</button>'
+      + '</div>';
+  }).join('');
+  body.innerHTML = '<div class="vd-count-label">순례 기록 ' + arr.length + '회</div>'
+    + rows
+    + '<button class="vd-add-btn" id="vd-add-btn">+ 날짜 추가</button>'
+    + '<button class="vd-map-btn" id="vd-map-btn">🗺 성지 지도에서 보기</button>';
+  /* rebind after re-render */
+  var s = _shrines.find(function(x) { return x.seq === seq; });
+  document.getElementById('vd-add-btn').onclick = function() {
+    var d = prompt('방문 날짜를 입력하세요 (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    var v2 = getVisited(), a2 = Array.isArray(v2[seq]) ? v2[seq] : [];
+    if (a2.indexOf(d) >= 0) { alert('이미 등록된 날짜입니다.'); return; }
+    a2.push(d); a2.sort(); v2[seq] = a2; saveVisited(v2);
+    _renderVdDates(seq); render();
+  };
+  document.getElementById('vd-map-btn').onclick = function() { location.href = 'map.html'; };
+}
+
+function removeVisitDate(seq, reversedIdx) {
+  var v = getVisited(), arr = Array.isArray(v[seq]) ? v[seq].slice().sort().reverse() : [];
+  var d = arr[reversedIdx];
+  if (!d || !confirm(d + '\n이 순례 기록을 삭제할까요?')) return;
+  /* 원본 배열에서 해당 날짜 제거 */
+  var orig = Array.isArray(v[seq]) ? v[seq] : [];
+  var idx = orig.indexOf(d);
+  if (idx >= 0) { orig.splice(idx, 1); }
+  if (orig.length) v[seq] = orig; else delete v[seq];
+  saveVisited(v); _renderVdDates(seq); render();
+}
+
+function closeVisitDetail() {
+  document.getElementById('visit-detail').classList.remove('open');
+  document.getElementById('vd-backdrop').classList.remove('open');
 }
 
 function renderList() {
@@ -603,5 +796,20 @@ window.addEventListener('pagehide', function(){
 /* ── 시작 ── */
 init();
 </script>
+<!-- 순례 상세 패널 -->
+<div id="vd-backdrop" class="vd-backdrop" onclick="closeVisitDetail()"></div>
+<div id="visit-detail">
+  <div class="vd-drag"></div>
+  <div class="vd-head">
+    <div class="vd-title-wrap">
+      <div class="vd-name" id="vd-name">-</div>
+      <div class="vd-type" id="vd-type"></div>
+    </div>
+    <button class="vd-close" onclick="closeVisitDetail()">✕</button>
+  </div>
+  <div class="vd-divider"></div>
+  <div class="vd-body" id="vd-body"></div>
+</div>
+
 </body>
 </html>
