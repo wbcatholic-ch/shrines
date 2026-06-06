@@ -817,11 +817,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   /* 탭 버튼 */
   document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
 
-  /* 시트 닫기 */
-  _q('#nearby-close').addEventListener('click',_closeTab);
-  _q('#list-close').addEventListener('click',_closeTab);
-  _q('#region-close').addEventListener('click',_closeTab);
-  _q('#route-close').addEventListener('click',_closeTab);
+  /* 시트 닫기 — × 버튼은 onclick="switchTab(...)"으로 처리 */
 
   /* 내위치 */
   _q('#loc-btn').addEventListener('click',()=>{
