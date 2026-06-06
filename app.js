@@ -407,6 +407,74 @@ function _openKakaoMapRoute() {
   window.open(url, '_blank');
 }
 
+/* §9-2 성지 선택 Picker (출발/도착/경유 선택) */
+let _pickerRole = '';
+
+function _openPicker(role) {
+  _pickerRole = role;
+  const titles = { start:'🔵 출발지 선택', end:'🔴 도착지 선택', via:'🟠 경유지 추가' };
+  _q('#rp-title').textContent = titles[role] || '성지 선택';
+  _q('#rp-input').value = '';
+  _renderPickerList('');
+  _q('#route-picker').classList.add('open');
+  setTimeout(() => _q('#rp-input').focus(), 200);
+}
+
+function _closePicker() {
+  _q('#route-picker').classList.remove('open');
+}
+
+function _renderPickerList(kw) {
+  const clr = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
+  const q   = kw.trim();
+  const list = q
+    ? _shrines.filter(s => s.name.includes(q) || (s.addr||'').includes(q))
+    : _shrines;
+
+  let html = '';
+  if (_pickerRole === 'start') {
+    html += `<div class="rp-myloc" id="rp-myloc-btn">
+      <span style="font-size:20px">📍</span><span>현재 내 위치</span>
+    </div>`;
+  }
+  if (!list.length) {
+    html += `<div class="rp-empty">검색 결과가 없습니다</div>`;
+  } else {
+    html += list.map(s => {
+      const idx  = _shrines.indexOf(s);
+      const dioc = _DIOCESE[s.diocese] || s.diocese || '';
+      return `<div class="rp-item" data-idx="${idx}">
+        <div class="rp-dot" style="background:${clr[s.type]||'#888'}"></div>
+        <div class="rp-info">
+          <div class="rp-name">${_esc(s.name)}</div>
+          <div class="rp-addr">${_esc(dioc)} · ${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  _q('#rp-list').innerHTML = html;
+
+  const myBtn = document.getElementById('rp-myloc-btn');
+  if (myBtn) myBtn.addEventListener('click', () => { _closePicker(); _setGpsStart(); });
+}
+
+function _initPicker() {
+  _q('#rp-close').addEventListener('click', _closePicker);
+  _q('#rp-input').addEventListener('input', e => _renderPickerList(e.target.value));
+  _q('#rp-list').addEventListener('click', e => {
+    const item = e.target.closest('[data-idx]');
+    if (!item) return;
+    const idx = parseInt(item.dataset.idx);
+    const s   = _shrines[idx];
+    if (!s) return;
+    const pt  = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
+    _closePicker();
+    if      (_pickerRole === 'start') { _setStart(pt); if (_rE) _tryRoute(); }
+    else if (_pickerRole === 'end')   { _setEnd(pt);   if (_rS) _tryRoute(); }
+    else if (_pickerRole === 'via')   { _addVia(pt);   if (_rS && _rE) _tryRoute(); }
+  });
+}
+
 
 /* §10 인포카드 */
 function _hpUrl(hp) { /* hp 필드 https:// 보정 */
@@ -608,10 +676,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   _q('#rs-myloc').addEventListener('click',_setGpsStart);
   _q('#rs-start-x').addEventListener('click', _clearStart);
   _q('#rs-end-x').addEventListener('click', _clearEnd);
-  _q('#rs-add-via').addEventListener('click', () => {
-    if (_curIdx >= 0) { _addVia({ idx: _curIdx, name: _cur.name, lat: _cur.lat, lng: _cur.lng, isGps: false }); _tryRoute(); }
-    else alert('지도에서 성지를 먼저 선택하세요.');
-  });
+  /* 출발/도착 박스 클릭 → picker 열기 */
+  _q('#rs-start-lbl').addEventListener('click', () => _openPicker('start'));
+  _q('#rs-end-lbl').addEventListener('click',   () => _openPicker('end'));
+  _q('#rs-add-via').addEventListener('click', () => _openPicker('via'));
   _q('#rs-navi-btn').addEventListener('click', _startNavi);
   _q('#rs-map-btn').addEventListener('click', _openKakaoMapRoute);
   _q('#rs-reset-btn').addEventListener('click', _clearRoute);
@@ -623,6 +691,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     _q('#rs-priority-bar').querySelectorAll('.rs-pri-btn').forEach(b => b.classList.toggle('active', b === btn));
     if (_rS && _rE) _tryRoute();
   });
+  _initPicker();
 
   /* 인포카드 */
   _q('#ic-close').addEventListener('click',_closeCard);

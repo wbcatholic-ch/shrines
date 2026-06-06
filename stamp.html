@@ -443,7 +443,7 @@
 
 <div id="main-scroll"></div>
 
-<script src="shrines.js?v=V2"></script>
+<script src="shrines.js?v=V3"></script>
 <script src="courses.js?v=V1b"></script>
 <script>
 /* ── 상수 ── */
@@ -496,7 +496,7 @@ function _hasDate(v, seq, date) { return _dates(v, seq).indexOf(date) !== -1; }
 /* ── 초기화 ── */
 function init() {
   var all = window._SH_RAW || [];
-  _shrines = all.filter(function(s){ return s.stamp; });
+  _shrines = all;  /* stamp 필드 없음 — 168개 전체 사용 */
   all.forEach(function(s){ _byseq[s.seq] = s; });
   _courses = window._COURSES || [];
   render();

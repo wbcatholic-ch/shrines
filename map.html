@@ -274,6 +274,46 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
   pointer-events: none; z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,.3);
 }
 #stamp-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* ── 경로 성지 선택 Picker ── */
+#route-picker {
+  position:fixed; inset:0; z-index:9000;
+  background:#f7f4ee; display:flex; flex-direction:column;
+  transform:translateY(100%); transition:transform .25s ease;
+}
+#route-picker.open { transform:translateY(0); }
+.rp-head {
+  display:flex; align-items:center; gap:10px;
+  padding:calc(env(safe-area-inset-top,0) + 12px) 14px 0;
+  background:var(--navy); color:#fff; flex-shrink:0; padding-bottom:12px;
+}
+.rp-title { flex:1; font-size:15px; font-weight:800; }
+.rp-close {
+  width:32px; height:32px; border:none; background:rgba(255,255,255,.18);
+  border-radius:50%; color:#fff; font-size:20px; line-height:1; cursor:pointer;
+}
+.rp-search-wrap { padding:10px 14px 6px; background:#fff; flex-shrink:0; border-bottom:1px solid #ece8e0; }
+.rp-input {
+  width:100%; padding:10px 14px; border:1.5px solid #ddd; border-radius:10px;
+  font-size:15px; font-family:inherit; background:#f8f8f8; box-sizing:border-box;
+}
+.rp-list { flex:1; overflow-y:auto; }
+.rp-myloc {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; border-bottom:2px solid #e0dbd0;
+  cursor:pointer; background:#fff;
+  font-size:14px; font-weight:800; color:var(--navy);
+}
+.rp-item {
+  display:flex; align-items:center; gap:12px;
+  padding:11px 16px; border-bottom:1px solid #ece8e0;
+  cursor:pointer; background:#fff;
+}
+.rp-item:active { background:#f0ede6; }
+.rp-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.rp-info { flex:1; min-width:0; }
+.rp-name { font-size:14px; font-weight:700; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rp-addr { font-size:11px; color:#999; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rp-empty { padding:40px 16px; text-align:center; color:#aaa; font-size:14px; }
 </style>
 </head>
 <body>
@@ -418,6 +458,18 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       <button class="ic-stamp-btn" id="ic-stamp" style="display:none"></button>
     </div>
   </div>
+</div>
+
+<!-- 경로 성지 선택 Picker -->
+<div id="route-picker">
+  <div class="rp-head">
+    <button class="rp-close" id="rp-close">×</button>
+    <div class="rp-title" id="rp-title">출발지 선택</div>
+  </div>
+  <div class="rp-search-wrap">
+    <input class="rp-input" id="rp-input" type="search" placeholder="성지 이름 검색…" autocomplete="off">
+  </div>
+  <div class="rp-list" id="rp-list"></div>
 </div>
 
 <div id="stamp-toast"></div>
