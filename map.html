@@ -157,7 +157,12 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
   padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700;
   color: #aaa; cursor: pointer; margin-bottom: 8px;
 }
-.rs-connector { width: 1.5px; height: 14px; background: #ddd; margin: -4px 0 -4px 5px; flex-shrink: 0; align-self: flex-start; }
+.rs-box {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1.5px solid #e5ddd1; border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 8px;
+}
+.rs-connector { width: 1.5px; height: 10px; background: #ddd; margin: -4px 0 -4px 5px; flex-shrink: 0; align-self: flex-start; }
 .rs-sep { height: 1px; background: #ebe5d9; margin: 2px 0 10px; }
 #rs-bottom { padding: 10px 14px 12px; flex-shrink: 0; }
 .rs-stats { display: flex; gap: 10px; margin-bottom: 8px; }
@@ -321,7 +326,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
   <button class="route-x" id="route-close">×</button>
   <div id="rs-top">
     <!-- 출발 -->
-    <div class="rs-row">
+    <div class="rs-box">
       <div class="rs-dot" style="background:#1565c0"></div>
       <span class="rs-lbl empty" id="rs-start-lbl">출발지를 선택하세요</span>
       <button class="rs-myloc" id="rs-myloc">내 위치</button>
@@ -333,7 +338,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
     <button class="rs-add-via" id="rs-add-via">➕ 경유지 추가</button>
     <div class="rs-connector"></div>
     <!-- 도착 -->
-    <div class="rs-row" style="margin-bottom:10px">
+    <div class="rs-box" style="margin-bottom:10px">
       <div class="rs-dot" style="background:#c0392b"></div>
       <span class="rs-lbl empty" id="rs-end-lbl">도착지를 선택하세요</span>
       <button class="rs-x-btn" id="rs-end-x" style="display:none">×</button>
@@ -384,7 +389,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       <button class="btn-kakao-nav" id="ic-kakao-nav">🚗 카카오내비</button>
     </div>
     <div class="ic-stamp-row">
-      <button class="ic-stamp-btn auto" id="ic-stamp">📍 성지에 가까워지면 자동으로 기록됩니다</button>
+      <button class="ic-stamp-btn" id="ic-stamp" style="display:none"></button>
     </div>
   </div>
 </div>

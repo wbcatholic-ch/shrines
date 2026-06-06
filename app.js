@@ -12,10 +12,10 @@ const STAMP_RADIUS   = 500;
 const _TY  = { A:'성지', B:'순례지', C:'순교 사적지' };
 const _CLR = { '성지':'#c0392b', '순례지':'#1565c0', '순교 사적지':'#1b7a3e' };
 const _DIOCESE = {
-  '서울':'서울대교구','인천':'인천교구','수원':'수원교구','의정부':'의정부교구',
-  '춘천':'춘천교구','원주':'원주교구','대전':'대전교구','청주':'청주교구',
-  '대구':'대구대교구','안동':'안동교구','부산':'부산교구','마산':'마산교구',
-  '광주':'광주대교구','전주':'전주교구','제주':'제주교구','군종':'군종교구'
+  SE:'서울대교구', IC:'인천교구',  SW:'수원교구',   UJ:'의정부교구',
+  CC:'춘천교구',   WJ:'원주교구',  DJ:'대전교구',   CJ:'청주교구',
+  DG:'대구대교구', AD:'안동교구',  BS:'부산교구',   MS:'마산교구',
+  GJ:'광주대교구', JJ:'전주교구',  JE:'제주교구',   ML:'군종교구'
 };
 
 /* §1 상태 */
@@ -242,7 +242,7 @@ function _removeVia(i) {
 }
 function _renderViaList() {
   _q('#rs-via-wrap').innerHTML = _rVia.map((v,i)=>
-    `<div class="rs-row" style="margin-bottom:6px">
+    `<div class="rs-box" style="margin-bottom:6px">
       <div class="rs-dot" style="background:#FF8C00"></div>
       <span class="rs-lbl">${_esc(v.name)}</span>
       <button class="rs-x-btn" onclick="_removeVia(${i})">×</button>
