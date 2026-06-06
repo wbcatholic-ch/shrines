@@ -441,12 +441,22 @@ function _openCard(idx) {
   const hp    = _q('#ic-hp');
   const guide = _q('#ic-guide');
   const links = _q('#ic-links');
-  if (s.hp)  { hp.href = _hpUrl(s.hp); hp.style.display = ''; }
-  else         hp.style.display = 'none';
+
+  if (s.hp) {
+    hp.href = _hpUrl(s.hp);
+    hp.style.display = '';
+  } else {
+    hp.style.display = 'none';
+  }
+
   if (s.seq) {
+    /* 참고 파일과 동일한 CBCK 정식 URL */
+    guide.href = 'https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq;
     guide.style.display = '';
-    guide.onclick = () => window.open('https://www.cbck.or.kr/page/api/page7330/view.asp?id=' + s.seq, '_blank');
-  } else guide.style.display = 'none';
+  } else {
+    guide.style.display = 'none';
+  }
+
   links.style.display = (s.hp || s.seq) ? '' : 'none';
 
   /* 카카오맵 — kw 있으면 키워드 검색, 없으면 좌표 링크 */
