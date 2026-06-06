@@ -65,7 +65,7 @@ function initMap() {
   _SZ = kakao.maps.Size;  _PT = kakao.maps.Point;  _PL = kakao.maps.Polyline;
 
   _map = new kakao.maps.Map(document.getElementById('map'), {
-    center: new _LL(36.5, 127.8), level: 12
+    center: new _LL(36.2, 127.9), level: 8   /* 구 앱과 동일 — 전국 중심 */
   });
   kakao.maps.event.addListener(_map, 'click', () => _closeCard());
   document.getElementById('map-loading').style.display = 'none';
@@ -73,6 +73,9 @@ function initMap() {
   if (window.Kakao && !Kakao.isInitialized()) Kakao.init(KAKAO_KEY);
   _buildMarkers();
   _startGPS();
+
+  /* 초진입 시 내주변 탭 자동 열기 — 구 앱 동일 */
+  switchTab('nearby');
 
   const p = new URLSearchParams(location.search);
   if (p.get('course')) _loadCourse(p.get('course'), p.get('navi') === '1');
@@ -104,7 +107,11 @@ function _onMarkerClick(idx) {
 
 function _showOnly(indices) { _markers.forEach((mk,i)=>mk&&mk.setMap(indices.includes(i)?_map:null)); }
 function _showAll()         { _markers.forEach(mk=>mk&&mk.setMap(_map)); }
-function _resizeMk(idx,big) { if(_markers[idx]) _markers[idx].setImage(_mkr(_CLR[_shrines[idx].type],big)); }
+function _resizeMk(idx,big) {
+  if (!_markers[idx]) return;
+  /* 선택 마커 = 노란색(#FFE500) 큰 사이즈 — 구 앱 동일 */
+  _markers[idx].setImage(big ? _mkr('#FFE500', true) : _mkr(_CLR[_shrines[idx].type], false));
+}
 
 /* §5 탭 전환 */
 function switchTab(tab) {
@@ -129,28 +136,53 @@ function _closeTab() {
 }
 
 /* §6 내주변 */
+/* 구 앱 동일: 최대 거리 기준 지도 레벨 자동 계산 */
+function _levelFor(maxM) {
+  const km = maxM / 1000;
+  if (km <= 1.8) return 5; if (km <= 3.5) return 6; if (km <= 7) return 7;
+  if (km <= 14)  return 8; if (km <= 28)  return 9; if (km <= 55) return 10;
+  if (km <= 95)  return 11; return 12;
+}
+
 function _loadNearby() {
   const body = document.getElementById('nearby-body');
   body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">📍 위치 확인 중…</div>';
-  if (!navigator.geolocation) { body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">위치 기능을 사용할 수 없습니다.</div>'; return; }
+  if (!navigator.geolocation) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">위치 기능을 사용할 수 없습니다.</div>';
+    return;
+  }
   navigator.geolocation.getCurrentPosition(pos => {
     const {latitude:lat, longitude:lng} = pos.coords;
-    _showMyLoc(lat,lng); _map.setCenter(new _LL(lat,lng)); _map.setLevel(8);
-    const list = _shrines.map((s,i)=>({i,d:_dist(lat,lng,s.lat,s.lng)}))
-      .filter(o=>o.d<500000).sort((a,b)=>a.d-b.d).slice(0,10);
-    _showOnly(list.map(o=>o.i));
-    body.innerHTML = list.map((o,n)=>{
+    _showMyLoc(lat, lng);
+    const list = _shrines
+      .map((s,i) => ({i, d:_dist(lat,lng,s.lat,s.lng)}))
+      .filter(o => o.d < 500000).sort((a,b) => a.d-b.d).slice(0, 10);
+    _showOnly(list.map(o => o.i));
+
+    /* 구 앱 동일: 10곳 기준 지도 레벨 + 현재 위치 중심 */
+    const maxD = list.reduce((m,o) => Math.max(m, o.d), 0);
+    _map.setLevel(_levelFor(maxD));
+    _map.setCenter(new _LL(lat, lng));
+
+    if (!list.length) {
+      body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">주변 50km 내 성지가 없습니다.</div>';
+      return;
+    }
+    body.innerHTML = list.map((o,n) => {
       const s=_shrines[o.i], c=_CLR[s.type];
-      const dt = o.d<1000?Math.round(o.d)+'m':(o.d/1000).toFixed(1)+'km';
+      const dt = o.d<1000 ? Math.round(o.d)+'m' : (o.d/1000).toFixed(1)+'km';
       return `<div class="li" data-i="${o.i}">
-        <div class="li-dot" style="background:${c}"></div>
-        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').slice(0,30))}</div></div>
+        <div class="li-num" style="background:${c}">${n+1}</div>
+        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc(_DIOCESE[s.diocese]||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
         <div class="li-dist">${dt}</div>
       </div>`;
     }).join('');
-    body.querySelectorAll('[data-i]').forEach(el=>el.addEventListener('click',()=>_openCard(+el.dataset.i)));
-  }, ()=>{ body.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">위치를 가져오지 못했습니다.</div>'; },
-  {enableHighAccuracy:true, timeout:12000, maximumAge:10000});
+    body.querySelectorAll('[data-i]').forEach(el =>
+      el.addEventListener('click', () => _openCard(+el.dataset.i))
+    );
+  }, () => {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">위치를 가져오지 못했습니다.<br><button onclick="_loadNearby()" style="margin-top:12px;padding:8px 18px;border-radius:20px;border:none;background:#1f2a44;color:#d4aa6a;font-weight:700;cursor:pointer">다시 시도</button></div>';
+  }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 10000});
 }
 
 /* §7 성지찾기 */
@@ -172,33 +204,114 @@ function _renderList(q) {
   body.querySelectorAll('[data-i]').forEach(el=>el.addEventListener('click',()=>_openCard(+el.dataset.i)));
 }
 
-/* §8 지역검색 */
+/* §8 지역검색
+   구 앱 동일 2단계:
+   ① 장소 후보 목록 → ② 선택 후 근처 성지 10곳 (직선거리×1.35 자동차 거리 추정) */
 function _regionSearch(q) {
   if (!q.trim()) return;
   const body = document.getElementById('region-body');
-  body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색 중…</div>';
-  if (!kakao.maps.services) { body.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">지역검색을 사용할 수 없습니다.</div>'; return; }
-  new kakao.maps.services.Places().keywordSearch(q, (data,status)=>{
-    if (status!==kakao.maps.services.Status.OK||!data.length) {
-      body.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색 결과가 없습니다.</div>'; return;
+  body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">🔍 장소 검색 중…</div>';
+
+  if (!kakao.maps.services) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">지역검색을 사용할 수 없습니다.</div>';
+    return;
+  }
+
+  new kakao.maps.services.Places().keywordSearch(q, (data, status) => {
+    if (status !== kakao.maps.services.Status.OK || !data.length) {
+      _regionFallback(q); return;
     }
-    const lat=+data[0].y, lng=+data[0].x;
-    if (_regionMk) _regionMk.setMap(null);
-    _regionMk = new _MM({map:_map, position:new _LL(lat,lng), image:_mkrRegion(), title:data[0].place_name, zIndex:500});
-    const near = _shrines.reduce((a,s,i)=>{if(s.lat&&s.lng&&_dist(lat,lng,s.lat,s.lng)<50000)a.push({i,d:_dist(lat,lng,s.lat,s.lng)});return a;},[]).sort((a,b)=>a.d-b.d);
-    _showOnly(near.map(o=>o.i));
-    const maxD = near.reduce((m,o)=>Math.max(m,o.d),0);
-    _map.setLevel(maxD<3500?6:maxD<7000?7:maxD<14000?8:maxD<28000?9:10);
-    _map.setCenter(new _LL(lat,lng));
-    if (!near.length) { body.innerHTML='<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">근처에 성지가 없습니다.</div>'; return; }
-    body.innerHTML = `<div style="padding:10px 14px;font-size:11px;color:#aaa;font-weight:700">📍 ${_esc(data[0].place_name)} 주변 성지 ${near.length}곳</div>` +
-      near.map(o=>{
-        const s=_shrines[o.i], c=_CLR[s.type];
-        const dt=o.d<1000?Math.round(o.d)+'m':(o.d/1000).toFixed(1)+'km';
-        return `<div class="li" data-i="${o.i}"><div class="li-dot" style="background:${c}"></div><div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').slice(0,30))}</div></div><div class="li-dist">${dt}</div></div>`;
-      }).join('');
-    body.querySelectorAll('[data-i]').forEach(el=>el.addEventListener('click',()=>_openCard(+el.dataset.i)));
-  });
+
+    /* ① 후보 목록 표시 */
+    let html = '<div style="padding:8px 14px 4px;font-size:11px;font-weight:700;color:#888;border-bottom:1px solid #eee">📍 지역을 선택하세요</div>';
+    data.forEach(d => {
+      const nm = d.place_name||'', ad = d.road_address_name||d.address_name||'';
+      html += `<div class="region-place-cand li" data-lat="${d.y}" data-lng="${d.x}" data-nm="${_esc(nm)}">
+        <div class="li-dot" style="background:#7c3aed"></div>
+        <div class="li-main"><div class="li-name">${_esc(nm)}</div><div class="li-sub">${_esc(ad)}</div></div>
+      </div>`;
+    });
+    body.innerHTML = html;
+
+    /* ② 후보 클릭 → 근처 성지 10곳 */
+    body.querySelectorAll('.region-place-cand').forEach(el => {
+      el.addEventListener('click', () => {
+        const lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng);
+        const nm  = el.dataset.nm || q;
+        _regionShowShrines(lat, lng, nm);
+      });
+    });
+  }, { size: 10 });
+}
+
+function _regionShowShrines(lat, lng, placeName) {
+  const body = document.getElementById('region-body');
+  body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">✝ 거리 계산 중…</div>';
+
+  /* 지역 마커 */
+  if (_regionMk) _regionMk.setMap(null);
+  _regionMk = new _MM({ map:_map, position:new _LL(lat,lng), image:_mkrRegion(), title:placeName, zIndex:500 });
+
+  /* 근처 성지 정렬 (직선거리 × 1.35 자동차 거리 추정) */
+  const sorted = _shrines
+    .map((s,i) => ({ i, d: _dist(lat,lng,s.lat,s.lng) }))
+    .filter(o => o.d < 200000)
+    .sort((a,b) => a.d - b.d)
+    .slice(0, 10);
+
+  /* 지도: 10곳만 표시 + 자동 레벨 */
+  _showOnly(sorted.map(o => o.i));
+  const maxD = sorted.reduce((m,o) => Math.max(m, o.d), 0);
+  _map.setLevel(_levelFor(maxD));
+  _map.setCenter(new _LL(lat, lng));
+
+  if (!sorted.length) {
+    body.innerHTML = `<div style="padding:16px 14px 4px;font-size:13px;font-weight:700;color:#1f2937">📍 ${_esc(placeName)}</div>
+      <div style="padding:24px;text-align:center;color:#aaa;font-size:13px">주변에 성지가 없습니다.</div>`;
+    return;
+  }
+
+  /* 결과 렌더 */
+  body.innerHTML =
+    `<div style="padding:12px 14px 4px;font-size:13px;font-weight:800;color:#1f2937">📍 ${_esc(placeName)}</div>
+     <div style="padding:0 14px 8px;font-size:11px;font-weight:700;color:#aaa">✝ 근처 성지 · 자동차 거리순 10곳</div>` +
+    sorted.map((o,n) => {
+      const s=_shrines[o.i], c=_CLR[s.type];
+      const km = (o.d / 1000 * 1.35).toFixed(1);
+      return `<div class="li" data-i="${o.i}">
+        <div class="li-num" style="background:${c}">${n+1}</div>
+        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc(_DIOCESE[s.diocese]||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
+        <div class="li-dist">🚗${km}km</div>
+      </div>`;
+    }).join('');
+
+  body.querySelectorAll('[data-i]').forEach(el =>
+    el.addEventListener('click', () => _openCard(+el.dataset.i))
+  );
+}
+
+/* 카카오 장소 검색 실패 시: 성지명·주소 직접 검색 */
+function _regionFallback(q) {
+  const body = document.getElementById('region-body');
+  const matched = _shrines
+    .map((s,i) => ({ i, s }))
+    .filter(o => o.s.name.includes(q) || (o.s.addr||'').includes(q) || (_DIOCESE[o.s.diocese]||'').includes(q));
+  if (!matched.length) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색 결과가 없습니다.</div>';
+    return;
+  }
+  _showOnly(matched.map(o => o.i));
+  body.innerHTML = `<div style="padding:10px 14px 4px;font-size:11px;font-weight:700;color:#aaa">✝ "${_esc(q)}" 검색 결과</div>` +
+    matched.slice(0, 20).map(o => {
+      const s=o.s, c=_CLR[s.type];
+      return `<div class="li" data-i="${o.i}">
+        <div class="li-dot" style="background:${c}"></div>
+        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
+      </div>`;
+    }).join('');
+  body.querySelectorAll('[data-i]').forEach(el =>
+    el.addEventListener('click', () => _openCard(+el.dataset.i))
+  );
 }
 
 /* §9 길찾기 (Kakao Mobility API + Kakao Navi JS SDK)
