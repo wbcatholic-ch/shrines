@@ -138,36 +138,84 @@
   .diocese-prog-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width .5s ease; }
   .diocese-count { font-size: 11px; color: var(--gray-500); font-weight: 600; }
 
-  /* ── 성지 목록 ── */
-  .shrine-list { display: flex; flex-direction: column; gap: 8px; }
-  /* ── 성지 인포카드 목록 ── */
-  .shrine-list { padding: 12px 14px calc(var(--safe-b) + 24px); }
+  /* ── 성지 목록 카드 (직사각형) ── */
+  .shrine-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+    padding: 12px 14px calc(var(--safe-b) + 24px);
+  }
+  @media (max-width: 380px) { .shrine-list { grid-template-columns: 1fr; } }
+
   .sh-card {
-    background: linear-gradient(180deg, #fffdf9, #f6efe6);
-    border: 1px solid #e4d7c5; border-radius: 14px;
-    overflow: hidden; margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(47,41,33,.08);
+    background: var(--warm-white, #faf7f0);
+    border: 1px solid #c8cfe8;
+    border-radius: 10px;
+    padding: 14px 14px 12px 18px;
+    position: relative; overflow: hidden;
+    transition: box-shadow .18s, transform .18s, border-color .18s;
   }
-  .sh-strip  { height: 3px; }
-  .sh-body   { padding: 11px 14px 12px; }
-  .sh-top    { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
-  .sh-name   { flex: 1; font-size: 15px; font-weight: 800; color: var(--d); letter-spacing: -.03em; line-height: 1.2; }
-  .sh-badge  { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 7px; flex-shrink: 0; margin-top: 3px; color: #fff; }
-  .sh-meta   { font-size: 11px; color: var(--gray); margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sh-visit  { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
-  .sh-btns   { display: flex; gap: 6px; }
-  .sh-btn    { height: 34px; border-radius: 8px; font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; padding: 0 12px; border: none; }
-  .sh-btn-add { background: var(--d); color: #fff; flex: 1; }
-  .sh-btn-del { background: #f0ebe2; color: var(--gray); border: 1px solid var(--bdr); flex-shrink: 0; }
-  .sh-links   { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .sh-card:active { transform: scale(.98); }
+  /* 왼쪽 타입 컬러 스트라이프 */
+  .sh-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 6px; border-radius: 4px 0 0 4px;
+  }
+  .sh-card.type-A { background: linear-gradient(to right, #fde8e6 0%, #faf7f0 32px); }
+  .sh-card.type-A::before { background: linear-gradient(180deg, #e53935, #c0392b); }
+  .sh-card.type-B { background: linear-gradient(to right, #ddeaff 0%, #faf7f0 32px); }
+  .sh-card.type-B::before { background: linear-gradient(180deg, #1e88e5, #1565c0); }
+  .sh-card.type-C { background: linear-gradient(to right, #d6f5e3 0%, #faf7f0 32px); }
+  .sh-card.type-C::before { background: linear-gradient(180deg, #2e7d52, #1b7a3e); }
+
+  .sh-no {
+    position: absolute; top: 10px; right: 12px;
+    font-size: 12px; color: #c8cfe8; font-weight: 400;
+    font-family: 'Georgia', serif;
+  }
+  .sh-name {
+    display: block; font-size: 15px; font-weight: 800; color: #1a2456;
+    line-height: 1.45; margin-bottom: 7px; padding-right: 28px;
+    text-decoration: none; letter-spacing: -.02em;
+  }
+  .sh-name:hover { color: #b8965a; text-decoration: underline; text-underline-offset: 3px; }
+  .sh-addr {
+    display: block; font-size: 12px; color: #5a6494;
+    margin-bottom: 8px; line-height: 1.5; text-decoration: none;
+  }
+  .sh-addr:hover { color: #1a2456; text-decoration: underline; text-underline-offset: 2px; }
+  .sh-meta { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-bottom: 9px; }
+  .sh-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .sh-badge.type-A { background: #fff5f4; color: #c0392b; border: 1px solid #f5b8b0; }
+  .sh-badge.type-B { background: #f0f5ff; color: #1565c0; border: 1px solid #90b8f0; }
+  .sh-badge.type-C { background: #f0faf4; color: #1b7a3e; border: 1px solid #80cc9a; }
+  .sh-ph  { font-size: 12px; color: #5a6494; }
+  .sh-visit {
+    font-size: 12px; font-weight: 700; color: var(--green);
+    margin-bottom: 8px; padding: 4px 0;
+    border-top: 1px dashed #c8cfe8;
+  }
+  .sh-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; border-top: 1px solid #e8ecf5; padding-top: 9px; }
+  .sh-btn-add {
+    flex: 1; min-width: 80px; height: 32px; border: none; border-radius: 6px;
+    background: #1a2456; color: #f5edd8;
+    font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer;
+  }
+  .sh-btn-del {
+    height: 32px; padding: 0 12px; border: 1px solid #c8cfe8; border-radius: 6px;
+    background: #f5f6f8; color: #5a6494;
+    font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .sh-links { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
   .sh-link {
-    font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 8px;
-    text-decoration: none; display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+    text-decoration: none; border: 1px solid;
+    display: inline-flex; align-items: center; gap: 3px;
   }
-  .sh-link-tel  { background: #e8f0fe; color: #1565c0; }
-  .sh-link-web  { background: #e8f5e9; color: #1b7a3e; }
-  .sh-link-cbck { background: #fff3e0; color: #b8430a; }
-  .sh-link-map  { background: #fff9c4; color: #7a6000; }
+  .sh-link-web  { background: #f0faf4; color: #1b7a3e; border-color: #80cc9a; }
     background: var(--card); border: 1px solid var(--bdr);
     border-radius: 12px; padding: 13px 15px;
     display: flex; align-items: center; gap: 12px;
@@ -659,63 +707,48 @@ function _hpUrl(hp) { return hp && !hp.startsWith('http') ? 'https://' + hp : hp
 
 function renderList() {
   var visited = getVisited();
-  var items = _shrines.slice();
-  if (_filter === 'stamped') items = items.filter(function(s){ return _cnt(visited, s.seq) > 0; });
-  else if (_filter === 'A' || _filter === 'B' || _filter === 'C') {
+  var items   = _shrines.slice();
+  if (_filter === 'stamped') {
+    items = items.filter(function(s){ return _cnt(visited, s.seq) > 0; });
+  } else if (_filter === 'A' || _filter === 'B' || _filter === 'C') {
     items = items.filter(function(s){ return s.type === _filter; });
   }
-
   if (!items.length) {
     return '<div class="empty-box"><div class="empty-icon">🕊</div><div class="empty-txt">해당하는 성지가 없습니다.</div></div>';
   }
-
-  var clr = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
+  var allSeqs = _shrines.map(function(s){ return s.seq; });
   return '<div class="shrine-list">' + items.map(function(s) {
-    var c    = clr[s.type] || '#888';
+    var t    = s.type;
     var cnt  = _cnt(visited, s.seq);
     var last = _last(visited, s.seq);
     var isV  = cnt > 0;
-    var dioc = (DIOCESE[s.diocese] || s.diocese || '');
-    var addr = (s.addr || '');
-    var meta = [dioc, addr].filter(Boolean).join(' · ');
-
-    /* 링크 버튼들 */
-    var links = [];
-    if (s.tel) {
-      var telHref = 'tel:' + s.tel.replace(/[^0-9+]/g, '');
-      links.push('<a class="sh-link sh-link-tel" href="' + escHtml(telHref) + '">📞 ' + escHtml(s.tel) + '</a>');
-    }
-    if (s.hp) {
-      links.push('<a class="sh-link sh-link-web" href="' + escHtml(_hpUrl(s.hp)) + '" target="_blank" rel="noopener">🌐 홈페이지</a>');
-    }
-    if (s.seq) {
-      var cbckUrl = 'https://www.cbck.or.kr/page/api/page7330/view.asp?id=' + s.seq;
-      links.push('<a class="sh-link sh-link-cbck" href="' + escHtml(cbckUrl) + '" target="_blank" rel="noopener">📖 성지 상세</a>');
-    }
-    var kakaoUrl = s.kw
-      ? 'https://map.kakao.com/link/search/' + encodeURIComponent(s.kw)
-      : 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng;
-    links.push('<a class="sh-link sh-link-map" href="' + escHtml(kakaoUrl) + '" target="_blank" rel="noopener">🗺 카카오맵</a>');
-
-    return '<div class="sh-card">'
-      + '<div class="sh-strip" style="background:' + c + '"></div>'
-      + '<div class="sh-body">'
-      +   '<div class="sh-top">'
-      +     '<div class="sh-name">' + escHtml(s.name) + '</div>'
-      +     '<span class="sh-badge" style="background:' + c + '">' + (TYPE_LABEL[s.type] || '') + '</span>'
-      +   '</div>'
-      +   '<div class="sh-meta">' + escHtml(meta) + '</div>'
-      +   (isV ? '<div class="sh-visit">✞ ' + cnt + '회 순례 · 마지막 ' + last + '</div>' : '')
-      +   '<div class="sh-links">' + links.join('') + '</div>'
-      +   '<div class="sh-btns">'
-      +     '<button class="sh-btn sh-btn-add" onclick="addManualStamp(\'' + s.seq + '\')">➕ 순례 기록</button>'
-      +     (isV ? '<button class="sh-btn sh-btn-del" onclick="delLastStamp(\'' + s.seq + '\')">삭제</button>' : '')
-      +   '</div>'
-      + '</div></div>';
+    var no   = allSeqs.indexOf(s.seq) + 1;
+    var cbckUrl = s.seq ? 'https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq : '';
+    var mapUrl  = (s.lat && s.lng)
+      ? 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng
+      : 'https://map.kakao.com/?q=' + encodeURIComponent((s.addr || '') + ' ' + s.name);
+    var hpUrl   = _hpUrl(s.hp);
+    var dioc    = DIOCESE[s.diocese] || s.diocese || '';
+    return '<div class="sh-card type-' + t + '">'
+      + '<span class="sh-no">' + no + '</span>'
+      + (cbckUrl ? '<a class="sh-name" href="' + escHtml(cbckUrl) + '" target="_blank" rel="noopener">' + escHtml(s.name) + '</a>' : '<span class="sh-name">' + escHtml(s.name) + '</span>')
+      + '<a class="sh-addr" href="' + escHtml(mapUrl) + '" target="_blank" rel="noopener">📍 ' + escHtml(s.addr || '') + '</a>'
+      + '<div class="sh-meta">'
+      +   '<span class="sh-badge type-' + t + '">' + (TYPE_LABEL[t] || '') + '&nbsp;' + escHtml(dioc) + '</span>'
+      +   (s.tel ? '<span class="sh-ph">☎ ' + escHtml(s.tel) + '</span>' : '')
+      + '</div>'
+      + (hpUrl ? '<div class="sh-links"><a class="sh-link sh-link-web" href="' + escHtml(hpUrl) + '" target="_blank" rel="noopener">🔗 홈페이지</a></div>' : '')
+      + (isV ? '<div class="sh-visit">✞ ' + cnt + '회 순례 · 마지막 ' + last + '</div>' : '')
+      + '<div class="sh-btns">'
+      +   '<button class="sh-btn-add" onclick="addManualStamp(\'' + s.seq + '\',event)">➕ 순례 기록 추가</button>'
+      +   (isV ? '<button class="sh-btn-del" onclick="delLastStamp(\'' + s.seq + '\',event)">삭제</button>' : '')
+      + '</div>'
+      + '</div>';
   }).join('') + '</div>';
 }
 
-function addManualStamp(seq) {
+function addManualStamp(seq, e) {
+  if (e) e.stopPropagation();
   var today = new Date().toISOString().slice(0, 10);
   var d = prompt('순례 날짜를 입력하세요 (YYYY-MM-DD)', today);
   if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
@@ -725,7 +758,8 @@ function addManualStamp(seq) {
   saveVisited(v); render();
 }
 
-function delLastStamp(seq) {
+function delLastStamp(seq, e) {
+  if (e) e.stopPropagation();
   var v = getVisited(), arr = Array.isArray(v[seq]) ? v[seq] : [];
   if (!arr.length) return;
   if (!confirm('마지막 기록 ' + arr[arr.length-1] + '\n이 순례 기록을 삭제할까요?')) return;
