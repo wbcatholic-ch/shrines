@@ -398,8 +398,8 @@ function _updateStamp(s){
       a.pop();if(a.length)v[s.seq]=a;else delete v[s.seq];_saveV(v);_updateStamp(s);
     };
   }else{
-    btn.textContent='📍 성지에 가까워지면 자동으로 기록됩니다';
-    btn.className='ic-stamp-btn auto'; btn.style.fontSize='11px'; btn.onclick=null;
+    btn.style.display = 'none';
+    btn.onclick = null;
   }
 }
 function _showMyLoc(lat,lng){

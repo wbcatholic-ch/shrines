@@ -140,7 +140,25 @@
 
   /* ── 성지 목록 ── */
   .shrine-list { display: flex; flex-direction: column; gap: 8px; }
-  .shrine-item {
+  /* ── 성지 인포카드 목록 ── */
+  .shrine-list { padding: 12px 14px calc(var(--safe-b) + 24px); }
+  .sh-card {
+    background: linear-gradient(180deg, #fffdf9, #f6efe6);
+    border: 1px solid #e4d7c5; border-radius: 14px;
+    overflow: hidden; margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(47,41,33,.08);
+  }
+  .sh-strip  { height: 3px; }
+  .sh-body   { padding: 11px 14px 12px; }
+  .sh-top    { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+  .sh-name   { flex: 1; font-size: 15px; font-weight: 800; color: var(--d); letter-spacing: -.03em; line-height: 1.2; }
+  .sh-badge  { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 7px; flex-shrink: 0; margin-top: 3px; color: #fff; }
+  .sh-meta   { font-size: 11px; color: var(--gray); margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sh-visit  { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+  .sh-btns   { display: flex; gap: 6px; }
+  .sh-btn    { height: 34px; border-radius: 8px; font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; padding: 0 12px; border: none; }
+  .sh-btn-add { background: var(--d); color: #fff; flex: 1; }
+  .sh-btn-del { background: #f0ebe2; color: var(--gray); border: 1px solid var(--bdr); flex-shrink: 0; }
     background: var(--card); border: 1px solid var(--bdr);
     border-radius: 12px; padding: 13px 15px;
     display: flex; align-items: center; gap: 12px;
@@ -148,34 +166,6 @@
     animation: fadeUp .2s ease both;
     transition: transform .12s;
   }
-  .shrine-item:active { transform: scale(.98); }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .stamp-circle {
-    width: 36px; height: 36px; min-width: 36px;
-    border-radius: 50%; border: 2px solid var(--bdr);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; background: var(--card-sub);
-    transition: all .2s;
-  }
-  .stamp-circle.stamped { background: var(--green-l); border-color: var(--green); }
-  .shrine-info { flex: 1; min-width: 0; }
-  .shrine-name {
-    font-size: 14px; font-weight: 700; color: var(--d);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
-  }
-  .shrine-name.stamped { color: var(--green); }
-  .shrine-meta { font-size: 11px; color: var(--gray-400); }
-  .visit-date { font-size: 10px; color: var(--green); font-weight: 600; margin-top: 1px; }
-  .shrine-type-badge {
-    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; flex-shrink: 0;
-  }
-  .type-A { background: #FEE2E2; color: #991B1B; }
-  .type-B { background: #DBEAFE; color: #1E3A8A; }
-  .type-C { background: #D1FAE5; color: #065F46; }
-
   /* ── 안내 박스 ── */
   .no-stamp-guide {
     background: var(--gold-l); border: 1px solid #E7D5B3;
@@ -659,7 +649,7 @@ function closeVisitDetail() {
 function renderList() {
   var visited = getVisited();
   var items = _shrines.slice();
-  if (_filter === 'stamped') items = items.filter(function(s){ return visited[s.seq]; });
+  if (_filter === 'stamped') items = items.filter(function(s){ return _cnt(visited, s.seq) > 0; });
   else if (_filter === 'A' || _filter === 'B' || _filter === 'C') {
     items = items.filter(function(s){ return s.type === _filter; });
   }
@@ -668,20 +658,46 @@ function renderList() {
     return '<div class="empty-box"><div class="empty-icon">🕊</div><div class="empty-txt">해당하는 성지가 없습니다.</div></div>';
   }
 
-  return '<div class="shrine-list">' + items.map(function(s, i){
-    var cnt  = _cnt(visited, s.seq);
-    var last = _last(visited, s.seq);
-    var isV  = cnt > 0;
-    return '<div class="shrine-item" style="animation-delay:' + Math.min(i,15)*0.03 + 's" onclick="toggleStamp(\'' + s.seq + '\',event)">'
-      + '<div class="stamp-circle' + (isV ? ' stamped' : '') + '">' + (isV ? '✅' : '○') + '</div>'
-      + '<div class="shrine-info">'
-      +   '<div class="shrine-name' + (isV ? ' stamped' : '') + '">' + escHtml(s.name) + '</div>'
-      +   '<div class="shrine-meta">' + (DIOCESE[s.diocese]||s.diocese) + '</div>'
-      +   (isV ? '<div class="visit-date">' + cnt + '회 순례 · ' + last + '</div>' : '')
-      + '</div>'
-      + '<span class="shrine-type-badge type-' + s.type + '">' + (TYPE_LABEL[s.type]||s.type) + '</span>'
-      + '</div>';
+  var clr = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
+  return '<div class="shrine-list">' + items.map(function(s) {
+    var c   = clr[s.type] || '#888';
+    var cnt = _cnt(visited, s.seq);
+    var last= _last(visited, s.seq);
+    var isV = cnt > 0;
+    var meta = [(DIOCESE[s.diocese]||s.diocese||''), (s.addr||'').split(' ').slice(0,3).join(' ')].filter(Boolean).join(' · ');
+    return '<div class="sh-card">'
+      + '<div class="sh-strip" style="background:' + c + '"></div>'
+      + '<div class="sh-body">'
+      +   '<div class="sh-top">'
+      +     '<div class="sh-name">' + escHtml(s.name) + '</div>'
+      +     '<span class="sh-badge" style="background:' + c + '">' + (TYPE_LABEL[s.type]||'') + '</span>'
+      +   '</div>'
+      +   '<div class="sh-meta">' + escHtml(meta) + '</div>'
+      +   (isV ? '<div class="sh-visit">✞ ' + cnt + '회 순례 · 마지막 ' + last + '</div>' : '')
+      +   '<div class="sh-btns">'
+      +     '<button class="sh-btn sh-btn-add" onclick="addManualStamp(\'' + s.seq + '\')">➕ 순례 기록</button>'
+      +     (isV ? '<button class="sh-btn sh-btn-del" onclick="delLastStamp(\'' + s.seq + '\')">삭제</button>' : '')
+      +   '</div>'
+      + '</div></div>';
   }).join('') + '</div>';
+}
+
+function addManualStamp(seq) {
+  var today = new Date().toISOString().slice(0, 10);
+  var d = prompt('순례 날짜를 입력하세요 (YYYY-MM-DD)', today);
+  if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+  var v = getVisited(), arr = Array.isArray(v[seq]) ? v[seq] : [];
+  if (arr.indexOf(d) >= 0) { alert('이미 등록된 날짜입니다.'); return; }
+  arr.push(d); arr.sort(); v[seq] = arr;
+  saveVisited(v); render();
+}
+
+function delLastStamp(seq) {
+  var v = getVisited(), arr = Array.isArray(v[seq]) ? v[seq] : [];
+  if (!arr.length) return;
+  if (!confirm('마지막 기록 ' + arr[arr.length-1] + '\n이 순례 기록을 삭제할까요?')) return;
+  arr.pop(); if (arr.length) v[seq] = arr; else delete v[seq];
+  saveVisited(v); render();
 }
 
 /* ── 코스 추천 ── */
