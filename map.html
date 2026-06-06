@@ -8,241 +8,384 @@
 <title>성지 지도 — 가톨릭길동무</title>
 <style>
 :root {
-  --navy:  #1f2a44;
-  --gold:  #d4aa6a;
-  --cream: #fbf8f1;
-  --ink:   #3e362e;
-  --sub:   #6b7280;
-  --line:  #e5ddd1;
-  --A: #c0392b; --B: #1565c0; --C: #1b7a3e;
-  --safe-t: env(safe-area-inset-top,0px);
-  --safe-b: env(safe-area-inset-bottom,0px);
+  --gold:    #d4aa6a;
+  --gold2:   #b8965a;
+  --cream:   #fbf8f1;
+  --ink:     #1f2937;
+  --ui-bg:   #f7f4ee;
+  --navy:    #1f2a44;
+  --shrine:  #c0392b;
+  --pilgrim: #1565c0;
+  --martyr:  #1b7a3e;
+  --tab-h:   78px;
+  --hdr-bg:  #1f2a44;
+  --safe-t:  env(safe-area-inset-top, 0px);
+  --safe-b:  env(safe-area-inset-bottom, 0px);
 }
+@media (max-width: 390px) { :root { --tab-h: 64px; } }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; font-family: 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background: #e8e3d9; }
+html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color: var(--ink); }
 
-/* 지도 */
-#kakao-map { position: fixed; inset: 0; }
+/* ── 지도 ── */
+#map { position: fixed; inset: 0; }
 
-/* 헤더 */
-#hdr {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-  background: var(--navy);
-  padding: calc(var(--safe-t) + 8px) 12px 8px;
-  display: flex; gap: 8px; align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.22);
+/* ── 탭바 ── */
+#tabbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 950;
+  display: grid; grid-template-columns: 44px repeat(4, minmax(0,1fr));
+  height: calc(var(--tab-h) + var(--safe-t));
+  padding: calc(var(--safe-t) + 6px) 6px 6px;
+  gap: 5px; align-items: stretch;
+  background: rgba(255,255,255,.97);
+  border-bottom: 1.5px solid var(--gold);
 }
-#btn-back {
-  width: 36px; height: 36px; flex-shrink: 0; border: none; background: rgba(255,255,255,.12);
-  border-radius: 10px; color: #fff; font-size: 18px; cursor: pointer;
+.tab-back {
   display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  font-size: 22px; color: #94a3b8; padding: 0; border-radius: 10px;
 }
-#search-wrap { flex: 1; position: relative; }
-#search-inp {
-  width: 100%; height: 36px; padding: 0 32px 0 12px;
-  background: rgba(255,255,255,.12); border: none; border-radius: 10px;
-  font-family: inherit; font-size: 13px; color: #fff; outline: none;
+.tab-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 6px 2px; border-radius: 13px;
+  border: 1.5px solid #cfd6dd; background: #eef1f4; color: #334155;
+  font-size: 12px; font-weight: 800; font-family: inherit;
+  cursor: pointer; line-height: 1.1; letter-spacing: -.04em;
+  transition: background .15s, color .15s, border-color .15s;
 }
-#search-inp::placeholder { color: rgba(255,255,255,.45); }
-#search-clear {
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; color: rgba(255,255,255,.6); font-size: 16px;
-  cursor: pointer; display: none; line-height: 1; padding: 0;
+.tab-btn .tab-icon { font-size: 20px; line-height: 1; display: block; }
+.tab-btn.active {
+  background: linear-gradient(135deg, #243a83, #1f2f6b);
+  color: #fff; border-color: transparent;
+  box-shadow: 0 4px 12px rgba(31,47,107,.18);
 }
+.tab-btn.active .tab-icon { font-size: 22px; }
 
-/* 검색 결과 */
-#search-results {
-  position: fixed; top: calc(var(--safe-t) + 58px); left: 12px; right: 12px;
-  background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(14,21,53,.18);
-  max-height: 52vh; overflow-y: auto; z-index: 19; display: none;
+/* ── 지도 컨트롤 ── */
+#loc-btn {
+  position: fixed; right: 12px; bottom: calc(var(--safe-b) + 80px); z-index: 20;
+  width: 46px; height: 46px; border-radius: 14px;
+  background: #fff; border: 1.5px solid #e0d8cc;
+  box-shadow: 0 2px 10px rgba(14,21,53,.15);
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-.sr-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
-.sr-item:last-child { border: none; }
-.sr-item:active { background: var(--cream); }
-.sr-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.sr-main { flex: 1; min-width: 0; }
-.sr-name { font-size: 14px; font-weight: 700; color: var(--ink); }
-.sr-addr { font-size: 11px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sr-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
-.sr-region { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; border-top: 1px solid var(--line); }
-.sr-region-ico { font-size: 18px; }
-.sr-region-txt { font-size: 13px; font-weight: 700; color: var(--navy); }
-
-/* FAB */
-#fabs {
-  position: fixed; right: 12px; bottom: calc(var(--safe-b) + 14px);
-  display: flex; flex-direction: column; gap: 8px; z-index: 15;
-}
-.fab {
-  width: 44px; height: 44px; border-radius: 14px; border: none; cursor: pointer;
-  background: var(--navy); color: #fff; font-size: 19px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 12px rgba(14,21,53,.28);
-}
-
-/* 타입 범례 */
 #legend {
-  position: fixed; left: 12px; bottom: calc(var(--safe-b) + 14px); z-index: 15;
+  position: fixed; left: 10px; bottom: calc(var(--safe-b) + 80px); z-index: 20;
   background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
   border-radius: 10px; padding: 6px 10px;
+  box-shadow: 0 2px 8px rgba(14,21,53,.12);
   display: flex; flex-direction: column; gap: 4px;
-  box-shadow: 0 2px 8px rgba(14,21,53,.14);
 }
-.lg { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: var(--ink); }
-.lg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.leg-row { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: #555; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
-/* 길찾기 하단 바 */
-#route-bar {
-  position: fixed; left: 12px; right: 64px; bottom: calc(var(--safe-b) + 14px);
-  background: var(--navy); border-radius: 14px; padding: 10px 12px;
-  display: none; align-items: center; gap: 8px; z-index: 15;
-  box-shadow: 0 4px 16px rgba(14,21,53,.32);
+/* ── 시트 (공통) ── */
+.sheet {
+  position: fixed;
+  top: calc(var(--tab-h) + var(--safe-t));
+  left: 0; right: 0; bottom: 0; z-index: 800;
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #fbf7f1, #f4efe6);
+  transform: translateY(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
 }
-#rb-summary { flex: 1; font-size: 11px; color: rgba(255,255,255,.8); line-height: 1.5; min-width: 0; }
-#rb-summary strong { color: #fff; font-size: 12px; }
-#rb-navi { flex-shrink: 0; background: var(--gold); color: var(--navy); border: none; border-radius: 10px; padding: 7px 12px; font-family: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
-#rb-clear { flex-shrink: 0; background: rgba(255,255,255,.14); border: none; border-radius: 8px; color: rgba(255,255,255,.7); font-size: 15px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.sheet.open { transform: none; }
+.sheet-hd {
+  background: var(--hdr-bg); padding: 8px 14px;
+  min-height: 48px; display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; border-bottom: 2px solid var(--gold);
+}
+.sheet-title { font-size: 15px; font-weight: 800; color: #c49b56; letter-spacing: .04em; }
+.sheet-x {
+  background: transparent; border: 1px solid rgba(212,170,106,.6);
+  border-radius: 50%; color: var(--gold); font-size: 24px; font-weight: 900;
+  width: 38px; height: 38px; min-width: 38px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.srch-bar {
+  padding: 8px 12px 6px; background: var(--hdr-bg);
+  flex-shrink: 0; border-bottom: 2px solid var(--gold);
+}
+.srch-inner {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,.12); border-radius: 10px; padding: 0 10px;
+}
+.srch-inner input {
+  flex: 1; height: 38px; background: none; border: none; outline: none;
+  font-family: inherit; font-size: 14px; color: #fff;
+}
+.srch-inner input::placeholder { color: rgba(255,255,255,.4); }
+.srch-x { background: none; border: none; color: rgba(255,255,255,.5); font-size: 18px; cursor: pointer; }
+.sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: var(--ui-bg); }
 
-/* 내주변 패널 */
-#nearby-panel {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-  background: #fff; border-radius: 20px 20px 0 0;
-  box-shadow: 0 -4px 24px rgba(14,21,53,.18);
-  transform: translateY(100%); transition: transform .28s cubic-bezier(.32,.72,0,1);
-  max-height: 62vh; display: flex; flex-direction: column;
+/* ── 목록 아이템 ── */
+.li { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #ebe5d9; cursor: pointer; background: #fff; }
+.li:active { background: #f5f0e8; }
+.li-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.li-main { flex: 1; min-width: 0; }
+.li-name { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li-sub  { font-size: 11px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px; flex-shrink: 0; }
+.li-dist  { font-size: 12px; font-weight: 800; color: #7a4f00; background: #fff3d0; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(180,110,0,.3); flex-shrink: 0; white-space: nowrap; }
+
+/* ── 길찾기 시트 ── */
+#sheet-route {
+  top: auto; max-height: 54vh; border-radius: 16px 16px 0 0;
+  border-top: 2px solid var(--gold2);
+  box-shadow: 0 -3px 16px rgba(0,0,0,.25);
+  padding-bottom: var(--safe-b);
+  background: linear-gradient(180deg, #fbf7f1, #f4efe6);
+}
+.route-x {
+  position: absolute; top: 10px; right: 12px; z-index: 3;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid rgba(100,100,100,.4); background: transparent;
+  color: #555; font-size: 18px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+#rs-top { padding: 14px 48px 0 14px; flex-shrink: 0; }
+.rs-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.rs-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.rs-lbl { flex: 1; font-size: 14px; font-weight: 700; color: var(--ink); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-lbl.empty { color: #aaa; font-weight: 400; }
+.rs-x-btn { background: none; border: 1px solid #ddd; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; color: #999; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rs-myloc { background: #e8f0fe; border: 1px solid #c5d9f5; border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 700; color: var(--pilgrim); cursor: pointer; flex-shrink: 0; font-family: inherit; }
+.rs-add-via {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  background: none; border: 1.5px dashed #d0c8b8; border-radius: 10px;
+  padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700;
+  color: #aaa; cursor: pointer; margin-bottom: 8px;
+}
+.rs-connector { width: 1.5px; height: 14px; background: #ddd; margin: -4px 0 -4px 5px; flex-shrink: 0; align-self: flex-start; }
+.rs-sep { height: 1px; background: #ebe5d9; margin: 2px 0 10px; }
+#rs-bottom { padding: 10px 14px 12px; flex-shrink: 0; }
+.rs-stats { display: flex; gap: 10px; margin-bottom: 8px; }
+.rs-stat { flex: 1; background: #fff; border-radius: 10px; padding: 8px 10px; border: 1px solid #e5ddd1; text-align: center; }
+.rs-stat-lbl { font-size: 11px; color: #aaa; font-weight: 600; margin-bottom: 3px; }
+.rs-stat-val { font-size: 18px; font-weight: 800; color: var(--ink); }
+.rs-stat-unit { font-size: 12px; }
+.route-btns { display: flex; gap: 8px; }
+.btn-kakao-navi { flex: 2; height: 46px; border: none; border-radius: 10px; background: #fee500; color: #3a1d1d; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
+.btn-route-reset { flex: 1; height: 46px; border: 1px solid #ddd; border-radius: 10px; background: #f8f8f8; color: #666; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.rs-hint { font-size: 13px; color: #aaa; text-align: center; padding: 14px 0 4px; line-height: 1.6; }
+#rs-result { display: none; }
+
+/* ── 인포카드 ── */
+#info-card {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 860;
+  background: linear-gradient(180deg, #fffdf9, #f6efe6);
+  border-top: 1px solid #e4d7c5; border-radius: 24px 24px 0 0;
+  max-height: 52vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  box-shadow: 0 -12px 36px rgba(0,0,0,.16);
   padding-bottom: var(--safe-b);
 }
-#nearby-panel.open { transform: none; }
-.np-drag { width: 38px; height: 4px; background: var(--line); border-radius: 2px; margin: 10px auto 12px; flex-shrink: 0; }
-.np-head { display: flex; align-items: center; padding: 0 14px 10px; flex-shrink: 0; }
-.np-title { flex: 1; font-size: 15px; font-weight: 800; color: var(--ink); }
-.np-close { background: none; border: none; font-size: 20px; color: var(--sub); cursor: pointer; }
-#nearby-list { overflow-y: auto; }
-.ni { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
-.ni:last-child { border: none; }
-.ni:active { background: var(--cream); }
-.ni-num { width: 26px; height: 26px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ni-info { flex: 1; min-width: 0; }
-.ni-name { font-size: 13px; font-weight: 700; color: var(--ink); }
-.ni-addr { font-size: 11px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ni-dist { font-size: 11px; font-weight: 700; flex-shrink: 0; text-align: right; }
-
-/* 인포카드 */
-#info-card {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
-  background: #fff; border-radius: 20px 20px 0 0;
-  box-shadow: 0 -4px 24px rgba(14,21,53,.18);
-  transform: translateY(100%); transition: transform .28s cubic-bezier(.32,.72,0,1);
-  padding-bottom: var(--safe-b); max-height: 68vh; overflow-y: auto;
+#info-card.open { display: block; }
+.ic-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 8px; }
+.ic-name { font-size: 16px; font-weight: 700; color: var(--ink); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ic-close-btn {
+  background: transparent; border: 1px solid rgba(0,0,0,.2); border-radius: 50%;
+  width: 30px; height: 30px; font-size: 18px; font-weight: 900; color: #555;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: 8px; flex-shrink: 0;
 }
-#info-card.open { transform: none; }
-.ic-drag { width: 38px; height: 4px; background: var(--line); border-radius: 2px; margin: 10px auto 0; }
-.ic-hd { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px 10px; }
-.ic-name { flex: 1; font-size: 18px; font-weight: 800; color: var(--ink); letter-spacing: -.04em; line-height: 1.2; }
-.ic-type-badge { font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 6px; color: #fff; flex-shrink: 0; margin-top: 3px; }
-.ic-close { background: none; border: none; font-size: 20px; color: var(--sub); cursor: pointer; flex-shrink: 0; padding: 0; }
-.ic-div { height: 1px; background: var(--line); margin: 0 16px; }
-.ic-row { display: flex; gap: 8px; padding: 10px 16px; font-size: 13px; color: var(--sub); align-items: flex-start; }
-.ic-row a { color: var(--navy); font-weight: 700; text-decoration: none; }
-.ic-route-row { display: flex; gap: 6px; padding: 8px 16px 0; }
-.ic-btn-r { flex: 1; height: 36px; border: none; border-radius: 9px; font-family: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
-.ic-btns { display: flex; gap: 8px; padding: 10px 16px 4px; }
-.ic-btn { flex: 1; height: 44px; border: none; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-.ic-btn-map   { background: #FEE500; color: #3B1E00; }
-.ic-btn-stamp { background: var(--navy); color: #fff; font-size: 12px; }
-.ic-btn-stamp.on { background: #1b7a3e; }
+.ic-meta { display: flex; align-items: center; justify-content: space-between; padding: 0 14px 8px; }
+.ic-sub { font-size: 12px; color: #9ca3af; font-weight: 600; }
+.ic-type-badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 10px; background: #f0f0f0; color: #555; white-space: nowrap; flex-shrink: 0; }
+.ic-addr-row { display: flex; align-items: flex-start; gap: 10px; padding: 0 14px 10px; border-bottom: 1px solid #f0f0f0; }
+.ic-addr-left { flex: 1; min-width: 0; }
+.ic-addr-lbl { font-size: 12px; color: #aaa; font-weight: 600; margin-bottom: 2px; }
+.ic-addr-val { font-size: 15px; color: var(--ink); word-break: keep-all; line-height: 1.45; }
+.ic-btn-row, .ic-links { display: flex; gap: 7px; padding: 10px 14px 0; }
+.ic-btn-row > *, .ic-links > * { flex: 1 1 0; min-width: 0; box-sizing: border-box; }
+.ic-body { padding: 0 0 12px; }
+.ic-tel-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; background: #f0f7ff; border: 1.5px solid #c5d9f5;
+  border-radius: 10px; padding: 0 8px; font-size: 13px; font-weight: 800;
+  color: var(--pilgrim); height: 46px; white-space: nowrap; overflow: hidden;
+}
+.ic-route-btn {
+  flex: 1; background: var(--navy); color: #fff; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit;
+  height: 46px; display: flex; align-items: center; justify-content: center;
+}
+.ic-link-btn {
+  flex: 1; height: 46px; padding: 0 4px; border-radius: 10px;
+  font-size: 13px; font-weight: 800; text-align: center; cursor: pointer;
+  font-family: inherit; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; white-space: nowrap; overflow: hidden;
+}
+.ic-hp-btn { background: var(--martyr); color: #fff; border: none; }
+.ic-guide-btn { background: var(--cream); color: #8b6914; border: 1px solid #ddd3b0; }
+.btn-kakao-nav {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 46px; border-radius: 10px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 800; font-family: inherit;
+  background: #fee500; color: #3a1d1d; width: 100%;
+}
+.ic-stamp-row { padding: 8px 14px 0; }
+.ic-stamp-btn {
+  width: 100%; height: 42px; border-radius: 10px; border: none; font-family: inherit;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  background: var(--navy); color: #fff; transition: background .15s;
+}
+.ic-stamp-btn.stamped { background: var(--martyr); }
+.ic-stamp-btn.auto { background: #f0f0f0; color: #aaa; cursor: default; }
 
-/* 지도 로딩 */
+/* ── 지도 로딩 ── */
 #map-loading {
-  position: fixed; inset: 0; z-index: 10;
+  position: fixed; inset: 0; z-index: 5;
   background: var(--cream); display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 14px;
 }
-.spinner { width: 34px; height: 34px; border: 3px solid var(--line); border-top-color: var(--navy); border-radius: 50%; animation: spin .8s linear infinite; }
+.spinner { width: 34px; height: 34px; border: 3px solid #e0d8cc; border-top-color: var(--navy); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading-txt { font-size: 13px; color: var(--sub); font-weight: 600; }
 
-/* 순례 기록 토스트 */
+/* ── 순례 토스트 ── */
 #stamp-toast {
-  position: fixed; bottom: calc(var(--safe-b) + 80px); left: 50%;
-  transform: translateX(-50%) translateY(12px);
+  position: fixed; bottom: calc(var(--safe-b) + 72px); left: 50%;
+  transform: translateX(-50%) translateY(10px);
   background: rgba(31,42,68,.96); color: #fff;
-  padding: 11px 22px; border-radius: 24px;
-  font-size: 14px; font-weight: 700; white-space: nowrap;
-  opacity: 0; transition: opacity .3s, transform .3s;
-  pointer-events: none; z-index: 99;
-  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  padding: 11px 22px; border-radius: 24px; font-size: 14px; font-weight: 700;
+  white-space: nowrap; opacity: 0; transition: opacity .3s, transform .3s;
+  pointer-events: none; z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,.3);
 }
 #stamp-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<div id="kakao-map"></div>
-<div id="map-loading"><div class="spinner"></div><p class="loading-txt">지도 불러오는 중…</p></div>
+<div id="map"></div>
+<div id="map-loading"><div class="spinner"></div><span style="font-size:13px;color:#9ca3af">지도 불러오는 중…</span></div>
 
-<!-- 헤더 -->
-<div id="hdr">
-  <button id="btn-back">←</button>
-  <div id="search-wrap">
-    <input id="search-inp" type="search" placeholder="성지 이름 또는 지역 검색" autocomplete="off">
-    <button id="search-clear">✕</button>
-  </div>
+<!-- 탭바 -->
+<div id="tabbar">
+  <button class="tab-back" onclick="location.href='index.html'">←</button>
+  <button class="tab-btn" id="tab-btn-nearby"  data-tab="nearby"><span  class="tab-icon">📍</span>내주변</button>
+  <button class="tab-btn" id="tab-btn-list"    data-tab="list"><span    class="tab-icon">📋</span>성지찾기</button>
+  <button class="tab-btn" id="tab-btn-region"  data-tab="region"><span  class="tab-icon">🔍</span>지역검색</button>
+  <button class="tab-btn" id="tab-btn-route"   data-tab="route"><span   class="tab-icon">🧭</span>길찾기</button>
 </div>
 
-<!-- 검색 결과 -->
-<div id="search-results"></div>
-
-<!-- FAB -->
-<div id="fabs">
-  <button class="fab" id="btn-nearby" title="내 주변">📍</button>
-  <button class="fab" id="btn-stamp-p" title="순례 스탬프">🎖</button>
-</div>
-
-<!-- 타입 범례 -->
+<!-- 내위치 FAB + 범례 -->
+<button id="loc-btn">📍</button>
 <div id="legend">
-  <div class="lg"><div class="lg-dot" style="background:var(--A)"></div>성지</div>
-  <div class="lg"><div class="lg-dot" style="background:var(--B)"></div>순례지</div>
-  <div class="lg"><div class="lg-dot" style="background:var(--C)"></div>순교사적지</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--shrine)"></div>성지</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--pilgrim)"></div>순례지</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--martyr)"></div>순교사적지</div>
 </div>
 
-<!-- 길찾기 하단 바 -->
-<div id="route-bar">
-  <button id="rb-clear">✕</button>
-  <div id="rb-summary"></div>
-  <button id="rb-navi">🧭 내비</button>
-</div>
-
-<!-- 내주변 패널 -->
-<div id="nearby-panel">
-  <div class="np-drag"></div>
-  <div class="np-head">
-    <span class="np-title">내 주변 성지</span>
-    <button class="np-close" id="btn-nearby-close">✕</button>
+<!-- 내주변 시트 -->
+<div class="sheet" id="sheet-nearby">
+  <div class="sheet-hd">
+    <div class="sheet-title">내 주변 성지</div>
+    <button class="sheet-x" id="nearby-close">×</button>
   </div>
-  <div id="nearby-list"></div>
+  <div class="sheet-body" id="nearby-body"><div style="padding:24px;text-align:center;color:#aaa;font-size:13px">📍 위치를 확인하는 중…</div></div>
+</div>
+
+<!-- 성지찾기 시트 -->
+<div class="sheet" id="sheet-list">
+  <div class="sheet-hd">
+    <div class="sheet-title">성지찾기</div>
+    <button class="sheet-x" id="list-close">×</button>
+  </div>
+  <div class="srch-bar">
+    <div class="srch-inner">
+      <span style="font-size:14px;opacity:.4;margin-right:8px;color:#fff">🔍</span>
+      <input type="text" id="list-inp" placeholder="성지 이름, 주소 검색" autocomplete="off" autocorrect="off" inputmode="search">
+      <button class="srch-x" id="list-inp-x">×</button>
+    </div>
+  </div>
+  <div class="sheet-body" id="list-body"></div>
+</div>
+
+<!-- 지역검색 시트 -->
+<div class="sheet" id="sheet-region">
+  <div class="sheet-hd">
+    <div class="sheet-title">지역검색</div>
+    <button class="sheet-x" id="region-close">×</button>
+  </div>
+  <div class="srch-bar">
+    <div class="srch-inner">
+      <span style="font-size:14px;opacity:.4;margin-right:8px;color:#fff">🔍</span>
+      <input type="text" id="region-inp" placeholder="지역명 입력 (예: 수원, 명동)" autocomplete="off" inputmode="search">
+      <button class="srch-x" id="region-inp-x">×</button>
+    </div>
+  </div>
+  <div class="sheet-body" id="region-body"><div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색할 지역명을 입력하세요</div></div>
+</div>
+
+<!-- 길찾기 시트 -->
+<div class="sheet" id="sheet-route">
+  <button class="route-x" id="route-close">×</button>
+  <div id="rs-top">
+    <!-- 출발 -->
+    <div class="rs-row">
+      <div class="rs-dot" style="background:#1565c0"></div>
+      <span class="rs-lbl empty" id="rs-start-lbl">출발지를 선택하세요</span>
+      <button class="rs-myloc" id="rs-myloc">내 위치</button>
+      <button class="rs-x-btn" id="rs-start-x" style="display:none">×</button>
+    </div>
+    <div class="rs-connector"></div>
+    <!-- 경유지 -->
+    <div id="rs-via-wrap"></div>
+    <button class="rs-add-via" id="rs-add-via">➕ 경유지 추가</button>
+    <div class="rs-connector"></div>
+    <!-- 도착 -->
+    <div class="rs-row" style="margin-bottom:10px">
+      <div class="rs-dot" style="background:#c0392b"></div>
+      <span class="rs-lbl empty" id="rs-end-lbl">도착지를 선택하세요</span>
+      <button class="rs-x-btn" id="rs-end-x" style="display:none">×</button>
+    </div>
+    <div class="rs-sep"></div>
+  </div>
+  <div id="rs-bottom">
+    <div id="rs-result">
+      <div class="rs-stats">
+        <div class="rs-stat"><div class="rs-stat-lbl">도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div>
+        <div class="rs-stat"><div class="rs-stat-lbl">예상 시간</div><div class="rs-stat-val" id="rs-time">—</div></div>
+      </div>
+      <div class="route-btns">
+        <button class="btn-kakao-navi" id="rs-navi-btn">🧭 카카오내비</button>
+        <button class="btn-route-reset" id="rs-reset-btn">다시선택</button>
+      </div>
+    </div>
+    <div class="rs-hint" id="rs-hint">출발·도착을 설정하거나<br>지도에서 마커를 탭하세요</div>
+  </div>
 </div>
 
 <!-- 인포카드 -->
 <div id="info-card">
-  <div class="ic-drag"></div>
-  <div class="ic-hd">
+  <div class="ic-header">
     <div class="ic-name" id="ic-name">-</div>
-    <div class="ic-type-badge" id="ic-type"></div>
-    <button class="ic-close" id="ic-close">✕</button>
+    <button class="ic-close-btn" id="ic-close">×</button>
   </div>
-  <div class="ic-div"></div>
-  <div class="ic-row" id="ic-addr"><span>📍</span><span id="ic-addr-txt"></span></div>
-  <div class="ic-row" id="ic-tel"><span>📞</span><a id="ic-tel-a"></a></div>
-  <div class="ic-row" id="ic-links"><span>🔗</span><span id="ic-links-txt"></span></div>
-  <div class="ic-route-row">
-    <button class="ic-btn-r" style="background:#FF0000;color:#fff" onclick="setRoute('s')">🚩 출발</button>
-    <button class="ic-btn-r" style="background:#FF8C00;color:#fff" onclick="setRoute('v')">➕ 경유</button>
-    <button class="ic-btn-r" style="background:#005BFF;color:#fff" onclick="setRoute('e')">🏁 도착</button>
+  <div class="ic-meta">
+    <div class="ic-sub" id="ic-sub"></div>
+    <span class="ic-type-badge" id="ic-type"></span>
   </div>
-  <div class="ic-btns">
-    <button class="ic-btn ic-btn-map" id="ic-nav">🧭 카카오맵</button>
-    <button class="ic-btn ic-btn-stamp" id="ic-stamp">📍 성지에 가까워지면 자동으로 기록됩니다</button>
+  <div class="ic-body">
+    <div class="ic-addr-row" id="ic-addr-row">
+      <div class="ic-addr-left">
+        <div class="ic-addr-lbl">주소</div>
+        <div class="ic-addr-val" id="ic-addr"></div>
+      </div>
+    </div>
+    <div class="ic-btn-row">
+      <a class="ic-tel-btn" id="ic-tel" href="#" style="display:none"><span>📞</span><span id="ic-tel-num"></span></a>
+      <button class="ic-route-btn" id="ic-route-btn">🧭 경로검색</button>
+    </div>
+    <div class="ic-links" id="ic-links" style="display:none">
+      <a class="ic-link-btn ic-hp-btn" id="ic-hp" href="#" target="_blank" style="display:none">홈페이지</a>
+      <button class="ic-link-btn ic-guide-btn" id="ic-guide" style="display:none">성지 상세</button>
+    </div>
+    <div style="padding:8px 14px 0">
+      <button class="btn-kakao-nav" id="ic-kakao-nav">🚗 카카오내비</button>
+    </div>
+    <div class="ic-stamp-row">
+      <button class="ic-stamp-btn auto" id="ic-stamp">📍 성지에 가까워지면 자동으로 기록됩니다</button>
+    </div>
   </div>
 </div>
 
