@@ -409,31 +409,56 @@ function _openKakaoMapRoute() {
 
 
 /* §10 인포카드 */
+function _hpUrl(hp) { /* hp 필드 https:// 보정 */
+  if (!hp) return '';
+  return hp.startsWith('http') ? hp : 'https://' + hp;
+}
+
 function _openCard(idx) {
-  if (_curIdx>=0&&_curIdx!==idx) _resizeMk(_curIdx,false);
-  _curIdx=idx; _cur=_shrines[idx];
-  _resizeMk(idx,true);
-  const s=_cur;
+  if (_curIdx >= 0 && _curIdx !== idx) _resizeMk(_curIdx, false);
+  _curIdx = idx; _cur = _shrines[idx];
+  _resizeMk(idx, true);
+  const s = _cur;
 
-  _q('#ic-name').textContent=s.name;
-  _q('#ic-sub').textContent=(_DIOCESE[s.diocese]||s.diocese||'');
-  const tb=_q('#ic-type');
-  tb.textContent=s.type||''; tb.style.background=_CLR[s.type]||'#eee'; tb.style.color=_CLR[s.type]?'#fff':'#555';
-  _q('#ic-addr').textContent=s.addr||'주소 정보 없음';
-  _q('#ic-addr-row').style.display=s.addr?'':'none';
+  _q('#ic-name').textContent = s.name;
+  _q('#ic-sub').textContent  = _DIOCESE[s.diocese] || s.diocese || '';
+  const tb = _q('#ic-type');
+  tb.textContent = s.type || '';
+  tb.style.background = _CLR[s.type] || '#888'; tb.style.color = s.type ? '#fff' : '#555';
 
-  const tel=_q('#ic-tel');
-  if(s.tel){_q('#ic-tel-num').textContent=s.tel;tel.href='tel:'+s.tel.replace(/\D/g,'');tel.style.display='';}
-  else tel.style.display='none';
+  _q('#ic-addr').textContent = s.addr || '';
+  _q('#ic-addr-row').style.display = s.addr ? '' : 'none';
 
-  const hp=_q('#ic-hp'), guide=_q('#ic-guide'), links=_q('#ic-links');
-  if(s.hp){hp.href=s.hp;hp.style.display='';}else hp.style.display='none';
-  if(s.seq){guide.style.display='';guide.onclick=()=>window.open(`https://www.cbck.or.kr/page/api/page7330/view.asp?id=${s.seq}`,'_blank');}else guide.style.display='none';
-  links.style.display=(s.hp||s.seq)?'':'none';
+  /* 전화 */
+  const tel = _q('#ic-tel');
+  if (s.tel) {
+    _q('#ic-tel-num').textContent = s.tel;
+    tel.href = 'tel:' + s.tel.replace(/[^0-9+]/g, '');
+    tel.style.display = '';
+  } else tel.style.display = 'none';
 
-  _q('#ic-kakao-nav').onclick=()=>location.href=`https://map.kakao.com/link/to/${encodeURIComponent(s.name)},${s.lat},${s.lng}`;
+  /* 홈페이지 + 성지 상세 링크 */
+  const hp    = _q('#ic-hp');
+  const guide = _q('#ic-guide');
+  const links = _q('#ic-links');
+  if (s.hp)  { hp.href = _hpUrl(s.hp); hp.style.display = ''; }
+  else         hp.style.display = 'none';
+  if (s.seq) {
+    guide.style.display = '';
+    guide.onclick = () => window.open('https://www.cbck.or.kr/page/api/page7330/view.asp?id=' + s.seq, '_blank');
+  } else guide.style.display = 'none';
+  links.style.display = (s.hp || s.seq) ? '' : 'none';
+
+  /* 카카오맵 — kw 있으면 키워드 검색, 없으면 좌표 링크 */
+  _q('#ic-kakao-nav').onclick = () => {
+    const url = s.kw
+      ? 'https://map.kakao.com/link/search/' + encodeURIComponent(s.kw)
+      : 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng;
+    location.href = url;
+  };
+
   _updateStamp(s);
-  _map.panTo(new _LL(s.lat,s.lng));
+  _map.panTo(new _LL(s.lat, s.lng));
   _q('#info-card').classList.add('open');
 }
 function _closeCard() {
@@ -451,36 +476,38 @@ function _startGPS() {
     _lastPos={lat,lng}; _autoStamp(lat,lng);
   },null,{enableHighAccuracy:true,timeout:20000,maximumAge:15000});
 }
-function _autoStamp(lat,lng) {
-  const v=_getV(),today=_today(); let changed=false;
-  _shrines.forEach(s=>{
-    if(!s.stamp||!s.lat||!s.lng)return;
-    const arr=Array.isArray(v[s.seq])?v[s.seq]:[];
-    if(arr.includes(today)||_dist(lat,lng,s.lat,s.lng)>STAMP_RADIUS)return;
-    arr.push(today);v[s.seq]=arr;changed=true;
-    _toast(`✝ ${s.name} 순례 기록!`+(arr.length>1?` · ${arr.length}번째 순례`:''));
-    if(_cur?.seq===s.seq)_updateStamp(s);
+function _autoStamp(lat, lng) {
+  const v = _getV(), today = _today(); let changed = false;
+  _shrines.forEach(s => {
+    if (!s.lat || !s.lng) return;  /* stamp 필드 체크 제거 — 모든 성지 대상 */
+    const arr = Array.isArray(v[s.seq]) ? v[s.seq] : [];
+    if (arr.includes(today) || _dist(lat, lng, s.lat, s.lng) > STAMP_RADIUS) return;
+    arr.push(today); v[s.seq] = arr; changed = true;
+    _toast('✝ ' + s.name + ' 순례 기록!' + (arr.length > 1 ? ' · ' + arr.length + '번째 순례' : ''));
+    if (_cur?.seq === s.seq) _updateStamp(s);
   });
-  if(changed)_saveV(v);
+  if (changed) _saveV(v);
 }
 function _toast(msg){
   const t=_q('#stamp-toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
-function _updateStamp(s){
-  const btn=_q('#ic-stamp');
-  if(!s.stamp){btn.style.display='none';return;} btn.style.display=''; btn.style.fontSize='';
-  const arr=Array.isArray(_getV()[s.seq])?_getV()[s.seq]:[];
-  if(arr.length){
-    btn.textContent=`✞ ${arr.length}회 순례 · ${arr[arr.length-1]}`;
-    btn.className='ic-stamp-btn stamped';
-    btn.onclick=()=>{
-      const v=_getV(),a=Array.isArray(v[s.seq])?v[s.seq]:[];
-      if(!confirm(`${s.name}\n순례 이력: ${a.join(', ')}\n\n마지막 기록을 삭제할까요?`))return;
-      a.pop();if(a.length)v[s.seq]=a;else delete v[s.seq];_saveV(v);_updateStamp(s);
+function _updateStamp(s) {
+  const btn = _q('#ic-stamp');
+  btn.style.display = ''; btn.style.cssText = '';
+  const arr = Array.isArray(_getV()[s.seq]) ? _getV()[s.seq] : [];
+  if (arr.length) {
+    btn.textContent = `✞ ${arr.length}회 순례 · ${arr[arr.length-1]}`;
+    btn.className = 'ic-stamp-btn stamped'; btn.disabled = false;
+    btn.onclick = () => {
+      const v = _getV(), a = Array.isArray(v[s.seq]) ? v[s.seq] : [];
+      if (!confirm(`${s.name}\n순례 이력: ${a.join(', ')}\n\n마지막 기록을 삭제할까요?`)) return;
+      a.pop(); if (a.length) v[s.seq] = a; else delete v[s.seq]; _saveV(v); _updateStamp(s);
     };
-  }else{
-    btn.style.display = 'none';
+  } else {
+    btn.textContent = '📍 반경 500m 진입 시 자동 순례 기록';
+    btn.className = 'ic-stamp-btn'; btn.disabled = true;
+    btn.style.background = '#f0f0f0'; btn.style.color = '#aaa'; btn.style.fontSize = '11px';
     btn.onclick = null;
   }
 }

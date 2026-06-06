@@ -159,6 +159,15 @@
   .sh-btn    { height: 34px; border-radius: 8px; font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; padding: 0 12px; border: none; }
   .sh-btn-add { background: var(--d); color: #fff; flex: 1; }
   .sh-btn-del { background: #f0ebe2; color: var(--gray); border: 1px solid var(--bdr); flex-shrink: 0; }
+  .sh-links   { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .sh-link {
+    font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 8px;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 3px;
+  }
+  .sh-link-tel  { background: #e8f0fe; color: #1565c0; }
+  .sh-link-web  { background: #e8f5e9; color: #1b7a3e; }
+  .sh-link-cbck { background: #fff3e0; color: #b8430a; }
+  .sh-link-map  { background: #fff9c4; color: #7a6000; }
     background: var(--card); border: 1px solid var(--bdr);
     border-radius: 12px; padding: 13px 15px;
     display: flex; align-items: center; gap: 12px;
@@ -646,6 +655,8 @@ function closeVisitDetail() {
   document.getElementById('vd-backdrop').classList.remove('open');
 }
 
+function _hpUrl(hp) { return hp && !hp.startsWith('http') ? 'https://' + hp : hp; }
+
 function renderList() {
   var visited = getVisited();
   var items = _shrines.slice();
@@ -660,20 +671,42 @@ function renderList() {
 
   var clr = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
   return '<div class="shrine-list">' + items.map(function(s) {
-    var c   = clr[s.type] || '#888';
-    var cnt = _cnt(visited, s.seq);
-    var last= _last(visited, s.seq);
-    var isV = cnt > 0;
-    var meta = [(DIOCESE[s.diocese]||s.diocese||''), (s.addr||'').split(' ').slice(0,3).join(' ')].filter(Boolean).join(' · ');
+    var c    = clr[s.type] || '#888';
+    var cnt  = _cnt(visited, s.seq);
+    var last = _last(visited, s.seq);
+    var isV  = cnt > 0;
+    var dioc = (DIOCESE[s.diocese] || s.diocese || '');
+    var addr = (s.addr || '');
+    var meta = [dioc, addr].filter(Boolean).join(' · ');
+
+    /* 링크 버튼들 */
+    var links = [];
+    if (s.tel) {
+      var telHref = 'tel:' + s.tel.replace(/[^0-9+]/g, '');
+      links.push('<a class="sh-link sh-link-tel" href="' + escHtml(telHref) + '">📞 ' + escHtml(s.tel) + '</a>');
+    }
+    if (s.hp) {
+      links.push('<a class="sh-link sh-link-web" href="' + escHtml(_hpUrl(s.hp)) + '" target="_blank" rel="noopener">🌐 홈페이지</a>');
+    }
+    if (s.seq) {
+      var cbckUrl = 'https://www.cbck.or.kr/page/api/page7330/view.asp?id=' + s.seq;
+      links.push('<a class="sh-link sh-link-cbck" href="' + escHtml(cbckUrl) + '" target="_blank" rel="noopener">📖 성지 상세</a>');
+    }
+    var kakaoUrl = s.kw
+      ? 'https://map.kakao.com/link/search/' + encodeURIComponent(s.kw)
+      : 'https://map.kakao.com/link/to/' + encodeURIComponent(s.name) + ',' + s.lat + ',' + s.lng;
+    links.push('<a class="sh-link sh-link-map" href="' + escHtml(kakaoUrl) + '" target="_blank" rel="noopener">🗺 카카오맵</a>');
+
     return '<div class="sh-card">'
       + '<div class="sh-strip" style="background:' + c + '"></div>'
       + '<div class="sh-body">'
       +   '<div class="sh-top">'
       +     '<div class="sh-name">' + escHtml(s.name) + '</div>'
-      +     '<span class="sh-badge" style="background:' + c + '">' + (TYPE_LABEL[s.type]||'') + '</span>'
+      +     '<span class="sh-badge" style="background:' + c + '">' + (TYPE_LABEL[s.type] || '') + '</span>'
       +   '</div>'
       +   '<div class="sh-meta">' + escHtml(meta) + '</div>'
       +   (isV ? '<div class="sh-visit">✞ ' + cnt + '회 순례 · 마지막 ' + last + '</div>' : '')
+      +   '<div class="sh-links">' + links.join('') + '</div>'
       +   '<div class="sh-btns">'
       +     '<button class="sh-btn sh-btn-add" onclick="addManualStamp(\'' + s.seq + '\')">➕ 순례 기록</button>'
       +     (isV ? '<button class="sh-btn sh-btn-del" onclick="delLastStamp(\'' + s.seq + '\')">삭제</button>' : '')
