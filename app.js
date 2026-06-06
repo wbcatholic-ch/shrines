@@ -22,7 +22,8 @@ const _DIOCESE = {
 let _map, _LL, _MM, _MI, _SZ, _PT, _PL;
 let _shrines = [], _byseq = {};
 let _markers = [];
-let _myMk = null, _regionMk = null, _routePolyline = null;
+let _myMk = null, _myLat = null, _myLng = null;  /* 현재 위치 (인포카드 거리) */
+let _regionMk = null, _routePolyline = null;
 let _curIdx = -1, _cur = null;
 let _activeTab = '';
 let _rS = null, _rVia = [], _rE = null;
@@ -151,33 +152,32 @@ function _levelFor(maxM) {
 
 function _loadNearby() {
   const body = document.getElementById('nearby-body');
-  body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">📍 위치 확인 중…</div>';
+  /* 스펙: 회전 십자가 로딩 스피너 */
+  body.innerHTML = `<div class="loading-wrap">
+    <div class="loading-cross">✝</div>
+    <div class="loading-txt">📍 정확한 거리를 계산 중입니다.</div>
+  </div>`;
   if (!navigator.geolocation) {
-    body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">위치 기능을 사용할 수 없습니다.</div>';
+    body.innerHTML = '<div class="loading-wrap"><div class="loading-txt">위치 기능을 사용할 수 없습니다.</div></div>';
     return;
   }
   navigator.geolocation.getCurrentPosition(pos => {
     const {latitude:lat, longitude:lng} = pos.coords;
+    _myLat = lat; _myLng = lng;   /* 인포카드 거리 계산용 */
     _showMyLoc(lat, lng);
     const list = _shrines
       .map((s,i) => ({i, d:_dist(lat,lng,s.lat,s.lng)}))
       .filter(o => o.d < 500000).sort((a,b) => a.d-b.d).slice(0, 10);
     _showOnly(list.map(o => o.i));
-
-    /* 구 앱 동일: 10곳 기준 지도 레벨 + 현재 위치 중심 */
     const maxD = list.reduce((m,o) => Math.max(m, o.d), 0);
     _map.setLevel(_levelFor(maxD));
     _map.setCenter(new _LL(lat, lng));
-
-    if (!list.length) {
-      body.innerHTML = '<div style="padding:24px;text-align:center;color:#bbb;font-size:13px">주변 50km 내 성지가 없습니다.</div>';
-      return;
-    }
-    /* 제목 업데이트 */
     const titleEl = document.getElementById('nearby-title');
     if (titleEl) titleEl.textContent = `내 주변 성지 ${list.length}곳`;
-
-    const TYPE_LBL = { A:'성지', B:'순례지', C:'순교 사적지' };
+    if (!list.length) {
+      body.innerHTML = '<div class="loading-wrap"><div class="loading-txt">주변 50km 내 성지가 없습니다.</div></div>';
+      return;
+    }
     body.innerHTML = list.map((o,n) => {
       const s = _shrines[o.i], c = _CLR[s.type];
       const km  = (o.d / 1000 * 1.35).toFixed(1);
@@ -200,7 +200,7 @@ function _loadNearby() {
       el.addEventListener('click', () => _openCard(+el.dataset.i))
     );
   }, () => {
-    body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">위치를 가져오지 못했습니다.<br><button onclick="_loadNearby()" style="margin-top:12px;padding:8px 18px;border-radius:20px;border:none;background:#1f2a44;color:#d4aa6a;font-weight:700;cursor:pointer">다시 시도</button></div>';
+    body.innerHTML = `<div class="loading-wrap"><div class="loading-txt">위치를 가져오지 못했습니다.<br><button onclick="_loadNearby()" style="margin-top:12px;padding:8px 20px;border-radius:20px;border:none;background:#1f2a44;color:#d4aa6a;font-weight:700;cursor:pointer;font-family:inherit">다시 시도</button></div></div>`;
   }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 10000});
 }
 
@@ -209,12 +209,23 @@ const TYPE_LBL = { A:'성지', B:'순례지', C:'순교 사적지' };
 const DIO_ORDER = ['SE','IC','SW','UJ','CC','WJ','DJ','CJ','DG','AD','BS','MS','GJ','JJ','JE','ML'];
 let _filterDio = 'all';
 
+/* 스펙: 토큰 분리 검색 — 띄어쓰기 제거 후 각 토큰이 이름/교구/주소에 포함되면 매칭 */
+function _matchShrines(s, q) {
+  if (!q) return true;
+  const tokens = q.trim().split(/\s+/);
+  const name  = s.name, addr = s.addr||'', dioc = _DIOCESE[s.diocese]||'';
+  return tokens.every(t =>
+    name.includes(t) || addr.includes(t) || dioc.includes(t) ||
+    name.replace(/\s/g,'').includes(t.replace(/\s/g,''))
+  );
+}
+
 function _renderList(kw) {
   const body = document.getElementById('list-body');
   const q = (kw||'').trim();
   let items = _shrines.map((s,i) => ({i,s}));
   if (_filterDio !== 'all') items = items.filter(o => o.s.diocese === _filterDio);
-  if (q) items = items.filter(o => o.s.name.includes(q) || (o.s.addr||'').includes(q));
+  if (q) items = items.filter(o => _matchShrines(o.s, q));
   _showOnly(items.map(o => o.i));
   if (!items.length) {
     body.innerHTML = '<div style="padding:32px;text-align:center;color:#bbb;font-size:13px">검색 결과가 없습니다.</div>';
@@ -659,11 +670,26 @@ function _openCard(idx) {
   _q('#ic-name').textContent = s.name;
   _q('#ic-sub').textContent  = _DIOCESE[s.diocese] || s.diocese || '';
   const tb = _q('#ic-type');
-  tb.textContent = s.type || '';
+  /* 스펙: 타입 배지 = 한글 레이블 (성지/순례지/순교 사적지) */
+  tb.textContent = TYPE_LBL[s.type] || s.type || '';
   tb.style.background = _CLR[s.type] || '#888'; tb.style.color = s.type ? '#fff' : '#555';
 
   _q('#ic-addr').textContent = s.addr || '';
   _q('#ic-addr-row').style.display = s.addr ? '' : 'none';
+
+  /* 스펙: 내위치에서 거리 표시 */
+  const distCol = document.getElementById('ic-dist-col');
+  if (distCol) {
+    if (_myLat && s.lat && s.lng) {
+      const d = _dist(_myLat, _myLng, s.lat, s.lng);
+      const km = d < 1000 ? Math.round(d)+'m' : (d/1000).toFixed(1)+'km';
+      const distVal = document.getElementById('ic-dist');
+      if (distVal) distVal.textContent = km;
+      distCol.style.display = '';
+    } else {
+      distCol.style.display = 'none';
+    }
+  }
 
   /* 전화 */
   const tel = _q('#ic-tel');
@@ -757,9 +783,10 @@ function _updateStamp(s) {
     btn.style.display = 'none'; btn.onclick = null;
   }
 }
-function _showMyLoc(lat,lng){
-  if(!_myMk)_myMk=new _MM({map:_map,image:_mkrMyLoc(),zIndex:200});
-  _myMk.setPosition(new _LL(lat,lng));
+function _showMyLoc(lat, lng) {
+  _myLat = lat; _myLng = lng;
+  if (!_myMk) _myMk = new _MM({map:_map, image:_mkrMyLoc(), zIndex:200});
+  _myMk.setPosition(new _LL(lat, lng));
 }
 function _getV(){
   try{const v=JSON.parse(localStorage.getItem(STAMP_KEY)||'{}');Object.keys(v).forEach(k=>{if(typeof v[k]==='string')v[k]=[v[k]];});return v;}catch{return{};}

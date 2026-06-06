@@ -137,30 +137,40 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 }
 .sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: #fff; }
 
-/* ── 목록 아이템 ── */
-.li { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #f0ebe0; cursor: pointer; background: #fff; }
-.li:active { background: #faf5ec; }
-.li-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+/* ── 목록 카드 (스펙: margin 10px, border-radius 13px, shadow) ── */
+.sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: #f7f4ee; }
+.li {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 10px 6px; padding: 12px 14px; min-height: 72px;
+  border-radius: 13px; border: 1px solid #e8edf5;
+  background: #fff; box-shadow: 0 2px 8px rgba(14,21,53,.06);
+  cursor: pointer;
+}
+.li:first-child { margin-top: 8px; }
+.li:active { opacity: .85; }
+.dio-hdr { padding: 10px 20px 4px; font-size: 11px; font-weight: 800; color: #c0392b; background: transparent; }
+.li-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 .li-num {
-  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 900; color: #fff;
+  font-size: 13px; font-weight: 900; color: #fff;
 }
 .li-main { flex: 1; min-width: 0; }
-.li-name { font-size: 14px; font-weight: 700; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.li-sub  { font-size: 11px; color: #9ca3af; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* 타입+거리 (오른쪽) */
-.li-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
-.li-badge {
-  font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 10px; white-space: nowrap;
-}
+.li-name { font-size: 16px; font-weight: 800; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.35; }
+.li-sub  { font-size: 13px; font-weight: 500; color: #7b8794; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.45; }
+.li-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.li-badge { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
 .badge-A { background: #fde8e6; color: #c0392b; }
 .badge-B { background: #ddeaff; color: #1565c0; }
 .badge-C { background: #d6f5e3; color: #1b7a3e; }
-.li-dist { font-size: 12px; font-weight: 800; color: #c0392b; }
-.li-dur  { font-size: 10px; color: #aaa; font-weight: 500; }
-/* 교구 그룹 헤더 */
-.dio-hdr { padding: 7px 14px 4px; font-size: 11px; font-weight: 800; color: #c0392b; background: #fafaf8; }
+.li-dist { font-size: 13px; font-weight: 900; color: #c0392b; }
+.li-dur  { font-size: 11px; color: #aaa; font-weight: 500; }
+
+/* ── 내주변 로딩 스피너 (회전 십자가) ── */
+@keyframes spin-cross { to { transform: rotate(360deg); } }
+.loading-wrap { padding: 40px 20px; text-align: center; }
+.loading-cross { display: inline-block; font-size: 42px; color: #d4aa6a; animation: spin-cross 1.5s linear infinite; line-height: 1; margin-bottom: 12px; }
+.loading-txt { font-size: 14px; font-weight: 700; color: #aaa; line-height: 1.7; }
 
 /* ── 성지찾기 필터 바 ── */
 .filter-bar {
@@ -258,6 +268,8 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 .ic-type-badge { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 10px; background: #f0f0f0; color: #555; white-space: nowrap; flex-shrink: 0; }
 .ic-addr-row { display: flex; align-items: flex-start; gap: 10px; padding: 0 14px 10px; border-bottom: 1px solid #f0f0f0; }
 .ic-addr-left { flex: 1; min-width: 0; }
+.ic-dist-col { text-align: right; flex-shrink: 0; }
+.ic-dist-val { font-size: 14px; font-weight: 800; color: #1565c0; }
 .ic-addr-lbl { font-size: 12px; color: #aaa; font-weight: 600; margin-bottom: 2px; }
 .ic-addr-val { font-size: 15px; color: var(--ink); word-break: keep-all; line-height: 1.45; }
 .ic-btn-row, .ic-links { display: flex; gap: 7px; padding: 10px 14px 0; }
@@ -403,10 +415,9 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       <button class="srch-x" id="list-inp-x">×</button>
     </div>
   </div>
-  <!-- 교구 필터 -->
+  <!-- 교구 필터 (스펙 순서: 전체→서울→인천→수원→의정부→춘천→원주→대전→청주→대구→안동→부산→마산→광주→전주→제주→군종) -->
   <div class="filter-bar" id="list-filter-bar">
     <button class="filter-pill active" data-dio="all">전체</button>
-    <button class="filter-pill" data-dio="DG">대구</button>
     <button class="filter-pill" data-dio="SE">서울</button>
     <button class="filter-pill" data-dio="IC">인천</button>
     <button class="filter-pill" data-dio="SW">수원</button>
@@ -415,6 +426,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
     <button class="filter-pill" data-dio="WJ">원주</button>
     <button class="filter-pill" data-dio="DJ">대전</button>
     <button class="filter-pill" data-dio="CJ">청주</button>
+    <button class="filter-pill" data-dio="DG">대구</button>
     <button class="filter-pill" data-dio="AD">안동</button>
     <button class="filter-pill" data-dio="BS">부산</button>
     <button class="filter-pill" data-dio="MS">마산</button>
@@ -511,6 +523,10 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       <div class="ic-addr-left">
         <div class="ic-addr-lbl">주소</div>
         <div class="ic-addr-val" id="ic-addr"></div>
+      </div>
+      <div class="ic-dist-col" id="ic-dist-col" style="display:none">
+        <div class="ic-addr-lbl">내 위치에서</div>
+        <div class="ic-dist-val" id="ic-dist">—</div>
       </div>
     </div>
     <div class="ic-btn-row">
