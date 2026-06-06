@@ -201,47 +201,77 @@ function _regionSearch(q) {
   });
 }
 
-/* §9 길찾기 (경유지 포함) */
-function _setRouteFromMarker(idx) {
-  const s=_shrines[idx];
-  if (!_rS) { _setStart({name:s.name,lat:s.lat,lng:s.lng,idx}); }
-  else if (!_rE) { _setEnd({name:s.name,lat:s.lat,lng:s.lng,idx}); }
-  else { _addVia({name:s.name,lat:s.lat,lng:s.lng,idx}); }
-  _tryRoute();
-}
+/* §9 길찾기 (Kakao Mobility API + Kakao Navi JS SDK)
+   ─────────────────────────────────────────────────────
+   REST  POST https://apis-navi.kakaomobility.com/v1/waypoints/directions
+         origin/destination: {name?, x:경도, y:위도}
+         waypoints: [{name, x:경도, y:위도}] 최대 30개
+         priority: RECOMMEND|TIME|DISTANCE
+         응답: summary.distance(m), duration(s), fare.taxi, fare.toll
+              sections.roads.vertexes [lng,lat,lng,lat...]
+   Navi  Kakao.Navi.start({name, x:경도, y:위도, coordType:'wgs84', viaPoints?})
+         → 시작은 항상 현재 GPS 위치
+         → 직접 지정 출발지는 viaPoints[0]으로 삽입
+   ───────────────────────────────────────────────────── */
 
+let _rPriority = 'RECOMMEND';
+
+/* ── 포인트 설정/해제 ── */
 function _setStart(pt) {
-  if (_rS?.idx>=0) _resizeMk(_rS.idx,false);
-  _rS=pt;
-  _q('#rs-start-lbl').textContent=pt.name; _q('#rs-start-lbl').classList.remove('empty');
-  _q('#rs-start-x').style.display='';
-  if (pt.idx>=0&&_markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('출'));
-  _updateRouteHint();
+  if (_rS?.idx >= 0) _resizeMk(_rS.idx, false);
+  _rS = pt;
+  const lbl = _q('#rs-start-lbl'); lbl.textContent = pt.name; lbl.classList.remove('empty');
+  _q('#rs-start-x').style.display = '';
+  if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('출'));
 }
 function _setEnd(pt) {
-  if (_rE?.idx>=0) _resizeMk(_rE.idx,false);
-  _rE=pt;
-  _q('#rs-end-lbl').textContent=pt.name; _q('#rs-end-lbl').classList.remove('empty');
-  _q('#rs-end-x').style.display='';
-  if (pt.idx>=0&&_markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('도'));
-  _updateRouteHint();
+  if (_rE?.idx >= 0) _resizeMk(_rE.idx, false);
+  _rE = pt;
+  const lbl = _q('#rs-end-lbl'); lbl.textContent = pt.name; lbl.classList.remove('empty');
+  _q('#rs-end-x').style.display = '';
+  if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('도'));
 }
 function _addVia(pt) {
-  if (_rVia.some(v=>v.idx===pt.idx)) return;
+  if (_rVia.some(v => v.idx >= 0 && v.idx === pt.idx)) return;
   _rVia.push(pt);
-  if (pt.idx>=0&&_markers[pt.idx]) _markers[pt.idx].setImage(_mkrVia(_rVia.length));
-  _renderViaList(); _updateRouteHint();
+  if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrVia(_rVia.length));
+  _renderViaList();
 }
 function _removeVia(i) {
-  const pt=_rVia[i];
-  if (pt?.idx>=0) _resizeMk(pt.idx,false);
-  _rVia.splice(i,1);
-  /* 경유지 번호 마커 재설정 */
-  _rVia.forEach((v,j)=>{ if(v.idx>=0&&_markers[v.idx]) _markers[v.idx].setImage(_mkrVia(j+1)); });
-  _renderViaList(); _updateRouteHint();
+  const pt = _rVia[i];
+  if (pt?.idx >= 0) _resizeMk(pt.idx, false);
+  _rVia.splice(i, 1);
+  _rVia.forEach((v, j) => { if (v.idx >= 0 && _markers[v.idx]) _markers[v.idx].setImage(_mkrVia(j + 1)); });
+  _renderViaList();
+}
+function _clearStart() {
+  if (_rS?.idx >= 0) _resizeMk(_rS.idx, false);
+  _rS = null;
+  const lbl = _q('#rs-start-lbl'); lbl.textContent = '출발지를 선택하세요'; lbl.classList.add('empty');
+  _q('#rs-start-x').style.display = 'none';
+  if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
+}
+function _clearEnd() {
+  if (_rE?.idx >= 0) _resizeMk(_rE.idx, false);
+  _rE = null;
+  const lbl = _q('#rs-end-lbl'); lbl.textContent = '도착지를 선택하세요'; lbl.classList.add('empty');
+  _q('#rs-end-x').style.display = 'none';
+  if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
+}
+function _clearRoute() {
+  [_rS, ..._rVia, _rE].forEach(p => { if (p?.idx >= 0) _resizeMk(p.idx, false); });
+  _rS = null; _rVia = []; _rE = null;
+  _q('#rs-start-lbl').textContent = '출발지를 선택하세요'; _q('#rs-start-lbl').classList.add('empty');
+  _q('#rs-end-lbl').textContent   = '도착지를 선택하세요'; _q('#rs-end-lbl').classList.add('empty');
+  _q('#rs-start-x').style.display = 'none'; _q('#rs-end-x').style.display = 'none';
+  _q('#rs-via-wrap').innerHTML = '';
+  _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
+  if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
 }
 function _renderViaList() {
-  _q('#rs-via-wrap').innerHTML = _rVia.map((v,i)=>
+  _q('#rs-via-wrap').innerHTML = _rVia.map((v, i) =>
     `<div class="rs-box" style="margin-bottom:6px">
       <div class="rs-dot" style="background:#FF8C00"></div>
       <span class="rs-lbl">${_esc(v.name)}</span>
@@ -249,82 +279,134 @@ function _renderViaList() {
     </div>`
   ).join('');
 }
-function _clearRoute() {
-  if(_rS?.idx>=0)_resizeMk(_rS.idx,false);
-  if(_rE?.idx>=0)_resizeMk(_rE.idx,false);
-  _rVia.forEach(v=>{if(v.idx>=0)_resizeMk(v.idx,false);});
-  _rS=null; _rVia=[]; _rE=null;
-  _q('#rs-start-lbl').textContent='출발지를 선택하세요'; _q('#rs-start-lbl').classList.add('empty');
-  _q('#rs-end-lbl').textContent='도착지를 선택하세요';   _q('#rs-end-lbl').classList.add('empty');
-  _q('#rs-start-x').style.display='none'; _q('#rs-end-x').style.display='none';
-  _q('#rs-via-wrap').innerHTML=''; _q('#rs-result').style.display='none'; _q('#rs-hint').style.display='';
-  if(_routePolyline){_routePolyline.setMap(null);_routePolyline=null;}
-}
-function _updateRouteHint() {
-  _q('#rs-hint').style.display = (_rS&&_rE)?'none':'';
-  _q('#rs-result').style.display = 'none';
+
+/* ── 마커 탭 → 자동 출발/도착/경유 할당 ── */
+function _setRouteFromMarker(idx) {
+  const s = _shrines[idx];
+  const pt = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
+  if (!_rS)      { _setStart(pt); switchTab('route'); }
+  else if (!_rE) { _setEnd(pt); _tryRoute(); switchTab('route'); }
+  else           { _addVia(pt); _tryRoute(); }
 }
 
-async function _tryRoute() {
-  if (!_rS || !_rE) return;
-  _q('#rs-hint').textContent='경로 계산 중…'; _q('#rs-hint').style.display='';
-  try {
-    const via = _rVia.map(v=>({name:v.name,x:String(v.lng),y:String(v.lat)}));
-    const body = {origin:{x:String(_rS.lng),y:String(_rS.lat)},destination:{x:String(_rE.lng),y:String(_rE.lat)},priority:'RECOMMEND'};
-    if (via.length) body.waypoints=via;
-    const res = await fetch('https://apis-navi.kakaomobility.com/v1/waypoints/directions',{
-      method:'POST', headers:{'Authorization':'KakaoAK '+KAKAO_REST_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
-    const data = await res.json();
-    const route = data.routes?.[0];
-    if (route?.result_code===0) {
-      const s=route.summary;
-      _q('#rs-km').textContent=(s.distance/1000).toFixed(1);
-      const min=Math.round(s.duration/60);
-      _q('#rs-time').textContent=min<60?min+'분':Math.floor(min/60)+'시간'+(min%60?min%60+'분':'');
-      _q('#rs-result').style.display=''; _q('#rs-hint').style.display='none';
-      /* 경로 폴리라인 */
-      if(_routePolyline){_routePolyline.setMap(null);}
-      const pts=[];
-      route.sections.forEach(sec=>sec.roads.forEach(r=>{for(let j=0;j<r.vertexes.length;j+=2)pts.push(new _LL(r.vertexes[j+1],r.vertexes[j]));}));
-      _routePolyline=new _PL({map:_map,path:pts,strokeWeight:5,strokeColor:'#1565c0',strokeOpacity:.8});
-      return;
-    }
-  } catch {}
-  _q('#rs-hint').textContent='경로를 가져오지 못했습니다. 카카오내비로 이동합니다.'; _q('#rs-hint').style.display='';
-  _q('#rs-result').style.display='';
-  _q('#rs-km').textContent='—'; _q('#rs-time').textContent='—';
-}
-
-function _startNavi() {
-  if (!_rS||!_rE) return;
-  if (!Kakao.isInitialized()) Kakao.init(KAKAO_KEY);
-  try {
-    Kakao.Navi.start({
-      name:_rE.name, x:String(_rE.lng), y:String(_rE.lat), coordType:'wgs84',
-      viaPoints:[_rS,..._rVia].map(p=>({name:p.name,x:String(p.lng),y:String(p.lat)}))
-    });
-  } catch { location.href=`https://map.kakao.com/link/to/${encodeURIComponent(_rE.name)},${_rE.lat},${_rE.lng}`; }
-}
-
-function _setGpsStart() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    _setStart({name:'내 위치',lat:pos.coords.latitude,lng:pos.coords.longitude,idx:-1});
-    _showMyLoc(pos.coords.latitude,pos.coords.longitude);
-    _tryRoute();
-  },null,{enableHighAccuracy:true,timeout:8000});
-}
-
+/* ── 인포카드 "경로검색" ── */
 function _icRoute() {
   if (!_cur) return;
-  const pt={name:_cur.name,lat:_cur.lat,lng:_cur.lng,idx:_curIdx};
-  if (!_rS) { _setStart(pt); }
-  else if (!_rE) { _setEnd(pt); _tryRoute(); }
-  else { _addVia(pt); _tryRoute(); }
+  const pt = { idx: _curIdx, name: _cur.name, lat: _cur.lat, lng: _cur.lng, isGps: false };
+  /* 도착지 우선 설정, 이미 있으면 출발지, 둘 다 있으면 경유 */
+  if (!_rE)      _setEnd(pt);
+  else if (!_rS) _setStart(pt);
+  else           _addVia(pt);
+  if (_rS && _rE) _tryRoute();
   switchTab('route');
 }
+
+/* ── GPS 출발지 ── */
+function _setGpsStart() {
+  if (!navigator.geolocation) return;
+  const btn = _q('#rs-myloc'); btn.textContent = '...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    btn.textContent = '내 위치';
+    _setStart({ idx: -1, name: '내 위치', lat: pos.coords.latitude, lng: pos.coords.longitude, isGps: true });
+    _showMyLoc(pos.coords.latitude, pos.coords.longitude);
+    if (_rE) _tryRoute();
+  }, () => { btn.textContent = '내 위치'; alert('위치를 가져오지 못했습니다.'); },
+  { enableHighAccuracy: true, timeout: 8000 });
+}
+
+/* ── 경로 계산 ── */
+async function _tryRoute() {
+  if (!_rS || !_rE) return;
+  _q('#rs-hint').textContent = '경로 계산 중…'; _q('#rs-hint').style.display = '';
+  _q('#rs-result').style.display = 'none';
+  _drawFallbackLines();  /* 직선으로 임시 표시 */
+
+  try {
+    const waypoints = _rVia.map(v => ({ name: v.name, x: v.lng, y: v.lat }));
+    const body = {
+      origin:      { name: _rS.name, x: _rS.lng, y: _rS.lat },
+      destination: { name: _rE.name, x: _rE.lng, y: _rE.lat },
+      priority:    _rPriority,
+      car_fuel:    'GASOLINE', car_hipass: false, alternatives: false
+    };
+    if (waypoints.length) body.waypoints = waypoints;
+
+    const res = await fetch('https://apis-navi.kakaomobility.com/v1/waypoints/directions', {
+      method: 'POST',
+      headers: { 'Authorization': 'KakaoAK ' + KAKAO_REST_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data  = await res.json();
+    const route = data.routes?.[0];
+    if (!route || route.result_code !== 0) throw new Error(route?.result_msg || '경로 없음');
+
+    /* 통계 표시 */
+    const sum = route.summary;
+    _q('#rs-km').textContent   = (sum.distance / 1000).toFixed(1);
+    const min = Math.round(sum.duration / 60);
+    _q('#rs-time').textContent = min < 60 ? min + '분' : Math.floor(min/60) + '시간 ' + (min%60 ? min%60 + '분' : '');
+    const fare = sum.fare || {};
+    const fareArr = [];
+    if (fare.toll)  fareArr.push('통행료 ' + fare.toll.toLocaleString() + '원');
+    if (fare.taxi)  fareArr.push('택시 약 ' + fare.taxi.toLocaleString() + '원');
+    _q('#rs-fare').textContent = fareArr.join('  ·  ');
+
+    /* 실제 경로 폴리라인 */
+    if (_routePolyline) _routePolyline.setMap(null);
+    const pts = [];
+    route.sections.forEach(sec => sec.roads.forEach(r => {
+      for (let j = 0; j < r.vertexes.length; j += 2) pts.push(new _LL(r.vertexes[j+1], r.vertexes[j]));
+    }));
+    _routePolyline = new _PL({ map: _map, path: pts, strokeWeight: 5, strokeColor: '#1565c0', strokeOpacity: .85 });
+
+    /* 지도 범위 자동 맞춤 */
+    const b = sum.bound;
+    if (b) _map.setBounds(new kakao.maps.LatLngBounds(new _LL(b.min_y, b.min_x), new _LL(b.max_y, b.max_x)), 60);
+
+    _q('#rs-result').style.display = ''; _q('#rs-hint').style.display = 'none';
+
+  } catch (e) {
+    /* CORS/API 오류: 직선 폴리라인 유지, 안내 표시 */
+    console.warn('[경로]', e.message);
+    _q('#rs-km').textContent = '—'; _q('#rs-time').textContent = '—';
+    _q('#rs-fare').textContent = '경로 데이터를 가져올 수 없습니다. 내비로 확인하세요.';
+    _q('#rs-result').style.display = ''; _q('#rs-hint').style.display = 'none';
+  }
+}
+
+function _drawFallbackLines() {
+  if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  const pts = [_rS, ..._rVia, _rE].filter(Boolean).map(p => new _LL(p.lat, p.lng));
+  if (pts.length < 2) return;
+  _routePolyline = new _PL({ map: _map, path: pts, strokeWeight: 3, strokeColor: '#1565c0', strokeOpacity: .4, strokeStyle: 'dashed' });
+}
+
+/* ── 카카오내비 실행 ──
+   Navi.start는 항상 현재 GPS에서 출발.
+   직접 지정 출발지(isGps=false)는 viaPoints 맨 앞에 삽입. */
+function _startNavi() {
+  if (!_rE) return;
+  if (!Kakao.isInitialized()) Kakao.init(KAKAO_KEY);
+  const via = [];
+  if (_rS && !_rS.isGps) via.push({ name: _rS.name, x: String(_rS.lng), y: String(_rS.lat) });
+  _rVia.forEach(v => via.push({ name: v.name, x: String(v.lng), y: String(v.lat) }));
+  try {
+    const params = { name: _rE.name, x: String(_rE.lng), y: String(_rE.lat), coordType: 'wgs84' };
+    if (via.length) params.viaPoints = via;
+    Kakao.Navi.start(params);
+  } catch (e) {
+    _openKakaoMapRoute();
+  }
+}
+
+/* ── 카카오맵 웹 경로 (내비 미설치 fallback) ── */
+function _openKakaoMapRoute() {
+  if (!_rE) return;
+  const url = 'https://map.kakao.com/link/to/' + encodeURIComponent(_rE.name) + ',' + _rE.lat + ',' + _rE.lng;
+  window.open(url, '_blank');
+}
+
 
 /* §10 인포카드 */
 function _openCard(idx) {
@@ -487,11 +569,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   /* 길찾기 */
   _q('#rs-myloc').addEventListener('click',_setGpsStart);
-  _q('#rs-start-x').addEventListener('click',()=>{if(_rS?.idx>=0)_resizeMk(_rS.idx,false);_rS=null;_q('#rs-start-lbl').textContent='출발지를 선택하세요';_q('#rs-start-lbl').classList.add('empty');_q('#rs-start-x').style.display='none';_q('#rs-result').style.display='none';_q('#rs-hint').style.display='';if(_routePolyline){_routePolyline.setMap(null);_routePolyline=null;}});
-  _q('#rs-end-x').addEventListener('click',()=>{if(_rE?.idx>=0)_resizeMk(_rE.idx,false);_rE=null;_q('#rs-end-lbl').textContent='도착지를 선택하세요';_q('#rs-end-lbl').classList.add('empty');_q('#rs-end-x').style.display='none';_q('#rs-result').style.display='none';_q('#rs-hint').style.display='';if(_routePolyline){_routePolyline.setMap(null);_routePolyline=null;}});
-  _q('#rs-add-via').addEventListener('click',()=>{if(!_cur){alert('지도에서 성지를 먼저 선택하세요.');return;}_addVia({name:_cur.name,lat:_cur.lat,lng:_cur.lng,idx:_curIdx});_tryRoute();});
-  _q('#rs-navi-btn').addEventListener('click',_startNavi);
-  _q('#rs-reset-btn').addEventListener('click',_clearRoute);
+  _q('#rs-start-x').addEventListener('click', _clearStart);
+  _q('#rs-end-x').addEventListener('click', _clearEnd);
+  _q('#rs-add-via').addEventListener('click', () => {
+    if (_curIdx >= 0) { _addVia({ idx: _curIdx, name: _cur.name, lat: _cur.lat, lng: _cur.lng, isGps: false }); _tryRoute(); }
+    else alert('지도에서 성지를 먼저 선택하세요.');
+  });
+  _q('#rs-navi-btn').addEventListener('click', _startNavi);
+  _q('#rs-map-btn').addEventListener('click', _openKakaoMapRoute);
+  _q('#rs-reset-btn').addEventListener('click', _clearRoute);
+  /* 우선순위 버튼 */
+  _q('#rs-priority-bar').addEventListener('click', e => {
+    const btn = e.target.closest('[data-pri]');
+    if (!btn) return;
+    _rPriority = btn.dataset.pri;
+    _q('#rs-priority-bar').querySelectorAll('.rs-pri-btn').forEach(b => b.classList.toggle('active', b === btn));
+    if (_rS && _rE) _tryRoute();
+  });
 
   /* 인포카드 */
   _q('#ic-close').addEventListener('click',_closeCard);

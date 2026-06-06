@@ -162,7 +162,19 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
   background: #fff; border: 1.5px solid #e5ddd1; border-radius: 10px;
   padding: 10px 12px; margin-bottom: 8px;
 }
-.rs-connector { width: 1.5px; height: 10px; background: #ddd; margin: -4px 0 -4px 5px; flex-shrink: 0; align-self: flex-start; }
+.rs-priority { display:flex; gap:5px; margin-bottom:8px; }
+.rs-pri-btn {
+  flex:1; height:30px; border:1px solid #ddd; border-radius:8px;
+  font-family:inherit; font-size:11px; font-weight:700; color:#888;
+  background:#f8f8f8; cursor:pointer;
+}
+.rs-pri-btn.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+.rs-fare { font-size:11px; color:#aaa; text-align:center; margin-bottom:8px; min-height:14px; }
+.btn-kakao-map {
+  flex:1; height:46px; border:1.5px solid #ddd; border-radius:10px;
+  background:#f8f8f8; color:#555; font-size:13px; font-weight:800;
+  cursor:pointer; font-family:inherit;
+}
 .rs-sep { height: 1px; background: #ebe5d9; margin: 2px 0 10px; }
 #rs-bottom { padding: 10px 14px 12px; flex-shrink: 0; }
 .rs-stats { display: flex; gap: 10px; margin-bottom: 8px; }
@@ -343,6 +355,12 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       <span class="rs-lbl empty" id="rs-end-lbl">도착지를 선택하세요</span>
       <button class="rs-x-btn" id="rs-end-x" style="display:none">×</button>
     </div>
+    <!-- 우선순위 -->
+    <div class="rs-priority" id="rs-priority-bar">
+      <button class="rs-pri-btn active" data-pri="RECOMMEND">추천</button>
+      <button class="rs-pri-btn" data-pri="TIME">최단시간</button>
+      <button class="rs-pri-btn" data-pri="DISTANCE">최단거리</button>
+    </div>
     <div class="rs-sep"></div>
   </div>
   <div id="rs-bottom">
@@ -351,10 +369,12 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
         <div class="rs-stat"><div class="rs-stat-lbl">도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div>
         <div class="rs-stat"><div class="rs-stat-lbl">예상 시간</div><div class="rs-stat-val" id="rs-time">—</div></div>
       </div>
+      <div class="rs-fare" id="rs-fare"></div>
       <div class="route-btns">
         <button class="btn-kakao-navi" id="rs-navi-btn">🧭 카카오내비</button>
-        <button class="btn-route-reset" id="rs-reset-btn">다시선택</button>
+        <button class="btn-kakao-map" id="rs-map-btn">🗺 카카오맵</button>
       </div>
+      <button class="btn-route-reset" id="rs-reset-btn" style="width:100%;margin-top:6px">↺ 다시선택</button>
     </div>
     <div class="rs-hint" id="rs-hint">출발·도착을 설정하거나<br>지도에서 마커를 탭하세요</div>
   </div>
