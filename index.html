@@ -5,79 +5,118 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1F2A44">
-<title>가톨릭길동무</title>
+<meta name="theme-color" content="#1f2a44">
 <link rel="manifest" href="../manifest.json">
+<title>가톨릭길동무</title>
 <style>
 :root {
-  --d:#1F2A44; --gold:#C8962A; --gold-l:#FEF3D8;
-  --bg:#F5F3EF; --card:#FFFFFF; --bdr:#E8E3D9;
-  --gray:#8B8477; --shadow:0 2px 10px rgba(31,42,68,.10);
-  --radius:14px;
-  --safe-t:env(safe-area-inset-top,0px);
-  --safe-b:env(safe-area-inset-bottom,0px);
+  --navy:   #1f2a44;
+  --gold:   #d4aa6a;
+  --cream:  #fbf8f1;
+  --stone:  #f3eee5;
+  --ink:    #3e362e;
+  --sub:    #7a7065;
+  --line:   rgba(126,104,74,.22);
+  --safe-t: env(safe-area-inset-top,0px);
+  --safe-b: env(safe-area-inset-bottom,0px);
 }
-@media(prefers-color-scheme:dark){
-  :root{--d:#E8E4DC;--bg:#1A1E2A;--card:#252B3B;--bdr:#343B4F;--gray:#8B91A0;}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--cream); font-family: 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color: var(--ink); }
+
+/* 십자가 배경 */
+#cross-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    linear-gradient(to bottom, var(--cream) 0%, rgba(251,248,241,0) 28%, rgba(251,248,241,0) 72%, var(--cream) 100%),
+    linear-gradient(to right,  var(--cream) 0%, rgba(251,248,241,0) 20%, rgba(251,248,241,0) 80%, var(--cream) 100%),
+    url("intro-cross-jesus.jpg?v=V2-113") center/auto 96% no-repeat;
+  opacity: .38;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{min-height:100%;background:var(--bg);color:var(--d);
-  font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-  -webkit-tap-highlight-color:transparent;}
-body{padding:calc(var(--safe-t) + 20px) 20px calc(var(--safe-b) + 24px);}
 
-.cover-head{display:flex;align-items:center;gap:12px;padding:8px 0 28px;}
-.cover-logo{width:48px;height:48px;border-radius:12px;background:var(--d);
-  display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
-.cover-title{font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--d);}
-.cover-sub{font-size:12px;color:var(--gray);margin-top:2px;}
+/* 커버 */
+#cover {
+  position: fixed; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: calc(var(--safe-t) + 24px) 16px calc(var(--safe-b) + 20px);
+  gap: clamp(10px, 2.5vh, 18px);
+}
 
-.cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.cc{background:var(--card);border:1px solid var(--bdr);border-radius:var(--radius);
-  padding:18px 16px;box-shadow:var(--shadow);cursor:pointer;
-  display:flex;flex-direction:column;gap:8px;text-decoration:none;
-  -webkit-tap-highlight-color:transparent;transition:transform .12s;}
-.cc:active{transform:scale(.96);}
-.cc-icon{font-size:28px;line-height:1;}
-.cc-name{font-size:15px;font-weight:700;color:var(--d);letter-spacing:-.03em;}
-.cc-desc{font-size:11px;color:var(--gray);font-weight:600;}
-.cover-ver{text-align:center;font-size:10px;color:var(--bdr);margin-top:24px;}
+/* 헤더 */
+.cover-header { text-align: center; }
+.cover-subtitle { font-size: 13px; font-weight: 600; color: var(--sub); letter-spacing: .03em; margin-bottom: 6px; }
+.cover-title {
+  font-size: clamp(30px, 8vw, 42px); font-weight: 800; letter-spacing: -.03em; color: var(--ink);
+  line-height: 1.1;
+}
+.cover-title::after {
+  content: ''; display: block; width: 56px; height: 2px; margin: 8px auto 0;
+  background: var(--gold); border-radius: 2px;
+}
+
+/* 그리드 */
+.cover-grid {
+  width: 100%; max-width: 420px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, 1fr);
+  gap: clamp(6px, 1.5vw, 10px);
+  flex: 0 0 auto;
+  height: clamp(200px, 42vh, 300px);
+}
+
+/* 카드 */
+.cc {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 16px; text-decoration: none; cursor: pointer;
+  background: linear-gradient(180deg, #fffdf8 0%, #f1e5d3 100%);
+  border: 1px solid var(--line);
+  box-shadow: 0 3px 10px rgba(47,41,33,.10);
+  transition: transform .14s, filter .14s;
+}
+.cc::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--gold); opacity: .5;
+}
+.cc:active { transform: translateY(6px) scale(.976); filter: brightness(.95); }
+#cc-1::before { background: #c0392b; }
+#cc-2::before { background: var(--navy); }
+#cc-3::before { background: #5c4a37; }
+#cc-4::before { background: #1b7a3e; }
+
+.cc-icon { font-size: clamp(28px, 7vw, 38px); line-height: 1; }
+.cc-name { font-size: clamp(13px, 3.5vw, 16px); font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+
+/* 하단 안내 */
+.cover-note { font-size: 10px; color: var(--sub); text-align: center; line-height: 1.6; max-width: 340px; }
 </style>
 </head>
 <body>
-<div class="cover-head">
-  <div class="cover-logo">🕊</div>
-  <div>
-    <div class="cover-title">가톨릭길동무</div>
-    <div class="cover-sub">성지순례 인증 앱</div>
+<div id="cross-bg"></div>
+<div id="cover">
+  <div class="cover-header">
+    <p class="cover-subtitle">성지순례의 모든 여정을 함께합니다</p>
+    <h1 class="cover-title">가톨릭 길동무</h1>
   </div>
+  <div class="cover-grid">
+    <a href="map.html" class="cc" id="cc-1">
+      <span class="cc-icon">✝</span>
+      <span class="cc-name">성지 지도</span>
+    </a>
+    <a href="stamp.html" class="cc" id="cc-2">
+      <span class="cc-icon">📍</span>
+      <span class="cc-name">순례 스탬프</span>
+    </a>
+    <a href="prayer.html" class="cc" id="cc-3">
+      <span class="cc-icon">📖</span>
+      <span class="cc-name">기도문</span>
+    </a>
+    <a href="route.html" class="cc" id="cc-4">
+      <span class="cc-icon">🚶</span>
+      <span class="cc-name">순례길</span>
+    </a>
+  </div>
+  <p class="cover-note">본 앱은 가톨릭 신자들의 성지순례를 돕기 위해 만든 비공식 개인 앱입니다.<br>정보는 CBCK 및 각 교구 홈페이지를 참고했습니다.</p>
 </div>
-
-<div class="cover-grid">
-  <a href="map.html" class="cc">
-    <div class="cc-icon">🗺</div>
-    <div class="cc-name">성지 지도</div>
-    <div class="cc-desc">167개 성지 찾기</div>
-  </a>
-  <a href="stamp.html" class="cc">
-    <div class="cc-icon">📍</div>
-    <div class="cc-name">순례 스탬프</div>
-    <div class="cc-desc">방문 인증 · 코스 추천</div>
-  </a>
-  <a href="prayer.html" class="cc">
-    <div class="cc-icon">📖</div>
-    <div class="cc-name">기도문</div>
-    <div class="cc-desc">주요 가톨릭 기도문</div>
-  </a>
-  <a href="route.html" class="cc">
-    <div class="cc-icon">🚶</div>
-    <div class="cc-name">순례길</div>
-    <div class="cc-desc">도보 순례 경로 안내</div>
-  </a>
-</div>
-
-<div class="cover-ver">가톨릭길동무 V1</div>
-
 <script src="sw-update.js?v=V1"></script>
 </body>
 </html>

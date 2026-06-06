@@ -294,7 +294,7 @@
 
 <div id="filter-bar" style="display:none;">
   <button class="filter-chip active" onclick="setFilter('all')" data-filter="all">전체</button>
-  <button class="filter-chip" onclick="setFilter('stamped')" data-filter="stamped">✅ 방문완료</button>
+  <button class="filter-chip" onclick="setFilter('stamped')" data-filter="stamped">✞ 순례완료</button>
   <button class="filter-chip" onclick="setFilter('A')" data-filter="A">성지</button>
   <button class="filter-chip" onclick="setFilter('B')" data-filter="B">순례지</button>
   <button class="filter-chip" onclick="setFilter('C')" data-filter="C">순교사적지</button>
@@ -400,7 +400,7 @@ function toggleStamp(seq, e) {
       if (dates.length) v[seq] = dates; else delete v[seq];
     }
   } else {
-    /* 첫 방문 — 날짜 입력 */
+    /* 첫 순례 — 날짜 입력 */
     var date2 = prompt('방문 날짜를 입력하세요 (YYYY-MM-DD)', _today());
     if (!date2 || !/^\d{4}-\d{2}-\d{2}$/.test(date2)) return;
     v[seq] = [date2];
@@ -444,7 +444,7 @@ function renderOverview() {
     }).join('');
 
   var guide = done === 0
-    ? '<div class="no-stamp-guide">🗺 <strong>성지 지도</strong>에서 성지를 선택하고<br><strong>방문 인증</strong> 버튼을 누르면 스탬프가 찍혀요.<br>또는 아래 <strong>성지 목록</strong> 탭에서 직접 체크할 수 있어요.</div>'
+    ? '<div class="no-stamp-guide">🗺 <strong>성지 지도</strong>를 열고 성지 근처에 가면<br>반경 500m 안에서 <strong>자동으로 순례가 기록</strong>됩니다.<br>아래 <strong>성지 목록</strong> 탭에서 직접 날짜를 입력할 수도 있어요.</div>'
     : '';
 
   return guide
@@ -453,7 +453,7 @@ function renderOverview() {
     +     '<div><div class="summary-label">순례 완료</div>'
     +     '<div class="summary-count">' + done + '<span> / ' + total + '곳</span></div></div>'
     +     '<div style="text-align:right"><div class="summary-percent">' + pct + '%</div>'
-    +     (totalVisits > done ? '<div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">누적 ' + totalVisits + '회 방문</div>' : '')
+    +     (totalVisits > done ? '<div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">누적 ' + totalVisits + '회 순례</div>' : '')
     +   '</div>'
     +   '</div>'
     +   '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:'+pct+'%"></div></div>'
@@ -484,7 +484,7 @@ function renderList() {
       + '<div class="shrine-info">'
       +   '<div class="shrine-name' + (isV ? ' stamped' : '') + '">' + escHtml(s.name) + '</div>'
       +   '<div class="shrine-meta">' + (DIOCESE[s.diocese]||s.diocese) + '</div>'
-      +   (isV ? '<div class="visit-date">' + cnt + '회 방문 · 최근 ' + last + '</div>' : '')
+      +   (isV ? '<div class="visit-date">' + cnt + '회 순례 · ' + last + '</div>' : '')
       + '</div>'
       + '<span class="shrine-type-badge type-' + s.type + '">' + (TYPE_LABEL[s.type]||s.type) + '</span>'
       + '</div>';
@@ -521,7 +521,7 @@ function renderCourseList() {
         + '</div>'
         + '<div class="course-title">' + escHtml(c.title) + '</div>'
         + '<div class="course-sub">' + c.seqs.length + '곳'
-        +   (done ? ' · <span class="done">' + done + '곳 방문</span>' : '')
+        +   (done ? ' · <span class="done">' + done + '곳 순례</span>' : '')
         + '</div>'
         + '</div>';
     });
@@ -559,10 +559,10 @@ function renderCourseDetail(c) {
     + '<div class="course-detail-head">'
     +   '<div class="cd-title">' + escHtml(c.title) + '</div>'
     +   '<div class="cd-meta">' + c.type + ' · ' + c.seqs.length + '곳 · 총 이동 약 ' + c.km + 'km'
-    +     (done ? ' · <span class="done">' + done + '곳 방문</span>' : '') + '</div>'
+    +     (done ? ' · <span class="done">' + done + '곳 순례</span>' : '') + '</div>'
     + '</div>'
     + '<div class="course-steps">' + steps + '</div>'
-    + '<div class="course-foot-note">🧭 버튼을 누르면 카카오맵 길찾기가 열립니다.<br>스탬프는 성지 지도에서 방문 인증하거나 성지 목록에서 체크하면 반영됩니다.</div>';
+    + '<div class="course-foot-note">🧭 버튼을 누르면 카카오맵 길찾기가 열립니다.<br>성지 근처(반경 500m)에서 지도 앱을 열면 순례가 자동으로 기록됩니다.</div>';
 }
 
 function openCourse(id) { _courseId = id; render(); }
