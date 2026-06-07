@@ -413,6 +413,7 @@ function _setStart(pt) {
   const lbl = _q('#rs-start-lbl'); lbl.textContent = pt.name; lbl.classList.remove('empty');
   _q('#rs-start-x').style.display = '';
   if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('출'));
+  window._updateSearchBtn && window._updateSearchBtn();
 }
 function _setEnd(pt) {
   if (_rE?.idx >= 0) _resizeMk(_rE.idx, false);
@@ -420,6 +421,7 @@ function _setEnd(pt) {
   const lbl = _q('#rs-end-lbl'); lbl.textContent = pt.name; lbl.classList.remove('empty');
   _q('#rs-end-x').style.display = '';
   if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('도'));
+  window._updateSearchBtn && window._updateSearchBtn();
 }
 function _addVia(pt) {
   if (_rVia.some(v => v.idx >= 0 && v.idx === pt.idx)) return;
@@ -441,6 +443,7 @@ function _clearStart() {
   _q('#rs-start-x').style.display = 'none';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
+  window._updateSearchBtn && window._updateSearchBtn();
 }
 function _clearEnd() {
   if (_rE?.idx >= 0) _resizeMk(_rE.idx, false);
@@ -449,7 +452,18 @@ function _clearEnd() {
   _q('#rs-end-x').style.display = 'none';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
+  window._updateSearchBtn && window._updateSearchBtn();
 }
+/* 경로 표시 중 — 출/경유/도 마커만 지도에 남김 */
+function _showRouteMarkersOnly() {
+  const keep = new Set();
+  if (_rS?.idx >= 0) keep.add(_rS.idx);
+  if (_rE?.idx >= 0) keep.add(_rE.idx);
+  _rVia.forEach(v => { if (v.idx >= 0) keep.add(v.idx); });
+  if (keep.size === 0) return;
+  _markers.forEach((mk, i) => mk && mk.setMap(keep.has(i) ? _map : null));
+}
+
 function _clearRoute() {
   [_rS, ..._rVia, _rE].forEach(p => { if (p?.idx >= 0) _resizeMk(p.idx, false); });
   _rS = null; _rVia = []; _rE = null;
@@ -459,6 +473,8 @@ function _clearRoute() {
   _q('#rs-via-wrap').innerHTML = '';
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  window._updateSearchBtn && window._updateSearchBtn();
+  _showAll();  /* 모든 마커 복원 */
 }
 function _renderViaList() {
   _q('#rs-via-wrap').innerHTML = _rVia.map((v, i) =>
@@ -496,11 +512,11 @@ function _setGpsStart() {
   if (!navigator.geolocation) return;
   const btn = _q('#rs-myloc'); btn.textContent = '...';
   navigator.geolocation.getCurrentPosition(pos => {
-    btn.textContent = '내 위치';
+    btn.textContent = '📍현위치';
     _setStart({ idx: -1, name: '내 위치', lat: pos.coords.latitude, lng: pos.coords.longitude, isGps: true });
     _showMyLoc(pos.coords.latitude, pos.coords.longitude);
     if (_rE) _tryRoute();
-  }, () => { btn.textContent = '내 위치'; alert('위치를 가져오지 못했습니다.'); },
+  }, () => { btn.textContent = '📍현위치'; alert('위치를 가져오지 못했습니다.'); },
   { enableHighAccuracy: true, timeout: 8000 });
 }
 
@@ -554,13 +570,14 @@ async function _tryRoute() {
     const b = sum.bound;
     if (b) _map.setBounds(new kakao.maps.LatLngBounds(new _LL(b.min_y, b.min_x), new _LL(b.max_y, b.max_x)), 60);
 
+    _showRouteMarkersOnly();  /* 출/도 마커만 남김 */
     _q('#rs-result').style.display = ''; _q('#rs-hint').style.display = 'none';
 
   } catch (e) {
-    /* CORS/API 오류: 직선 폴리라인 유지, 안내 표시 */
     console.warn('[경로]', e.message);
     _q('#rs-km').textContent = '—'; _q('#rs-time').textContent = '—';
     _q('#rs-fare').textContent = '경로 데이터를 가져올 수 없습니다. 내비로 확인하세요.';
+    _showRouteMarkersOnly();  /* 실패해도 출/도 마커만 표시 */
     _q('#rs-result').style.display = ''; _q('#rs-hint').style.display = 'none';
   }
 }
@@ -619,21 +636,24 @@ function _initSab() {
     if (_sabIdx < 0) return;
     const s = _shrines[_sabIdx];
     _setStart({ idx: _sabIdx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
-    window._updateSearchBtn && window._updateSearchBtn();
     _sabClose();
     switchTab('route');
+    /* 출발지만 설정 → 나머지 마커 유지, 지도 중심 이동 */
+    _map.panTo(new _LL(s.lat, s.lng));
   });
   document.getElementById('sab-end').addEventListener('click', () => {
     if (_sabIdx < 0) return;
     const s = _shrines[_sabIdx];
     _setEnd({ idx: _sabIdx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
-    window._updateSearchBtn && window._updateSearchBtn();
     _sabClose();
     switchTab('route');
-  });
-  document.getElementById('sab-detail').addEventListener('click', () => {
-    const idx = _sabIdx; _sabClose();
-    _openCard(idx);
+    /* 도착지 설정 → 출발지도 있으면 바로 경로 계산 */
+    if (_rS) {
+      _tryRoute();   /* 성공 시 _showRouteMarkersOnly() 호출됨 */
+    } else {
+      /* 출발지 없음 → 도착지 마커만 강조 */
+      _showOnly([_sabIdx]);
+    }
   });
 }
 
