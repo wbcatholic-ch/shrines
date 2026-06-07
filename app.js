@@ -10,7 +10,7 @@ const KAKAO_REST_KEY = '86a3b86e6c1b0210b8e4aba5f6c83b00';
 const STAMP_KEY      = 'catholic_stamp_visited_v1';
 const STAMP_RADIUS   = 500;
 const _TY  = { A:'성지', B:'순례지', C:'순교 사적지' };
-const _CLR = { '성지':'#c0392b', '순례지':'#1565c0', '순교 사적지':'#1b7a3e' };
+const _CLR = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
 const _DIOCESE = {
   SE:'서울대교구', IC:'인천교구',  SW:'수원교구',   UJ:'의정부교구',
   CC:'춘천교구',   WJ:'원주교구',  DJ:'대전교구',   CJ:'청주교구',
