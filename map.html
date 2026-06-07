@@ -141,32 +141,40 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 
 /* ── 목록 카드 (스펙: margin 10px, border-radius 13px, shadow) ── */
 .sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; background: #f7f4ee; }
-.li {
+
+/* ── 성지찾기 목록 (구 앱 패턴) ── */
+.dio-hd  { padding: 10px 14px 4px; font-size: 11px; font-weight: 800; color: #c0392b; }
+.list-item {
   display: flex; align-items: center; gap: 12px;
   margin: 0 10px 6px; padding: 12px 14px; min-height: 72px;
   border-radius: 13px; border: 1px solid #e8edf5;
-  background: #fff; box-shadow: 0 2px 10px rgba(14,21,53,.1);
+  background: #fff; box-shadow: 0 2px 8px rgba(14,21,53,.08);
   cursor: pointer;
 }
-.li:first-child { margin-top: 8px; }
-.li:active { opacity: .85; }
-.dio-hdr { padding: 10px 20px 4px; font-size: 11px; font-weight: 800; color: #c0392b; background: transparent; }
-.li-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.li-num {
-  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 900; color: #fff;
+.list-item:active { opacity: .85; }
+.li-dot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: 16px; font-weight: 800; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li-sub  { font-size: 13px; font-weight: 500; color: #7b8794; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li-badge{ font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+
+/* ── 내주변 목록 (구 앱 패턴) ── */
+.nearby-item {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 10px 6px; padding: 12px 14px; min-height: 72px;
+  border-radius: 13px; border: 1px solid #e8edf5;
+  background: #fff; box-shadow: 0 2px 8px rgba(14,21,53,.08);
+  cursor: pointer;
 }
-.li-main { flex: 1; min-width: 0; }
-.li-name { font-size: 16px; font-weight: 800; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.35; }
-.li-sub  { font-size: 13px; font-weight: 500; color: #7b8794; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.45; }
-.li-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-.li-badge { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
-.badge-A { background: #fde8e6; color: #c0392b; }
-.badge-B { background: #ddeaff; color: #1565c0; }
-.badge-C { background: #d6f5e3; color: #1b7a3e; }
-.li-dist { font-size: 13px; font-weight: 900; color: #c0392b; }
-.li-dur  { font-size: 11px; color: #aaa; font-weight: 500; }
+.nearby-item:active { opacity: .85; }
+.nearby-num  { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #fff; }
+.nearby-info { flex: 1; min-width: 0; }
+.nearby-name { font-size: 16px; font-weight: 800; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nearby-addr { font-size: 13px; font-weight: 500; color: #7b8794; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nearby-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.nearby-type { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+.nearby-dist { font-size: 13px; font-weight: 900; white-space: nowrap; }
+.nearby-dur  { font-size: 11px; color: #aaa; }
 
 /* ── 내주변 로딩 스피너 (회전 십자가) ── */
 @keyframes spin-cross { to { transform: rotate(360deg); } }
@@ -373,30 +381,29 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 #route-float-x    { width:44px; height:44px; font-size:22px; font-weight:900; }
 #route-float-swap { width:40px; height:40px; font-size:18px; }
 
-/* ── 성지 액션 배너 ── */
+/* ── 경로검색 위치 선택 모달 (구 앱 동일) ── */
 #shrine-action-bar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
-  background: #fff; border-top: 2px solid var(--gold);
-  border-radius: 18px 18px 0 0;
-  padding: 14px 16px calc(var(--safe-b) + 14px);
-  transform: translateY(100%); transition: transform .22s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 -8px 24px rgba(0,0,0,.14);
+  background: #fff; border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(env(safe-area-inset-bottom,0) + 20px);
+  transform: translateY(100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 -6px 30px rgba(0,0,0,.18);
 }
 #shrine-action-bar.open { transform: none; }
-.sab-name {
-  font-size: 15px; font-weight: 800; color: #1f2937;
-  text-align: center; margin-bottom: 14px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.sab-title {
+  font-size: 18px; font-weight: 900; color: #1f2937; margin-bottom: 8px;
 }
-.sab-btns { display: flex; gap: 8px; }
-.sab-btn {
-  flex: 1; height: 46px; border-radius: 12px; border: none;
-  font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+.sab-desc {
+  font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 22px;
 }
-.sab-btn-start  { background: #1565c0; color: #fff; }
-.sab-btn-end    { background: #c0392b; color: #fff; }
-.sab-btn-detail { background: #f5f0e8; color: #555; border: 1px solid #ddd; }
-.sab-btn-cancel { background: #f0f0f0; color: #999; }
+.sab-row  { display: flex; gap: 10px; margin-bottom: 10px; }
+.sab-btn  {
+  width: 100%; height: 54px; border-radius: 14px;
+  font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+}
+.sab-btn-start  { flex: 1; background: #fff0ef; color: #c0392b; border: 2px solid #f5b8b0; }
+.sab-btn-end    { flex: 1; background: #eef3ff; color: #1565c0; border: 2px solid #90b8f0; }
+.sab-btn-cancel { background: #f0faf4; color: #1b7a3e; border: 2px solid #a0d4b0; }
 #shrine-action-overlay {
   position: fixed; inset: 0; z-index: 999; display: none; background: rgba(0,0,0,.3);
 }
@@ -450,24 +457,25 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
     </div>
   </div>
   <!-- 교구 필터 (스펙 순서: 전체→서울→인천→수원→의정부→춘천→원주→대전→청주→대구→안동→부산→마산→광주→전주→제주→군종) -->
+  <!-- 교구 필터: data-dio = 한글 풀네임 (구 앱 패턴) -->
   <div class="filter-bar" id="list-filter-bar">
     <button class="filter-pill active" data-dio="all">전체</button>
-    <button class="filter-pill" data-dio="SE">서울</button>
-    <button class="filter-pill" data-dio="IC">인천</button>
-    <button class="filter-pill" data-dio="SW">수원</button>
-    <button class="filter-pill" data-dio="UJ">의정부</button>
-    <button class="filter-pill" data-dio="CC">춘천</button>
-    <button class="filter-pill" data-dio="WJ">원주</button>
-    <button class="filter-pill" data-dio="DJ">대전</button>
-    <button class="filter-pill" data-dio="CJ">청주</button>
-    <button class="filter-pill" data-dio="DG">대구</button>
-    <button class="filter-pill" data-dio="AD">안동</button>
-    <button class="filter-pill" data-dio="BS">부산</button>
-    <button class="filter-pill" data-dio="MS">마산</button>
-    <button class="filter-pill" data-dio="GJ">광주</button>
-    <button class="filter-pill" data-dio="JJ">전주</button>
-    <button class="filter-pill" data-dio="JE">제주</button>
-    <button class="filter-pill" data-dio="ML">군종</button>
+    <button class="filter-pill" data-dio="서울대교구">서울</button>
+    <button class="filter-pill" data-dio="인천교구">인천</button>
+    <button class="filter-pill" data-dio="수원교구">수원</button>
+    <button class="filter-pill" data-dio="의정부교구">의정부</button>
+    <button class="filter-pill" data-dio="춘천교구">춘천</button>
+    <button class="filter-pill" data-dio="원주교구">원주</button>
+    <button class="filter-pill" data-dio="대전교구">대전</button>
+    <button class="filter-pill" data-dio="청주교구">청주</button>
+    <button class="filter-pill" data-dio="대구대교구">대구</button>
+    <button class="filter-pill" data-dio="안동교구">안동</button>
+    <button class="filter-pill" data-dio="부산교구">부산</button>
+    <button class="filter-pill" data-dio="마산교구">마산</button>
+    <button class="filter-pill" data-dio="광주대교구">광주</button>
+    <button class="filter-pill" data-dio="전주교구">전주</button>
+    <button class="filter-pill" data-dio="제주교구">제주</button>
+    <button class="filter-pill" data-dio="군종교구">군종</button>
   </div>
   <div class="sh-credit">성지 정보는 CBCK 홈페이지를 참고했습니다.</div>
   <div class="sheet-body" id="list-body"></div>
@@ -606,12 +614,13 @@ if ('serviceWorker' in navigator) {
 <!-- 성지 액션 배너 -->
 <div id="shrine-action-overlay" onclick="_sabClose()"></div>
 <div id="shrine-action-bar">
-  <div class="sab-name" id="sab-name">성지명</div>
-  <div class="sab-btns">
-    <button class="sab-btn sab-btn-start"  id="sab-start">🔵 출발지로 설정</button>
-    <button class="sab-btn sab-btn-end"    id="sab-end">🔴 도착지로 설정</button>
-    <button class="sab-btn sab-btn-cancel" onclick="_sabClose()">취소</button>
+  <div class="sab-title">경로검색 위치 선택</div>
+  <div class="sab-desc" id="sab-name"></div>
+  <div class="sab-row">
+    <button class="sab-btn sab-btn-start" id="sab-start">출발지로 설정</button>
+    <button class="sab-btn sab-btn-end"   id="sab-end">도착지로 설정</button>
   </div>
+  <button class="sab-btn sab-btn-cancel" onclick="_sabClose()">취소</button>
 </div>
 </body>
 </html>

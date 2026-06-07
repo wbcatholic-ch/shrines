@@ -9,14 +9,24 @@ const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
 const KAKAO_REST_KEY = '86a3b86e6c1b0210b8e4aba5f6c83b00';
 const STAMP_KEY      = 'catholic_stamp_visited_v1';
 const STAMP_RADIUS   = 500;
-const _TY  = { A:'성지', B:'순례지', C:'순교 사적지' };
-const _CLR = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
-const _DIOCESE = {
+/* ── 구 앱 패턴 데이터 맵 ── */
+const _TY  = { A:'성지', B:'순례지', C:'순교 사적지' };           /* 타입 코드 → 한글 */
+const _DIO = {                                                      /* 교구 코드 → 한글 풀네임 */
   SE:'서울대교구', IC:'인천교구',  SW:'수원교구',   UJ:'의정부교구',
   CC:'춘천교구',   WJ:'원주교구',  DJ:'대전교구',   CJ:'청주교구',
   DG:'대구대교구', AD:'안동교구',  BS:'부산교구',   MS:'마산교구',
   GJ:'광주대교구', JJ:'전주교구',  JE:'제주교구',   ML:'군종교구'
 };
+/* TC: 구 앱과 동일 — 한글 타입명 키 */
+const TC = { '성지':'#c0392b', '순례지':'#1565c0', '순교 사적지':'#1b7a3e' };
+/* _CLR은 A/B/C 직접 참조용 (badge CSS) */
+const _CLR = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
+/* _typeColor: 구 앱 동일 */
+function _typeColor(t){ return TC[t] || '#888'; }
+/* 교구 표시 순서 (한글 풀네임) */
+const DIO_ORDER = ['서울대교구','인천교구','수원교구','의정부교구','춘천교구','원주교구',
+                   '대전교구','청주교구','대구대교구','안동교구','부산교구','마산교구',
+                   '광주대교구','전주교구','제주교구','군종교구'];
 
 /* §1 상태 */
 let _map, _LL, _MM, _MI, _SZ, _PT, _PL;
@@ -190,41 +200,38 @@ function _loadNearby() {
       return;
     }
     body.innerHTML = list.map((o,n) => {
-      const s = _shrines[o.i], c = _CLR[s.type];
+      const s = _shrines[o.i], c = _typeColor(s.type);
       const km  = (o.d / 1000 * 1.35).toFixed(1);
       const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
       const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
-      return `<div class="li" data-i="${o.i}">
-        <div class="li-num" style="background:${c}">${n+1}</div>
-        <div class="li-main">
-          <div class="li-name">${_esc(s.name)}</div>
-          <div class="li-sub">${_esc(_DIOCESE[s.diocese]||'')} · ${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div>
+      return `<div class="nearby-item" onclick="_sabOpen(${o.i})">
+        <div class="nearby-num" style="background:${c}!important">${n+1}</div>
+        <div class="nearby-info">
+          <div class="nearby-name">${_esc(s.name)}</div>
+          <div class="nearby-addr">${_esc((s.addr||'').substring(0,28))}</div>
         </div>
-        <div class="li-right">
-          <span class="li-badge badge-${s.type}">${TYPE_LBL[s.type]||''}</span>
-          <span class="li-dist">🚗${km}km</span>
-          <span class="li-dur">${dur}</span>
+        <div class="nearby-meta">
+          <div class="nearby-type" style="background:${c}18!important;color:${c}!important">${_esc(s.type)}</div>
+          <div class="nearby-dist" style="color:${c}!important">🚗${km}km</div>
+          <div class="nearby-dur">${dur}</div>
         </div>
       </div>`;
     }).join('');
-    body.querySelectorAll('[data-i]').forEach(el =>
-      el.addEventListener('click', () => _sabOpen(+el.dataset.i))
-    );
   }, () => {
     body.innerHTML = `<div class="loading-wrap"><div class="loading-txt">위치를 가져오지 못했습니다.<br><button onclick="_loadNearby()" style="margin-top:12px;padding:8px 20px;border-radius:20px;border:none;background:#1f2a44;color:#d4aa6a;font-weight:700;cursor:pointer;font-family:inherit">다시 시도</button></div></div>`;
   }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 10000});
 }
 
 /* §7 성지찾기 */
-const TYPE_LBL = { A:'성지', B:'순례지', C:'순교 사적지' };
-const DIO_ORDER = ['SE','IC','SW','UJ','CC','WJ','DJ','CJ','DG','AD','BS','MS','GJ','JJ','JE','ML'];
+/* TYPE_LBL: _TY와 동일 — s.type이 이미 한글로 변환됨 */
+/* DIO_ORDER 상단에 정의됨 */
 let _filterDio = 'all';
 
 /* 스펙: 토큰 분리 검색 — 띄어쓰기 제거 후 각 토큰이 이름/교구/주소에 포함되면 매칭 */
 function _matchShrines(s, q) {
   if (!q) return true;
   const tokens = q.trim().split(/\s+/);
-  const name  = s.name, addr = s.addr||'', dioc = _DIOCESE[s.diocese]||'';
+  const name  = s.name, addr = s.addr||'', dioc = s.diocese||'';
   return tokens.every(t =>
     name.includes(t) || addr.includes(t) || dioc.includes(t) ||
     name.replace(/\s/g,'').includes(t.replace(/\s/g,''))
@@ -242,30 +249,29 @@ function _renderList(kw) {
     body.innerHTML = '<div style="padding:32px;text-align:center;color:#bbb;font-size:13px">검색 결과가 없습니다.</div>';
     return;
   }
-  /* 교구별 그룹 — 구 앱 동일 */
+  /* 교구별 그룹 — 구 앱 동일 (한글 교구명 기준) */
   const groups = {};
   DIO_ORDER.forEach(d => groups[d] = []);
   items.forEach(o => { if (groups[o.s.diocese]) groups[o.s.diocese].push(o); });
-  let html = '';
+  const body2 = document.createElement('div');
   DIO_ORDER.forEach(dioc => {
     const g = groups[dioc]; if (!g||!g.length) return;
-    html += `<div class="dio-hdr">${_DIOCESE[dioc]||dioc}</div>`;
+    const hd = document.createElement('div');
+    hd.className = 'dio-hd'; hd.textContent = dioc;
+    body2.appendChild(hd);
     g.forEach(({i,s}) => {
-      const c = _CLR[s.type];
-      html += `<div class="li" data-i="${i}">
-        <div class="li-dot" style="background:${c};width:12px;height:12px;border-radius:50%;flex-shrink:0"></div>
-        <div class="li-main">
-          <div class="li-name">${_esc(s.name)}</div>
-          <div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
-        </div>
-        <span class="li-badge badge-${s.type}">${TYPE_LBL[s.type]||''}</span>
-      </div>`;
+      const c = _typeColor(s.type);
+      const d = document.createElement('div');
+      d.className = 'list-item';
+      d.innerHTML = `<div class="li-dot" style="background:${c}"></div>
+        <div class="li-info"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').substring(0,28))}</div></div>
+        <span class="li-badge" style="background:${c}18;color:${c}">${_esc(s.type)}</span>`;
+      d.onclick = () => _sabOpen(i);
+      body2.appendChild(d);
     });
   });
-  body.innerHTML = html;
-  body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _sabOpen(+el.dataset.i))
-  );
+  body.innerHTML = '';
+  body.appendChild(body2);
 }
 
 /* §8 지역검색
@@ -290,9 +296,9 @@ function _regionSearch(q) {
     let html = '<div style="padding:8px 14px 4px;font-size:11px;font-weight:700;color:#888;border-bottom:1px solid #eee">📍 지역을 선택하세요</div>';
     data.forEach(d => {
       const nm = d.place_name||'', ad = d.road_address_name||d.address_name||'';
-      html += `<div class="region-place-cand li" data-lat="${d.y}" data-lng="${d.x}" data-nm="${_esc(nm)}">
+      html += `<div class="region-place-cand list-item" data-lat="${d.y}" data-lng="${d.x}" data-nm="${_esc(nm)}">
         <div class="li-dot" style="background:#7c3aed"></div>
-        <div class="li-main"><div class="li-name">${_esc(nm)}</div><div class="li-sub">${_esc(ad)}</div></div>
+        <div class="li-info"><div class="li-name">${_esc(nm)}</div><div class="li-sub">${_esc(ad)}</div></div>
       </div>`;
     });
     body.innerHTML = html;
@@ -344,7 +350,7 @@ function _regionShowShrines(lat, lng, placeName) {
      </div>
      <div style="padding:7px 14px 4px;font-size:11px;font-weight:700;color:#c0392b">† 근처 성지 · 자동차 거리순 ${sorted.length}곳</div>` +
     sorted.map((o,n) => {
-      const s=_shrines[o.i], c=_CLR[s.type];
+      const s=_shrines[o.i], c=_typeColor(s.type);
       const km  = (o.d / 1000 * 1.35).toFixed(1);
       const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
       const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
@@ -355,7 +361,7 @@ function _regionShowShrines(lat, lng, placeName) {
           <div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
         </div>
         <div class="li-right">
-          <span class="li-badge badge-${s.type}">${TYPE_LBL[s.type]||''}</span>
+          <span class="li-badge" style="background:${c}18;color:${c}">${_esc(s.type)}</span>
           <span class="li-dist">🚗${km}km</span>
           <span class="li-dur">${dur}</span>
         </div>
@@ -372,7 +378,7 @@ function _regionFallback(q) {
   const body = document.getElementById('region-body');
   const matched = _shrines
     .map((s,i) => ({ i, s }))
-    .filter(o => o.s.name.includes(q) || (o.s.addr||'').includes(q) || (_DIOCESE[o.s.diocese]||'').includes(q));
+    .filter(o => o.s.name.includes(q) || (o.s.addr||'').includes(q) || (o.s.diocese||'').includes(q));
   if (!matched.length) {
     body.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px">검색 결과가 없습니다.</div>';
     return;
@@ -503,14 +509,8 @@ function _setRouteFromMarker(idx) {
 
 /* ── 인포카드 "경로검색" ── */
 function _icRoute() {
-  if (!_cur) return;
-  const pt = { idx: _curIdx, name: _cur.name, lat: _cur.lat, lng: _cur.lng, isGps: false };
-  /* 도착지 우선 설정, 이미 있으면 출발지, 둘 다 있으면 경유 */
-  if (!_rE)      _setEnd(pt);
-  else if (!_rS) _setStart(pt);
-  else           _addVia(pt);
-  if (_rS && _rE) _tryRoute();
-  switchTab('route');
+  if (_curIdx < 0) return;
+  _sabOpen(_curIdx);   /* 인포카드 경로검색 → 같은 모달 다이얼로그 */
 }
 
 /* ── GPS 출발지 ── */
@@ -626,7 +626,11 @@ let _sabIdx = -1;
 function _sabOpen(idx) {
   _sabIdx = idx;
   const s = _shrines[idx];
-  document.getElementById('sab-name').textContent = s.name;
+  /* 구 앱 동일: 을(를) 조사 */
+  const last = s.name.charCodeAt(s.name.length - 1);
+  const particle = (last >= 0xAC00 && (last - 0xAC00) % 28 !== 0) ? '을(를)' : '를(을)';
+  document.getElementById('sab-name').textContent =
+    `${s.name}${particle} 출발지 또는 도착지로 설정하세요.`;
   document.getElementById('shrine-action-overlay').style.display = '';
   document.getElementById('shrine-action-bar').classList.add('open');
 }
@@ -718,7 +722,7 @@ function _renderPickerList(kw) {
   } else {
     html += list.map(s => {
       const idx  = _shrines.indexOf(s);
-      const dioc = _DIOCESE[s.diocese] || s.diocese || '';
+      const dioc = s.diocese || '';
       return `<div class="rp-item" data-idx="${idx}">
         <div class="rp-dot" style="background:${clr[s.type]||'#888'}"></div>
         <div class="rp-info">
@@ -774,10 +778,10 @@ function _openCard(idx) {
   const s = _cur;
 
   _q('#ic-name').textContent = s.name;
-  _q('#ic-sub').textContent  = _DIOCESE[s.diocese] || s.diocese || '';
+  _q('#ic-sub').textContent  = s.diocese || '';
   const tb = _q('#ic-type');
   /* 스펙: 타입 배지 = 한글 레이블 (성지/순례지/순교 사적지) */
-  tb.textContent = TYPE_LBL[s.type] || s.type || '';
+  tb.textContent = s.type || '';  /* 이미 한글 변환됨 */
   tb.style.background = _CLR[s.type] || '#888'; tb.style.color = s.type ? '#fff' : '#555';
 
   _q('#ic-addr').textContent = s.addr || '';
@@ -945,7 +949,13 @@ window.addEventListener('pagehide',()=>{if(_watchId!==null){navigator.geolocatio
 window.addEventListener('pageshow',()=>{if(_map&&!_courseMode)_startGPS();});
 
 document.addEventListener('DOMContentLoaded',()=>{
-  _shrines = (window._SH_RAW||[]).filter(s => s.lat && s.lng);
+  /* 구 앱 패턴: _buildShrineList — type/diocese 코드→한글 변환 */
+  _shrines = (window._SH_RAW||[]).map(function(src){
+    const s = Object.assign({}, src);
+    if (_TY[s.type])   s.type   = _TY[s.type];    /* A→성지, B→순례지, C→순교 사적지 */
+    if (_DIO[s.diocese]) s.diocese = _DIO[s.diocese]; /* SE→서울대교구 등 */
+    return s;
+  }).filter(function(s){ return s.lat && s.lng; });
 
   /* 탭 버튼 */
   document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
@@ -1009,7 +1019,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   _q('#list-filter-bar').addEventListener('click', e => {
     const pill = e.target.closest('[data-dio]');
     if (!pill) return;
-    _filterDio = pill.dataset.dio;
+    _filterDio = pill.dataset.dio;  /* 한글 교구명 또는 'all' */
     _q('#list-filter-bar').querySelectorAll('.filter-pill').forEach(p =>
       p.classList.toggle('active', p === pill));
     _renderList(_q('#list-inp').value);
