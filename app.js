@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B019"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B020"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -458,7 +458,7 @@ function _setEnd(pt) {
 function _addVia(pt) {
   if (_rVia.some(v => v.idx >= 0 && v.idx === pt.idx)) return;
   _rVia.push(pt);
-  if (pt.idx >= 0 && _markers[pt.idx]) { _markers[pt.idx].setImage(_mkrRoute("경")); _markers[pt.idx].setZIndex(50); }
+  if (pt.idx >= 0 && _markers[pt.idx]) { _markers[pt.idx].setMap(_map); _markers[pt.idx].setImage(_mkrRoute("경")); _markers[pt.idx].setZIndex(50); }
   _renderViaList();
 }
 function _removeVia(i) {
@@ -507,13 +507,13 @@ function _showRouteMarkersOnly() {
 
   /* 출/도/경 마커 이미지 강제 적용 */
   if (_rS?.idx >= 0 && _markers[_rS.idx]) {
-    _markers[_rS.idx].setImage(_mkrRoute('출')); _markers[_rS.idx].setZIndex(340);
+    _markers[_rS.idx].setMap(_map); _markers[_rS.idx].setImage(_mkrRoute('출')); _markers[_rS.idx].setZIndex(340);
   }
   if (_rE?.idx >= 0 && _markers[_rE.idx]) {
-    _markers[_rE.idx].setImage(_mkrRoute('도')); _markers[_rE.idx].setZIndex(320);
+    _markers[_rE.idx].setMap(_map); _markers[_rE.idx].setImage(_mkrRoute('도')); _markers[_rE.idx].setZIndex(320);
   }
   _rVia.filter(v => !v.pending && v.idx >= 0).forEach(v => {
-    if (_markers[v.idx]) { _markers[v.idx].setImage(_mkrRoute('경')); _markers[v.idx].setZIndex(50); }
+    if (_markers[v.idx]) { _markers[v.idx].setMap(_map); _markers[v.idx].setImage(_mkrRoute('경')); _markers[v.idx].setZIndex(50); }
   });
 
   /* GPS 임시 마커 */
@@ -657,7 +657,7 @@ function _setRouteFromMarker(idx) {
   const pendingIdx = _rVia.findIndex(v => v.pending);
   if (pendingIdx >= 0) {
     _rVia[pendingIdx] = { ...pt, pending:false };
-    if (_markers[idx]) { _markers[idx].setImage(_mkrRoute('경')); _markers[idx].setZIndex(50); }
+    if (_markers[idx]) { _markers[idx].setMap(_map); _markers[idx].setImage(_mkrRoute('경')); _markers[idx].setZIndex(50); }
     _renderViaList();
     if (_rS && _rE) _tryRoute();
     return;
@@ -947,7 +947,7 @@ function _initPicker() {
         const old = _rVia[_pickerViaIdx];
         if (old?.idx >= 0) _resizeMk(old.idx, false);
         _rVia[_pickerViaIdx] = { ...pt, pending:false };
-        if (_markers[pt.idx]) { _markers[pt.idx].setImage(_mkrRoute('경')); _markers[pt.idx].setZIndex(50); }
+        if (_markers[pt.idx]) { _markers[pt.idx].setMap(_map); _markers[pt.idx].setImage(_mkrRoute('경')); _markers[pt.idx].setZIndex(50); }
         _renderViaList();
         if (_rS && _rE) _tryRoute();
       }
