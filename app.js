@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = 'B010'; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = 'B011'; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -276,6 +276,13 @@ function _renderList(kw) {
   body.appendChild(body2);
 }
 
+/* 지역검색 "지도 보기" — 시트 닫고 지역 마커로 지도 이동 */
+function _regionMapView() {
+  if (!_regionMk) return;
+  _closeTab();
+  _map.setCenter(_regionMk.getPosition());
+}
+
 /* §8 지역검색
    구 앱 동일 2단계:
    ① 장소 후보 목록 → ② 선택 후 근처 성지 10곳 (직선거리×1.35 자동차 거리 추정) */
@@ -348,7 +355,7 @@ function _regionShowShrines(lat, lng, placeName) {
        <div>
          <div style="font-size:15px;font-weight:800">📍 ${_esc(placeName)}</div>
        </div>
-       <button onclick="if(_regionMk)_map.setCenter(_regionMk.getPosition())" style="padding:6px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.85);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">지도 보기</button>
+       <button onclick="_regionMapView()" style="padding:6px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">지도 보기</button>
      </div>
      <div style="padding:7px 14px 4px;font-size:11px;font-weight:700;color:#c0392b">† 근처 성지 · 자동차 거리순 ${sorted.length}곳</div>` +
     sorted.map((o,n) => {
@@ -458,13 +465,50 @@ function _clearEnd() {
   window._updateSearchBtn && window._updateSearchBtn();
 }
 /* 경로 표시 중 — 출/경유/도 마커만 지도에 남김 */
+/* GPS 출발지 임시 마커 */
+let _startTmpMkr = null;
+let _endTmpMkr   = null;
+
+function _clearRouteTmpMkrs() {
+  if (_startTmpMkr) { _startTmpMkr.setMap(null); _startTmpMkr = null; }
+  if (_endTmpMkr)   { _endTmpMkr.setMap(null);   _endTmpMkr   = null; }
+}
+
 function _showRouteMarkersOnly() {
+  /* 성지 마커: 출발/도착만 표시 */
   const keep = new Set();
   if (_rS?.idx >= 0) keep.add(_rS.idx);
   if (_rE?.idx >= 0) keep.add(_rE.idx);
   _rVia.forEach(v => { if (v.idx >= 0) keep.add(v.idx); });
-  if (keep.size === 0) return;
   _markers.forEach((mk, i) => mk && mk.setMap(keep.has(i) ? _map : null));
+
+  /* GPS 출발지 임시 "출" 마커 (shrine 마커 아닐 때) */
+  _clearRouteTmpMkrs();
+  if (_rS && _rS.idx < 0 && _rS.lat) {
+    _startTmpMkr = new _MM({ map:_map, position:new _LL(_rS.lat,_rS.lng),
+      image:_mkrRoute('출'), zIndex:340 });
+  }
+  if (_rE && _rE.idx < 0 && _rE.lat) {
+    _endTmpMkr = new _MM({ map:_map, position:new _LL(_rE.lat,_rE.lng),
+      image:_mkrRoute('도'), zIndex:320 });
+  }
+}
+
+/* 인포카드 고려한 bounds 맞춤 */
+function _fitRouteBounds(bound) {
+  if (!bound) return;
+  const sw = new _LL(bound.min_y, bound.min_x);
+  const ne = new _LL(bound.max_y, bound.max_x);
+  const bounds = new kakao.maps.LatLngBounds(sw, ne);
+
+  /* 길찾기 결과 시트 높이만큼 하단 패딩 추가 */
+  const sheet = document.getElementById('sheet-route');
+  const sheetH = sheet ? sheet.offsetHeight : 240;
+  const mapDiv = _map.getNode ? _map.getNode() : document.getElementById('map');
+  const mapH   = mapDiv ? mapDiv.offsetHeight : 500;
+
+  /* 하단 패딩 = 결과 시트 높이 + 여유 20px, 상단 = 60px */
+  _map.setBounds(bounds, 60, 60, Math.round(sheetH) + 20, 60);
 }
 
 function _clearRoute() {
@@ -476,6 +520,7 @@ function _clearRoute() {
   _q('#rs-via-wrap').innerHTML = '';
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  _clearRouteTmpMkrs();
   window._updateSearchBtn && window._updateSearchBtn();
   _showAll();  /* 모든 마커 복원 */
 }
@@ -565,9 +610,8 @@ async function _tryRoute() {
     }));
     _routePolyline = new _PL({ map: _map, path: pts, strokeWeight: 5, strokeColor: '#1565c0', strokeOpacity: .85 });
 
-    /* 지도 범위 자동 맞춤 */
-    const b = sum.bound;
-    if (b) _map.setBounds(new kakao.maps.LatLngBounds(new _LL(b.min_y, b.min_x), new _LL(b.max_y, b.max_x)), 60);
+    /* 지도 범위: 길찾기 결과 시트 높이 고려 */
+    _fitRouteBounds(sum.bound);
 
     _showRouteMarkersOnly();  /* 출/도 마커만 남김 */
     _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
@@ -702,11 +746,7 @@ function _renderPickerList(kw) {
     : _shrines;
 
   let html = '';
-  if (_pickerRole === 'start') {
-    html += `<div class="rp-myloc" id="rp-myloc-btn">
-      <span style="font-size:20px">📍</span><span>현재 내 위치</span>
-    </div>`;
-  }
+  /* 현재 내 위치 항목 삭제 — 출발지 없으면 도착지 설정 시 자동 GPS */
   if (!list.length) {
     html += `<div class="rp-empty">검색 결과가 없습니다</div>`;
   } else {
