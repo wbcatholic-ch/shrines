@@ -490,9 +490,15 @@ function _renderViaList() {
 function _setRouteFromMarker(idx) {
   const s = _shrines[idx];
   const pt = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
-  if (!_rS)      { _setStart(pt); switchTab('route'); }
-  else if (!_rE) { _setEnd(pt); _tryRoute(); switchTab('route'); }
-  else           { _addVia(pt); _tryRoute(); }
+  if (!_rS) {
+    _setStart(pt); switchTab('route');
+  } else if (!_rE) {
+    _setEnd(pt);
+    _tryRoute();   /* 출발+도착 완성 → 바로 경로 계산 */
+    switchTab('route');
+  } else {
+    _addVia(pt); _tryRoute();
+  }
 }
 
 /* ── 인포카드 "경로검색" ── */
@@ -739,9 +745,18 @@ function _initPicker() {
     if (!s) return;
     const pt  = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
     _closePicker();
-    if      (_pickerRole === 'start') { _setStart(pt); if (_rE) _tryRoute(); }
-    else if (_pickerRole === 'end')   { _setEnd(pt);   if (_rS) _tryRoute(); }
-    else if (_pickerRole === 'via')   { _addVia(pt);   if (_rS && _rE) _tryRoute(); }
+    if (_pickerRole === 'start') {
+      _setStart(pt);
+      /* 도착지 이미 있으면 자동 경로 계산 */
+      if (_rE) _tryRoute();
+    } else if (_pickerRole === 'end') {
+      _setEnd(pt);
+      /* 출발지 이미 있으면 자동 경로 계산 */
+      if (_rS) _tryRoute();
+    } else if (_pickerRole === 'via') {
+      _addVia(pt);
+      if (_rS && _rE) _tryRoute();
+    }
   });
 }
 
@@ -951,7 +966,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   window._updateSearchBtn = function() {
     const btn = document.getElementById('rs-search-btn');
     if (!btn) return;
-    btn.style.display = (_rS && _rE) ? '' : 'none';
+    btn.style.display = (_rS && _rE) ? 'block' : 'none';  /* '' 아닌 'block' — CSS display:none 방지 */
   };
 
   _q('#rs-start-x').addEventListener('click', () => { _clearStart(); window._updateSearchBtn && window._updateSearchBtn(); });
