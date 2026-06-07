@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B012"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B013"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -57,7 +57,7 @@ function _mkr(color, big) {
   return _mi(_EC(`<svg ${_NS} width="${w}" height="${h}"><path d="${path}" fill="${color}" opacity=".92"/>${cross}</svg>`), w, h);
 }
 function _mkrRoute(label) {
-  const c = label === '출' ? '#FF0000' : '#005BFF';
+  const c = label === '출' ? '#FF0000' : (label === '경' ? '#FF8C00' : '#005BFF');
   return _mi(_EC(`<svg ${_NS} width="36" height="46"><path d="M18 2C9 2 2 9 2 18c0 10 16 26 16 26s16-16 16-26C34 9 27 2 18 2z" fill="${c}" stroke="#fff" stroke-width="2"/><circle cx="18" cy="18" r="10" fill="#fff" opacity=".9"/><text x="18" y="23" font-size="13" font-weight="900" fill="${c}" text-anchor="middle" font-family="Arial,sans-serif">${label}</text></svg>`), 36, 46, 18, 44);
 }
 function _mkrVia(n) {
@@ -67,7 +67,7 @@ function _mkrRegion() {
   return _mi(_EC(`<svg ${_NS} width="42" height="54"><path d="M21 2C10 2 1 11 1 22c0 13 20 30 20 30s20-17 20-30C41 11 32 2 21 2z" fill="#7B2FBE" stroke="#fff" stroke-width="2"/><circle cx="21" cy="22" r="9" fill="#fff" opacity=".95"/></svg>`), 42, 54, 21, 52);
 }
 function _mkrMyLoc() {
-  return _mi(_EC(`<svg ${_NS} width="20" height="20"><circle cx="10" cy="10" r="8" fill="#2A8040" stroke="#fff" stroke-width="2.5"/></svg>`), 20, 20, 10, 10);
+  return _mi(_EC(`<svg ${_NS} width="20" height="20"><circle cx="10" cy="10" r="8" fill="#1565c0" stroke="#fff" stroke-width="2.5"/></svg>`), 20, 20, 10, 10);
 }
 function _mi(url, w, h, ox, oy) { return new _MI(url, new _SZ(w,h), {offset:new _PT(ox??w/2, oy??h)}); }
 
@@ -436,14 +436,14 @@ function _setEnd(pt) {
 function _addVia(pt) {
   if (_rVia.some(v => v.idx >= 0 && v.idx === pt.idx)) return;
   _rVia.push(pt);
-  if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrVia(_rVia.length));
+  if (pt.idx >= 0 && _markers[pt.idx]) { _markers[pt.idx].setImage(_mkrRoute("경")); _markers[pt.idx].setZIndex(50); }
   _renderViaList();
 }
 function _removeVia(i) {
   const pt = _rVia[i];
   if (pt?.idx >= 0) _resizeMk(pt.idx, false);
   _rVia.splice(i, 1);
-  _rVia.forEach((v, j) => { if (v.idx >= 0 && _markers[v.idx]) _markers[v.idx].setImage(_mkrVia(j + 1)); });
+  _rVia.forEach((v, j) => { if (v.idx >= 0 && _markers[v.idx]) _markers[v.idx].setImage(_mkrRoute("경")); });
   _renderViaList();
 }
 function _clearStart() {
@@ -465,13 +465,13 @@ function _clearEnd() {
   window._updateSearchBtn && window._updateSearchBtn();
 }
 /* 경로 표시 중 — 출/경유/도 마커만 지도에 남김 */
-/* GPS 출발지 임시 마커 */
-let _startTmpMkr = null;
-let _endTmpMkr   = null;
+/* GPS 출발지/경유지/도착지 임시 마커 */
+let _startTmpMkr = null, _endTmpMkr = null, _viaTmpMkrs = [];
 
 function _clearRouteTmpMkrs() {
   if (_startTmpMkr) { _startTmpMkr.setMap(null); _startTmpMkr = null; }
   if (_endTmpMkr)   { _endTmpMkr.setMap(null);   _endTmpMkr   = null; }
+  _viaTmpMkrs.forEach(mk => mk.setMap(null)); _viaTmpMkrs = [];
 }
 
 function _showRouteMarkersOnly() {
@@ -488,10 +488,14 @@ function _showRouteMarkersOnly() {
     _startTmpMkr = new _MM({ map:_map, position:new _LL(_rS.lat,_rS.lng),
       image:_mkrRoute('출'), zIndex:340 });
   }
-  if (_rE && _rE.idx < 0 && _rE.lat) {
-    _endTmpMkr = new _MM({ map:_map, position:new _LL(_rE.lat,_rE.lng),
-      image:_mkrRoute('도'), zIndex:320 });
-  }
+  /* GPS 경유지 임시 마커 */
+  _rVia.forEach((v) => {
+    if (v.idx < 0 && v.lat) {
+      const mk = new _MM({ map:_map, position:new _LL(v.lat, v.lng),
+        image:_mkrRoute('경'), zIndex:50 });
+      _viaTmpMkrs.push(mk);
+    }
+  });
 }
 
 /* 인포카드 고려한 bounds 맞춤 */
@@ -525,13 +529,22 @@ function _clearRoute() {
   _showAll();  /* 모든 마커 복원 */
 }
 function _renderViaList() {
-  _q('#rs-via-wrap').innerHTML = _rVia.map((v, i) =>
-    `<div class="rs-box" style="margin-bottom:6px">
-      <div class="rs-dot" style="background:#FF8C00"></div>
-      <span class="rs-lbl">${_esc(v.name)}</span>
-      <button class="rs-x-btn" onclick="_removeVia(${i})">×</button>
+  const wrap = _q('#rs-via-wrap');
+  wrap.innerHTML = _rVia.map((v, i) =>
+    `<div class="rs-input-row" style="margin-bottom:4px">
+      <div class="rs-box" style="cursor:pointer" onclick="_openViaEdit(${i})">
+        <div class="rs-dot" style="background:#FF8C00"></div>
+        <span class="rs-lbl" style="color:#FF8C00;font-weight:800">${_esc(v.name)}</span>
+      </div>
+      <div class="rs-side-col">
+        <button class="rs-x-btn" onclick="_removeVia(${i})" style="font-size:16px;color:#aaa">×</button>
+      </div>
     </div>`
   ).join('');
+}
+function _openViaEdit(i) {
+  _pickerViaIdx = i;
+  _openPicker('via-edit');
 }
 
 /* ── 마커 탭 → 자동 출발/도착/경유 할당 ── */
@@ -725,11 +738,11 @@ function _initSwiper() {
     }, {passive: true});
   });
 }
-let _pickerRole = '';
+let _pickerRole = '', _pickerViaIdx = -1;
 
 function _openPicker(role) {
   _pickerRole = role;
-  const titles = { start:'🔵 출발지 선택', end:'🔴 도착지 선택', via:'🟠 경유지 추가' };
+  const titles = { start:'🔵 출발지 선택', end:'🔴 도착지 선택', via:'🟠 경유지 추가', 'via-edit':'🟠 경유지 변경' };
   _q('#rp-title').textContent = titles[role] || '성지 선택';
   _q('#rp-input').value = '';
   _renderPickerList('');
@@ -793,6 +806,16 @@ function _initPicker() {
     } else if (_pickerRole === 'via') {
       _addVia(pt);
       if (_rS && _rE) _tryRoute();
+    } else if (_pickerRole === 'via-edit') {
+      /* 기존 경유지 교체 */
+      if (_pickerViaIdx >= 0 && _pickerViaIdx < _rVia.length) {
+        const old = _rVia[_pickerViaIdx];
+        if (old?.idx >= 0) _resizeMk(old.idx, false);
+        _rVia[_pickerViaIdx] = pt;
+        if (pt.idx >= 0 && _markers[pt.idx]) { _markers[pt.idx].setImage(_mkrRoute('경')); _markers[pt.idx].setZIndex(50); }
+        _renderViaList();
+        if (_rS && _rE) _tryRoute();
+      }
     }
   });
 }
@@ -839,8 +862,8 @@ function _openCard(idx) {
   if (s.tel) {
     _q('#ic-tel-num').textContent = s.tel;
     tel.href = 'tel:' + s.tel.replace(/[^0-9+]/g, '');
-    tel.style.display = '';
-  } else tel.style.display = 'none';
+    tel.style.display = ''; tel.style.visibility = 'visible';
+  } else { tel.style.visibility = 'hidden'; tel.style.display = ''; }
 
   /* 홈페이지 + 성지 상세 링크 */
   const hp    = _q('#ic-hp');
@@ -848,10 +871,10 @@ function _openCard(idx) {
   const links = _q('#ic-links');
 
   if (s.hp) {
-    hp.href = s.hp;          /* 이미 https:// 포함 */
-    hp.style.display = '';
+    hp.href = s.hp;
+    hp.style.display = ''; hp.style.visibility = 'visible';
   } else {
-    hp.style.display = 'none';
+    hp.style.visibility = 'hidden'; hp.style.display = '';
   }
 
   if (s.cbck || s.seq) {
