@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B014"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B015"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -553,8 +553,20 @@ function _clearRoute() {
 }
 function _renderViaList() {
   const wrap = _q('#rs-via-wrap');
-  wrap.innerHTML = _rVia.map((v, i) =>
-    `<div class="rs-input-row" style="margin-bottom:4px">
+  wrap.innerHTML = _rVia.map((v, i) => {
+    if (v.pending) {
+      /* 빈 경유 슬롯 — 탭하면 모달 열림, 지도 마커 탭으로도 채울 수 있음 */
+      return `<div class="rs-input-row" style="margin-bottom:4px">
+        <div class="rs-box" style="cursor:pointer;border-style:dashed;border-color:#FF8C00;opacity:.7" onclick="_openViaEdit(${i})">
+          <div class="rs-dot" style="background:#FF8C00;opacity:.5"></div>
+          <span class="rs-lbl empty" style="color:#FF8C00">경유지를 선택하세요</span>
+        </div>
+        <div class="rs-side-col">
+          <button class="rs-x-btn" onclick="_removeVia(${i})" style="font-size:16px;color:#aaa">×</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="rs-input-row" style="margin-bottom:4px">
       <div class="rs-box" style="cursor:pointer" onclick="_openViaEdit(${i})">
         <div class="rs-dot" style="background:#FF8C00"></div>
         <span class="rs-lbl" style="color:#FF8C00;font-weight:800">${_esc(v.name)}</span>
@@ -562,9 +574,10 @@ function _renderViaList() {
       <div class="rs-side-col">
         <button class="rs-x-btn" onclick="_removeVia(${i})" style="font-size:16px;color:#aaa">×</button>
       </div>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
 }
+
 function _openViaEdit(i) {
   _pickerViaIdx = i;
   _openPicker('via-edit');
@@ -575,11 +588,26 @@ function _setRouteFromMarker(idx) {
   const s = _shrines[idx];
   const pt = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
 
+  /* 같은 마커 재클릭 → 취소 */
+  if (_rS?.idx === idx)  { _clearStart(); return; }
+  if (_rE?.idx === idx)  { _clearEnd();   return; }
+  const assignedVia = _rVia.findIndex(v => !v.pending && v.idx === idx);
+  if (assignedVia >= 0) { _removeVia(assignedVia); return; }
+
+  /* 빈 경유 슬롯(pending)이 있으면 채우기 */
+  const pendingIdx = _rVia.findIndex(v => v.pending);
+  if (pendingIdx >= 0) {
+    _rVia[pendingIdx] = { ...pt, pending:false };
+    if (_markers[idx]) { _markers[idx].setImage(_mkrRoute('경')); _markers[idx].setZIndex(50); }
+    _renderViaList();
+    if (_rS && _rE) _tryRoute();
+    return;
+  }
+
+  /* 지역 컨텍스트: 지역 출발 → 마커를 도착지로 */
   if (!_rS && _routeRegionStart) {
-    /* 지역 컨텍스트: 지역 출발 → 마커를 도착지로 */
     _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
-    _setEnd(pt);
-    _tryRoute(); switchTab('route');
+    _setEnd(pt); _tryRoute(); switchTab('route');
   } else if (!_rS) {
     _setStart(pt); switchTab('route');
   } else if (!_rE) {
@@ -598,14 +626,25 @@ function _icRoute() {
 /* ── GPS 출발지 ── */
 function _setGpsStart() {
   if (!navigator.geolocation) return;
-  const btn = _q('#rs-myloc'); btn.textContent = '...';
+  const btn = _q('#rs-myloc');
+
+  /* ① 이미 위치가 있으면 즉시 사용 (가장 빠름) */
+  if (_myLat && _myLng) {
+    _setStart({ idx:-1, name:'내 위치', lat:_myLat, lng:_myLng, isGps:true });
+    if (_rE) _tryRoute();
+    return;
+  }
+
+  btn.textContent = '...';
+  /* ② maximumAge=30s, 정확도 낮춤으로 빠른 응답 우선 */
   navigator.geolocation.getCurrentPosition(pos => {
     btn.textContent = '📍현위치';
-    _setStart({ idx: -1, name: '내 위치', lat: pos.coords.latitude, lng: pos.coords.longitude, isGps: true });
-    _showMyLoc(pos.coords.latitude, pos.coords.longitude);
+    _myLat = pos.coords.latitude; _myLng = pos.coords.longitude;
+    _setStart({ idx:-1, name:'내 위치', lat:_myLat, lng:_myLng, isGps:true });
+    _showMyLoc(_myLat, _myLng);
     if (_rE) _tryRoute();
   }, () => { btn.textContent = '📍현위치'; alert('위치를 가져오지 못했습니다.'); },
-  { enableHighAccuracy: true, timeout: 8000 });
+  { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 });
 }
 
 /* ── 경로 계산 ── */
@@ -838,12 +877,12 @@ function _initPicker() {
       _addVia(pt);
       if (_rS && _rE) _tryRoute();
     } else if (_pickerRole === 'via-edit') {
-      /* 기존 경유지 교체 */
+      /* 기존 경유지 교체 (pending 포함) */
       if (_pickerViaIdx >= 0 && _pickerViaIdx < _rVia.length) {
         const old = _rVia[_pickerViaIdx];
         if (old?.idx >= 0) _resizeMk(old.idx, false);
-        _rVia[_pickerViaIdx] = pt;
-        if (pt.idx >= 0 && _markers[pt.idx]) { _markers[pt.idx].setImage(_mkrRoute('경')); _markers[pt.idx].setZIndex(50); }
+        _rVia[_pickerViaIdx] = { ...pt, pending:false };
+        if (_markers[pt.idx]) { _markers[pt.idx].setImage(_mkrRoute('경')); _markers[pt.idx].setZIndex(50); }
         _renderViaList();
         if (_rS && _rE) _tryRoute();
       }
@@ -1089,7 +1128,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   /* 출발/도착 박스 탭 → picker */
   _q('#rs-start-lbl').addEventListener('click', () => _openPicker('start'));
   _q('#rs-end-lbl').addEventListener('click',   () => _openPicker('end'));
-  _q('#rs-add-via').addEventListener('click',   () => _openPicker('via'));
+  _q('#rs-add-via').addEventListener('click', () => {
+    /* 빈 경유 슬롯 추가 — 클릭해야 모달 열림, 지도 마커 탭으로도 채울 수 있음 */
+    _rVia.push({ idx:-1, name:'', lat:null, lng:null, pending:true });
+    _renderViaList();
+  });
 
   /* 경로 검색 버튼 (수동 트리거) */
   _q('#rs-search-btn').addEventListener('click', _tryRoute);
