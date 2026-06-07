@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = 'B011'; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B012"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -615,6 +615,7 @@ async function _tryRoute() {
 
     _showRouteMarkersOnly();  /* 출/도 마커만 남김 */
     _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
+    const sb=document.getElementById('rs-search-btn');if(sb)sb.style.display='none';
 
   } catch (e) {
     console.warn('[경로]', e.message);
@@ -622,6 +623,7 @@ async function _tryRoute() {
     _q('#rs-fare').style.display = 'none';
     _showRouteMarkersOnly();  /* 실패해도 출/도 마커만 표시 */
     _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
+    const sb=document.getElementById('rs-search-btn');if(sb)sb.style.display='none';
   }
 }
 
@@ -1042,13 +1044,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   _q('#rs-reset-btn').addEventListener('click', () => { _clearRoute(); window._updateSearchBtn && window._updateSearchBtn(); });
 
   /* 플로팅 스왑 버튼 */
-  document.getElementById('route-float-swap').addEventListener('click', () => {
+  /* 인라인 스왑 버튼 (rs-swap-inline) + 레거시 플로팅 스왑 모두 처리 */
+  ['route-float-swap','rs-swap-inline'].forEach(id => {
+    const el=document.getElementById(id); if(!el) return;
+    el.addEventListener('click', () => {
     const tmpS = _rS, tmpE = _rE;
     if (tmpS) _setEnd({...tmpS}); else _clearEnd();
     if (tmpE) _setStart({...tmpE}); else _clearStart();
     window._updateSearchBtn && window._updateSearchBtn();
     _q('#rs-result').style.display = 'none';
     _q('#rs-hint').style.display = '';
+    });
   });
 
   /* 우선순위 버튼 삭제됨 — RECOMMEND 고정 */
