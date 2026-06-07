@@ -558,11 +558,7 @@ async function _tryRoute() {
     _q('#rs-km').textContent   = (sum.distance / 1000).toFixed(1);
     const min = Math.round(sum.duration / 60);
     _q('#rs-time').textContent = min < 60 ? min + '분' : Math.floor(min/60) + '시간 ' + (min%60 ? min%60 + '분' : '');
-    const fare = sum.fare || {};
-    const fareArr = [];
-    if (fare.toll)  fareArr.push('통행료 ' + fare.toll.toLocaleString() + '원');
-    if (fare.taxi)  fareArr.push('택시 약 ' + fare.taxi.toLocaleString() + '원');
-    _q('#rs-fare').textContent = fareArr.join('  ·  ');
+    /* 택시비 삭제 */
 
     /* 실제 경로 폴리라인 */
     if (_routePolyline) _routePolyline.setMap(null);
@@ -582,7 +578,7 @@ async function _tryRoute() {
   } catch (e) {
     console.warn('[경로]', e.message);
     _q('#rs-km').textContent = '—'; _q('#rs-time').textContent = '—';
-    _q('#rs-fare').textContent = '경로 데이터를 가져올 수 없습니다. 내비로 확인하세요.';
+    _q('#rs-fare').style.display = 'none';
     _showRouteMarkersOnly();  /* 실패해도 출/도 마커만 표시 */
     _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
   }
@@ -1004,13 +1000,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     _q('#rs-hint').style.display = '';
   });
 
-  /* 우선순위 버튼 */
-  _q('#rs-priority-bar').addEventListener('click', e => {
-    const btn = e.target.closest('[data-pri]');
-    if (!btn) return;
-    _rPriority = btn.dataset.pri;
-    _q('#rs-priority-bar').querySelectorAll('.rs-pri-btn').forEach(b => b.classList.toggle('active', b === btn));
-  });
+  /* 우선순위 버튼 삭제됨 — RECOMMEND 고정 */
+  _rPriority = 'RECOMMEND';
   _initPicker();
   _initSab();
   _initSwiper();

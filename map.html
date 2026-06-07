@@ -229,23 +229,31 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 .rs-box.rs-box-end   { border-left-color:#c0392b; background:#fff8f7; border-color:#f0d0cc; border-left-color:#c0392b; }
 /* 경로 검색 버튼 */
 .btn-route-search {
-  width:100%; height:54px; margin-top:10px;
-  background:#1565c0; color:#fff; border:none; border-radius:14px;
-  font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; display:none;
+  width:100%; height:44px; margin-top:8px;
+  background:#1565c0; color:#fff; border:none; border-radius:12px;
+  font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; display:none;
 }
-/* 결과 카드 — 네이비 dark */
-.rs-stats     { display:flex; gap:8px; margin-bottom:10px; }
-.rs-stat      { flex:1; background:#1a2456; border-radius:12px; padding:14px 12px; }
-.rs-stat-lbl  { font-size:10px; font-weight:700; color:rgba(255,255,255,.55); margin-bottom:6px; letter-spacing:.03em; }
-.rs-stat-val  { font-size:28px; font-weight:900; color:#fff; line-height:1; }
-.rs-stat-unit { font-size:14px; font-weight:700; }
-.rs-fare      { font-size:11px; color:#aaa; text-align:center; margin-bottom:8px; }
+/* 경유지 추가 버튼 */
+.rs-add-via {
+  display:inline-flex; align-items:center; gap:5px;
+  height:30px; padding:0 12px; margin:5px 0;
+  border:1px solid #ccc; border-radius:8px;
+  background:#f8f8f8; color:#666; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+}
+/* 결과 카드 — 크기 축소 */
+.rs-stats     { display:flex; gap:8px; margin-bottom:8px; }
+.rs-stat      { flex:1; background:#1a2456; border-radius:10px; padding:10px 12px; }
+.rs-stat-lbl  { font-size:9px; font-weight:700; color:rgba(255,255,255,.55); margin-bottom:4px; letter-spacing:.03em; }
+.rs-stat-val  { font-size:22px; font-weight:900; color:#fff; line-height:1; }
+.rs-stat-unit { font-size:12px; font-weight:700; }
+.rs-fare      { display:none; }
 .route-btns   { display:flex; gap:8px; }
-.btn-kakao-navi { flex:3; height:50px; border:none; border-radius:12px; background:#fee500; color:#3a1d1d; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
-.btn-route-reset{ flex:2; height:50px; border:1.5px solid #ddd; border-radius:12px; background:#f8f8f8; color:#555; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+.btn-kakao-navi { flex:3; height:44px; border:none; border-radius:10px; background:#fee500; color:#3a1d1d; font-size:15px; font-weight:900; cursor:pointer; font-family:inherit; }
+.btn-route-reset{ flex:2; height:44px; border:1.5px solid #ddd; border-radius:10px; background:#f8f8f8; color:#555; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
 .btn-kakao-map  { display:none!important; }
-.rs-sep       { height:1px; background:#e8e4dc; margin:10px 0; }
-.rs-hint      { text-align:center; color:#bbb; font-size:12px; line-height:1.9; padding:8px 0; }
+.rs-sep       { height:1px; background:#e8e4dc; margin:6px 0; }
+.rs-hint      { text-align:center; color:#bbb; font-size:12px; line-height:1.9; padding:6px 0; }
 #rs-result { display: none; }
 
 /* ── 인포카드 ── */
@@ -523,12 +531,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       <span class="rs-lbl empty" id="rs-end-lbl">도착지를 선택하세요</span>
       <button class="rs-x-btn" id="rs-end-x" style="display:none">×</button>
     </div>
-    <!-- 우선순위 -->
-    <div class="rs-priority" id="rs-priority-bar" style="margin-top:10px">
-      <button class="rs-pri-btn active" data-pri="RECOMMEND">추천</button>
-      <button class="rs-pri-btn" data-pri="TIME">최단시간</button>
-      <button class="rs-pri-btn" data-pri="DISTANCE">최단거리</button>
-    </div>
+    <!-- 우선순위 버튼 삭제 -->
     <!-- 출발+도착 설정 시 나타나는 경로검색 버튼 -->
     <button class="btn-route-search" id="rs-search-btn">🔍 경로 검색</button>
     <div class="rs-sep"></div>
