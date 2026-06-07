@@ -165,8 +165,8 @@ function _loadNearby() {
   const body = document.getElementById('nearby-body');
   /* 스펙: 회전 십자가 로딩 스피너 */
   body.innerHTML = `<div class="loading-wrap">
+    <div class="loading-txt">📍 정확한 거리를 계산중입니다.</div>
     <div class="loading-cross">✝</div>
-    <div class="loading-txt">📍 정확한 거리를 계산 중입니다.</div>
   </div>`;
   if (!navigator.geolocation) {
     body.innerHTML = '<div class="loading-wrap"><div class="loading-txt">위치 기능을 사용할 수 없습니다.</div></div>';
