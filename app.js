@@ -3,6 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
+const APP_BUILD = 'B009'; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -118,10 +119,11 @@ function _onMarkerClick(idx) {
 
 function _showOnly(indices) { _markers.forEach((mk,i)=>mk&&mk.setMap(indices.includes(i)?_map:null)); }
 function _showAll()         { _markers.forEach(mk=>mk&&mk.setMap(_map)); }
-function _resizeMk(idx,big) {
+function _resizeMk(idx, big) {
   if (!_markers[idx]) return;
-  /* 선택 마커 = 노란색(#FFE500) 큰 사이즈 — 구 앱 동일 */
+  /* 선택: 노란색 + 큰 사이즈 + z-index 최상위 (다른 마커 위) */
   _markers[idx].setImage(big ? _mkr('#FFE500', true) : _mkr(_typeColor(_shrines[idx].type), false));
+  _markers[idx].setZIndex(big ? 100 : 1);
 }
 
 /* §5 탭 전환 */
@@ -843,15 +845,17 @@ function _openCard(idx) {
   document.querySelectorAll('.sheet').forEach(sh => sh.classList.remove('open'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   _activeTab = '';
-  _showAll();  /* 모든 마커 복원 */
-  _resizeMk(idx, true);  /* 선택 마커 노랑으로 재적용 */
+  _showAll();         /* 모든 마커 복원 */
+  _resizeMk(idx, true); /* 선택 마커 노랑 + z-index 최상위 재적용 */
 
-  /* 지도 중심: 인포카드가 올라온 만큼 위쪽으로 보정 (구 앱 동일) */
-  const offset = 120;
-  const proj = _map.getProjection();
-  const pt = proj.pointFromCoords(new _LL(s.lat, s.lng));
-  const adjusted = proj.coordsFromPoint({ x: pt.x, y: pt.y - offset });
-  _map.setCenter(adjusted);
+  /* 지도 중심: 마커를 지도 중앙에 두고, 인포카드 높이/2 만큼 위로 보정
+     panBy(0, n): n>0 → 지도 아래로 → 마커는 위로 */
+  _map.setCenter(new _LL(s.lat, s.lng));
+  requestAnimationFrame(() => {
+    const ic = document.getElementById('info-card');
+    const icH = ic ? ic.offsetHeight : 260;
+    _map.panBy(0, Math.round(icH / 2));
+  });
 
   _q('#info-card').classList.add('open');
 }

@@ -1,80 +1,51 @@
-/* 가톨릭길동무 Service Worker — 성지순례 앱 V1
-   구 catholic-way-V2-xxx 캐시를 자동 삭제하고 새 캐시로 전환합니다. */
+/* 가톨릭길동무 Service Worker
+   BUILD 번호를 올릴 때마다 캐시가 완전히 갱신됩니다.
+   HTML·JS → 항상 네트워크 우선 (즉시 반영)
+   이미지  → 캐시 우선 (오프라인 지원) */
 'use strict';
 
-const CACHE_VERSION = 'catholic-pilgrim-V3';
+/* ★ 수정할 때마다 BUILD 번호만 올리면 됩니다 ★ */
+const BUILD = 'B009';
+const CACHE_VERSION = 'catholic-pilgrim-V3-' + BUILD;
 
-/* 앱 셸: 첫 실행에 필요한 파일 전부 선캐시 */
-const APP_SHELL = [
-  './',
-  './index.html',
-  './map.html?v=V3',
-  './stamp.html',
-  './prayer.html',
-  './route.html',
-  './app.js?v=V2',
-  './shrines.js?v=V3',
-  './courses.js?v=V1b',
-  './routes.js?v=V2',
-  './prayer.js?v=V1',
-  './sw-update.js?v=V1',
-  './manifest.json',
+const SHELL_STATIC = [
   './icon-192x192.png',
   './icon-512x512.png',
   './icon-512x512-maskable.png',
-  './intro-cross-jesus.jpg?v=V2-113',
 ];
 
-/* ── 설치: 앱 셸 선캐시 ── */
+/* ── 설치: 정적 자산만 선캐시 (JS/HTML은 네트워크 우선이라 선캐시 불필요) ── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
       .then((cache) => Promise.all(
-        APP_SHELL.map((url) => cache.add(url).catch(() => null))
+        SHELL_STATIC.map((url) => cache.add(url).catch(() => null))
       ))
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting())   /* 즉시 활성화 */
   );
 });
 
-/* ── 활성화: 구버전 캐시(catholic-way-V2-*) 전부 삭제 ── */
+/* ── 활성화: 구버전 캐시 전부 삭제 ── */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
         keys.map((key) => key === CACHE_VERSION ? null : caches.delete(key))
       ))
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim())  /* 즉시 모든 탭에 적용 */
   );
 });
-
-/* ── 헬퍼 ── */
-function sameOrigin(request) {
-  try { return new URL(request.url).origin === self.location.origin; }
-  catch (e) { return false; }
-}
-function isHtmlRequest(request) {
-  return request.mode === 'navigate' ||
-    (request.headers.get('accept') || '').includes('text/html');
-}
-function isVersionedAsset(request) {
-  try {
-    const url = new URL(request.url);
-    /* ?v= 파라미터 있거나, 새 앱의 주요 JS/HTML 파일 */
-    return url.searchParams.has('v') ||
-      /app\.js|shrines\.js|courses\.js|routes\.js|prayer\.js|sw-update\.js|map\.html|stamp\.html|prayer\.html|route\.html/.test(url.pathname);
-  } catch (e) { return false; }
-}
 
 /* ── 전략 ── */
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_VERSION);
   try {
-    const fresh = await fetch(request, { cache: 'no-cache' });
+    const fresh = await fetch(request, { cache: 'no-store' });
     if (fresh && fresh.ok) cache.put(request, fresh.clone()).catch(() => null);
     return fresh;
   } catch (e) {
     const cached = await cache.match(request);
-    return cached || cache.match('./index.html');
+    return cached || new Response('Offline', { status: 503 });
   }
 }
 async function cacheFirst(request) {
@@ -89,30 +60,24 @@ async function cacheFirst(request) {
     return new Response('Offline', { status: 503 });
   }
 }
-async function staleWhileRevalidate(request) {
-  const cache = await caches.open(CACHE_VERSION);
-  const cached = await cache.match(request);
-  const freshPromise = fetch(request)
-    .then((fresh) => {
-      if (fresh && fresh.ok) cache.put(request, fresh.clone()).catch(() => null);
-      return fresh;
-    })
-    .catch(() => null);
-  return cached || freshPromise;
+
+function sameOrigin(request) {
+  try { return new URL(request.url).origin === self.location.origin; }
+  catch (e) { return false; }
+}
+function isStaticAsset(request) {
+  return /\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf)(\?|$)/.test(request.url);
 }
 
 /* ── fetch 인터셉트 ── */
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
-  if (!sameOrigin(request)) return;          /* 외부(카카오맵SDK 등) 제외 */
-  if (isHtmlRequest(request)) {
-    event.respondWith(networkFirst(request)); /* HTML: 항상 최신 시도 */
-    return;
+  if (!sameOrigin(request)) return;     /* 외부 리소스(카카오맵 SDK 등) 제외 */
+
+  if (isStaticAsset(request)) {
+    event.respondWith(cacheFirst(request));    /* 이미지·폰트: 캐시 우선 */
+  } else {
+    event.respondWith(networkFirst(request)); /* HTML·JS·JSON: 항상 네트워크 우선 */
   }
-  if (isVersionedAsset(request)) {
-    event.respondWith(cacheFirst(request));   /* 버전 자산: 캐시 우선 */
-    return;
-  }
-  event.respondWith(staleWhileRevalidate(request)); /* 이미지 등: stale-while-revalidate */
 });
