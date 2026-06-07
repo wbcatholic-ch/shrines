@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B017"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B018"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -331,15 +331,24 @@ function _regionShowShrines(lat, lng, placeName) {
   if (_regionMk) _regionMk.setMap(null);
   _regionMk = new _MM({ map:_map, position:new _LL(lat,lng), image:_mkrRegion(), title:placeName, zIndex:500 });
 
-  /* 지역 기억 — 경로탐색 시 출발점으로 사용 */
+  /* 지역 기억 — 보라색 마커 나타나면 즉시 출발지로 자동 설정 */
   _routeRegionStart = { lat, lng, name: placeName };
 
-  /* 보라색 마커 클릭 → 길찾기 탭으로 이동, 지역을 출발지로 자동 설정 */
+  /* 자동 출발지 설정 (탭 전환 없이 백그라운드로) */
+  _rS = { idx:-1, name:placeName, lat, lng, isGps:false };
+  const startLbl = document.getElementById('rs-start-lbl');
+  if (startLbl) { startLbl.textContent = placeName; startLbl.classList.remove('empty'); }
+  const startX = document.getElementById('rs-start-x');
+  if (startX) startX.style.display = '';
+  window._updateSearchBtn && window._updateSearchBtn();
+
+  /* 보라색 마커 클릭 → 길찾기 탭으로 이동, 출발지 확인 */
   kakao.maps.event.addListener(_regionMk, 'click', () => {
     if (!_routeRegionStart) return;
-    _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
+    if (!_rS || _rS.lat !== lat) {
+      _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
+    }
     switchTab('route');
-    /* 가이드: 도착 성지를 탭하세요 */
     const tip = document.getElementById('rs-guide-tip');
     if (tip) { tip.textContent = '도착 성지를 탭하세요'; tip.style.display = ''; }
   });
@@ -741,7 +750,10 @@ async function _tryRoute() {
     /* 지도 범위: 길찾기 결과 시트 높이 고려 */
     _fitRouteBounds(sum.bound);
 
-    _showRouteMarkersOnly();  /* 출/도 마커만 남김 */
+    _showRouteMarkersOnly();
+    /* 결과카드가 항상 보이도록 시트 스크롤 */
+    const _sh = document.getElementById('sheet-route');
+    if (_sh) requestAnimationFrame(() => { _sh.scrollTop = _sh.scrollHeight; });
     _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
     const sb=document.getElementById('rs-search-btn');if(sb)sb.style.display='none';
 
@@ -749,7 +761,10 @@ async function _tryRoute() {
     console.warn('[경로]', e.message);
     _q('#rs-km').textContent = '—'; _q('#rs-time').textContent = '—';
     _q('#rs-fare').style.display = 'none';
-    _showRouteMarkersOnly();  /* 실패해도 출/도 마커만 표시 */
+    _showRouteMarkersOnly();
+    /* 결과카드가 항상 보이도록 시트 스크롤 */
+    const _sh = document.getElementById('sheet-route');
+    if (_sh) requestAnimationFrame(() => { _sh.scrollTop = _sh.scrollHeight; });
     _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
     const sb=document.getElementById('rs-search-btn');if(sb)sb.style.display='none';
   }
@@ -1206,7 +1221,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   _q('#rs-search-btn').addEventListener('click', _tryRoute);
 
   _q('#rs-navi-btn').addEventListener('click', _startNavi);
-  _q('#rs-reset-btn').addEventListener('click', () => { _clearRoute(); window._updateSearchBtn && window._updateSearchBtn(); });
+  _q('#rs-reset-btn').addEventListener('click', () => {
+    /* 다시선택: 지도 중심/줌 유지하면서 경로만 제거 */
+    const savedCenter = _map.getCenter();
+    const savedLevel  = _map.getLevel();
+    _clearRoute();
+    window._updateSearchBtn && window._updateSearchBtn();
+    /* 지도 위치 복원 (DOM 변경 후 카카오맵 재조정 방지) */
+    requestAnimationFrame(() => {
+      _map.setCenter(savedCenter);
+      _map.setLevel(savedLevel);
+    });
+  });
 
   /* 플로팅 스왑 버튼 */
   /* 인라인 스왑 버튼 (rs-swap-inline) + 레거시 플로팅 스왑 모두 처리 */
