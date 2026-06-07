@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B018"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B019"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -497,6 +497,7 @@ function _clearRouteTmpMkrs() {
 }
 
 function _showRouteMarkersOnly() {
+  if (_myMk) _myMk.setMap(null);  /* 경로 표시 중 현위치 숨김 */
   /* 출/도/경유 마커 인덱스 수집 */
   const keep = new Set();
   if (_rS?.idx >= 0) keep.add(_rS.idx);
@@ -545,7 +546,7 @@ function _fitRouteBounds(bound) {
   _map.setBounds(bounds, 60, 60, Math.round(sheetH) + 20, 60);
 }
 
-function _clearRoute() {
+function _clearRoute(fresh = false) {
   [_rS, ..._rVia, _rE].forEach(p => { if (p?.idx >= 0) _resizeMk(p.idx, false); });
   _rS = null; _rVia = []; _rE = null;
   _q('#rs-start-lbl').textContent = '출발지를 선택하세요'; _q('#rs-start-lbl').classList.add('empty');
@@ -555,13 +556,13 @@ function _clearRoute() {
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
   _clearRouteTmpMkrs();
+  if (_myMk) _myMk.setMap(_map);   /* 현위치 마커 복원 */
   window._updateSearchBtn && window._updateSearchBtn();
   _showAll();  /* 모든 마커 복원 */
 
-  /* 지역검색 컨텍스트 — 보라색 마커 복원 + 지역 출발지 자동 유지 */
-  if (_routeRegionStart) {
-    if (_regionMk) _regionMk.setMap(_map);   /* 보라색 마커 다시 표시 */
-    /* 지역을 출발지로 재설정 (라벨만, 경로 자동계산 안 함) */
+  /* 지역검색 컨텍스트 — fresh(다시선택)이면 자동 출발지 복원 안 함 */
+  if (_routeRegionStart && _regionMk) _regionMk.setMap(_map);  /* 보라색 마커는 항상 복원 */
+  if (!fresh && _routeRegionStart) {
     setTimeout(() => {
       _setStart({ idx:-1, name:_routeRegionStart.name,
         lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
@@ -1225,9 +1226,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     /* 다시선택: 지도 중심/줌 유지하면서 경로만 제거 */
     const savedCenter = _map.getCenter();
     const savedLevel  = _map.getLevel();
-    _clearRoute();
+    _clearRoute(true);  /* fresh=true: 완전 초기화, 첫클릭=출발 두번째=도착 */
     window._updateSearchBtn && window._updateSearchBtn();
-    /* 지도 위치 복원 (DOM 변경 후 카카오맵 재조정 방지) */
+    /* 지도 위치 복원 */
     requestAnimationFrame(() => {
       _map.setCenter(savedCenter);
       _map.setLevel(savedLevel);
