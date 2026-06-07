@@ -124,9 +124,16 @@ function switchTab(tab) {
   const sheet = document.getElementById('sheet-' + tab);
   if (sheet) sheet.classList.add('open');
 
+  /* 길찾기 플로팅 버튼 */
+  const fx = document.getElementById('route-float-x');
+  const fs = document.getElementById('route-float-swap');
+  const isRoute = tab === 'route';
+  if (fx) { fx.style.display = isRoute ? 'flex' : 'none'; fx.style.top = 'calc(var(--tab-h) + var(--safe-t) + 10px)'; }
+  if (fs) { fs.style.display = isRoute ? 'flex' : 'none'; fs.style.top = 'calc(var(--tab-h) + var(--safe-t) + 62px)'; }
+
   /* 길찾기 가이드 툴팁 */
   const tip = document.getElementById('rs-guide-tip');
-  if (tip) tip.style.display = (tab === 'route') ? '' : 'none';
+  if (tip) tip.style.display = isRoute ? '' : 'none';
 
   if (tab === 'nearby') _loadNearby();
   if (tab === 'list')   _renderList('');
@@ -138,6 +145,10 @@ function _closeTab() {
   document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
   const tip = document.getElementById('rs-guide-tip');
   if (tip) tip.style.display = 'none';
+  const fx = document.getElementById('route-float-x');
+  const fs = document.getElementById('route-float-swap');
+  if (fx) fx.style.display = 'none';
+  if (fs) fs.style.display = 'none';
   _showAll();
 }
 
@@ -197,7 +208,7 @@ function _loadNearby() {
       </div>`;
     }).join('');
     body.querySelectorAll('[data-i]').forEach(el =>
-      el.addEventListener('click', () => _openCard(+el.dataset.i))
+      el.addEventListener('click', () => _sabOpen(+el.dataset.i))
     );
   }, () => {
     body.innerHTML = `<div class="loading-wrap"><div class="loading-txt">위치를 가져오지 못했습니다.<br><button onclick="_loadNearby()" style="margin-top:12px;padding:8px 20px;border-radius:20px;border:none;background:#1f2a44;color:#d4aa6a;font-weight:700;cursor:pointer;font-family:inherit">다시 시도</button></div></div>`;
@@ -253,7 +264,7 @@ function _renderList(kw) {
   });
   body.innerHTML = html;
   body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _openCard(+el.dataset.i))
+    el.addEventListener('click', () => _sabOpen(+el.dataset.i))
   );
 }
 
@@ -352,7 +363,7 @@ function _regionShowShrines(lat, lng, placeName) {
     }).join('');
 
   body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _openCard(+el.dataset.i))
+    el.addEventListener('click', () => _sabOpen(+el.dataset.i))
   );
 }
 
@@ -376,7 +387,7 @@ function _regionFallback(q) {
       </div>`;
     }).join('');
   body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _openCard(+el.dataset.i))
+    el.addEventListener('click', () => _sabOpen(+el.dataset.i))
   );
 }
 
@@ -586,7 +597,67 @@ function _openKakaoMapRoute() {
   window.open(url, '_blank');
 }
 
-/* §9-2 성지 선택 Picker (출발/도착/경유 선택) */
+/* §9-3 성지 액션 배너 (출발지/도착지/상세) */
+let _sabIdx = -1;
+
+function _sabOpen(idx) {
+  _sabIdx = idx;
+  const s = _shrines[idx];
+  document.getElementById('sab-name').textContent = s.name;
+  document.getElementById('shrine-action-overlay').style.display = '';
+  document.getElementById('shrine-action-bar').classList.add('open');
+}
+
+function _sabClose() {
+  document.getElementById('shrine-action-overlay').style.display = 'none';
+  document.getElementById('shrine-action-bar').classList.remove('open');
+  _sabIdx = -1;
+}
+
+function _initSab() {
+  document.getElementById('sab-start').addEventListener('click', () => {
+    if (_sabIdx < 0) return;
+    const s = _shrines[_sabIdx];
+    _setStart({ idx: _sabIdx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
+    window._updateSearchBtn && window._updateSearchBtn();
+    _sabClose();
+    switchTab('route');
+  });
+  document.getElementById('sab-end').addEventListener('click', () => {
+    if (_sabIdx < 0) return;
+    const s = _shrines[_sabIdx];
+    _setEnd({ idx: _sabIdx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
+    window._updateSearchBtn && window._updateSearchBtn();
+    _sabClose();
+    switchTab('route');
+  });
+  document.getElementById('sab-detail').addEventListener('click', () => {
+    const idx = _sabIdx; _sabClose();
+    _openCard(idx);
+  });
+}
+
+/* §9-4 시트 좌우 스와이퍼 (nearby↔list↔region) */
+const SWIPE_TABS = ['nearby', 'list', 'region'];
+
+function _initSwiper() {
+  let tx = 0, ty = 0, swiping = false;
+  document.querySelectorAll('.sheet').forEach(el => {
+    el.addEventListener('touchstart', e => {
+      tx = e.touches[0].clientX; ty = e.touches[0].clientY; swiping = true;
+    }, {passive: true});
+    el.addEventListener('touchend', e => {
+      if (!swiping) return; swiping = false;
+      const dx = e.changedTouches[0].clientX - tx;
+      const dy = Math.abs(e.changedTouches[0].clientY - ty);
+      if (Math.abs(dx) < 60 || dy > 80 || _activeTab === 'route') return;
+      const cur = SWIPE_TABS.indexOf(_activeTab);
+      if (cur < 0) return;
+      if (dx < 0 && cur < SWIPE_TABS.length - 1) switchTab(SWIPE_TABS[cur + 1]);
+      else if (dx > 0 && cur > 0)                 switchTab(SWIPE_TABS[cur - 1]);
+    }, {passive: true});
+  });
+}
 let _pickerRole = '';
 
 function _openPicker(role) {
@@ -856,21 +927,62 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   /* 성지찾기 */
+  /* 경로검색 버튼 표시 갱신 */
+  window._updateSearchBtn = function() {
+    const btn = document.getElementById('rs-search-btn');
+    if (!btn) return;
+    btn.style.display = (_rS && _rE) ? '' : 'none';
+  };
+
+  _q('#rs-start-x').addEventListener('click', () => { _clearStart(); window._updateSearchBtn && window._updateSearchBtn(); });
+  _q('#rs-end-x').addEventListener('click',   () => { _clearEnd();   window._updateSearchBtn && window._updateSearchBtn(); });
+
+  /* 출발/도착 박스 탭 → picker */
+  _q('#rs-start-lbl').addEventListener('click', () => _openPicker('start'));
+  _q('#rs-end-lbl').addEventListener('click',   () => _openPicker('end'));
+  _q('#rs-add-via').addEventListener('click',   () => _openPicker('via'));
+
+  /* 경로 검색 버튼 (수동 트리거) */
+  _q('#rs-search-btn').addEventListener('click', _tryRoute);
+
+  _q('#rs-navi-btn').addEventListener('click', _startNavi);
+  _q('#rs-reset-btn').addEventListener('click', () => { _clearRoute(); window._updateSearchBtn && window._updateSearchBtn(); });
+
+  /* 플로팅 스왑 버튼 */
+  document.getElementById('route-float-swap').addEventListener('click', () => {
+    const tmpS = _rS, tmpE = _rE;
+    if (tmpS) _setEnd({...tmpS}); else _clearEnd();
+    if (tmpE) _setStart({...tmpE}); else _clearStart();
+    _updateSearchBtn();
+    _q('#rs-result').style.display = 'none';
+    _q('#rs-hint').style.display = '';
+  });
+
+  /* 우선순위 버튼 */
+  _q('#rs-priority-bar').addEventListener('click', e => {
+    const btn = e.target.closest('[data-pri]');
+    if (!btn) return;
+    _rPriority = btn.dataset.pri;
+    _q('#rs-priority-bar').querySelectorAll('.rs-pri-btn').forEach(b => b.classList.toggle('active', b === btn));
+  });
+  _initPicker();
+  _initSab();
+  _initSwiper();
+
   /* 성지찾기 필터 pill */
   _q('#list-filter-bar').addEventListener('click', e => {
     const pill = e.target.closest('[data-dio]');
     if (!pill) return;
     _filterDio = pill.dataset.dio;
     _q('#list-filter-bar').querySelectorAll('.filter-pill').forEach(p =>
-      p.classList.toggle('active', p === pill)
-    );
+      p.classList.toggle('active', p === pill));
     _renderList(_q('#list-inp').value);
   });
   _q('#list-inp').addEventListener('input', e => {
     clearTimeout(_listTimer);
     _listTimer = setTimeout(() => _renderList(e.target.value), 220);
   });
-  _q('#list-inp-x').addEventListener('click', () => { _q('#list-inp').value = ''; _renderList(''); });
+  _q('#list-inp-x').addEventListener('click', () => { _q('#list-inp').value=''; _renderList(''); });
 
   /* 지역검색 */
   _q('#region-inp').addEventListener('keydown', e => { if(e.key==='Enter') _regionSearch(_q('#region-inp').value); });
@@ -881,35 +993,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     if (_regionMk) { _regionMk.setMap(null); _regionMk = null; }
     _showAll();
   });
-
-  /* 길찾기 스왑 버튼 */
-  _q('#rs-swap-btn').addEventListener('click', () => {
-    const tmpS = _rS, tmpE = _rE;
-    if (tmpS) _setEnd(tmpS); else _clearEnd();
-    if (tmpE) _setStart(tmpE); else _clearStart();
-    if (_rS && _rE) _tryRoute();
-  });
-
-  /* 길찾기 */
-  _q('#rs-myloc').addEventListener('click',_setGpsStart);
-  _q('#rs-start-x').addEventListener('click', _clearStart);
-  _q('#rs-end-x').addEventListener('click', _clearEnd);
-  /* 출발/도착 박스 클릭 → picker 열기 */
-  _q('#rs-start-lbl').addEventListener('click', () => _openPicker('start'));
-  _q('#rs-end-lbl').addEventListener('click',   () => _openPicker('end'));
-  _q('#rs-add-via').addEventListener('click', () => _openPicker('via'));
-  _q('#rs-navi-btn').addEventListener('click', _startNavi);
-  _q('#rs-map-btn').addEventListener('click', _openKakaoMapRoute);
-  _q('#rs-reset-btn').addEventListener('click', _clearRoute);
-  /* 우선순위 버튼 */
-  _q('#rs-priority-bar').addEventListener('click', e => {
-    const btn = e.target.closest('[data-pri]');
-    if (!btn) return;
-    _rPriority = btn.dataset.pri;
-    _q('#rs-priority-bar').querySelectorAll('.rs-pri-btn').forEach(b => b.classList.toggle('active', b === btn));
-    if (_rS && _rE) _tryRoute();
-  });
-  _initPicker();
 
   /* 인포카드 */
   _q('#ic-close').addEventListener('click',_closeCard);

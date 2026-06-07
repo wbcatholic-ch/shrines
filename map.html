@@ -39,7 +39,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 /* ── 탭바 ── */
 #tabbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 950;
-  display: grid; grid-template-columns: 44px repeat(4, minmax(0,1fr));
+  display: grid; grid-template-columns: repeat(4, 1fr);
   height: calc(var(--tab-h) + var(--safe-t));
   padding: calc(var(--safe-t) + 6px) 6px 6px;
   gap: 5px; align-items: stretch;
@@ -112,22 +112,23 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 }
 /* 검색바 */
 .srch-bar {
-  padding: 8px 12px 8px; background: var(--navy);
+  padding: 8px 12px; background: #f0ebe0;
   flex-shrink: 0; display: flex; gap: 8px; align-items: center;
+  border-bottom: 1px solid #ddd5c0;
 }
 .srch-inner {
   flex: 1; display: flex; align-items: center; gap: 0;
-  background: rgba(255,255,255,.12); border-radius: 22px; padding: 0 12px;
+  background: #fff; border: 1.5px solid #c8bfaa; border-radius: 22px; padding: 0 12px;
 }
 .srch-inner input {
   flex: 1; height: 38px; background: none; border: none; outline: none;
-  font-family: inherit; font-size: 14px; color: #fff;
+  font-family: inherit; font-size: 14px; color: #1f2937;
 }
-.srch-inner input::placeholder { color: rgba(255,255,255,.4); }
-.srch-x { background: none; border: none; color: rgba(255,255,255,.5); font-size: 18px; cursor: pointer; }
+.srch-inner input::placeholder { color: #b0a898; }
+.srch-x { background: none; border: none; color: #b0a898; font-size: 18px; cursor: pointer; }
 .srch-btn {
   height: 38px; padding: 0 16px; border-radius: 22px;
-  background: var(--gold2); color: #fff; border: none;
+  background: var(--navy); color: #d4aa6a; border: none;
   font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; flex-shrink: 0;
 }
 /* CBCK 크레딧 */
@@ -205,45 +206,37 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 #rs-top    { padding: 14px 14px 0; flex-shrink: 0; }
 #rs-bottom { padding: 10px 14px calc(var(--safe-b) + 10px); flex: 1; overflow-y: auto; }.rs-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .rs-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.rs-lbl { flex: 1; font-size: 14px; font-weight: 700; color: var(--ink); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rs-lbl.empty { color: #aaa; font-weight: 400; }
-.rs-x-btn { background: none; border: 1px solid #ddd; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; color: #999; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.rs-myloc { background: #e8f0fe; border: 1px solid #c5d9f5; border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 700; color: var(--pilgrim); cursor: pointer; flex-shrink: 0; font-family: inherit; }
-.rs-add-via {
-  display: flex; align-items: center; gap: 6px; width: 100%;
-  background: none; border: 1.5px dashed #d0c8b8; border-radius: 10px;
-  padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700;
-  color: #aaa; cursor: pointer; margin-bottom: 8px;
-}
+.rs-lbl       { flex:1; font-size:14px; font-weight:700; color:#1f2937; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rs-lbl.empty { color:#aaa; font-weight:500; }
+.rs-x-btn     { width:24px; height:24px; border:none; background:none; color:#bbb; font-size:20px; cursor:pointer; flex-shrink:0; line-height:1; }
+.rs-myloc     { flex-shrink:0; padding:5px 12px; border-radius:14px; border:1.5px solid #1565c0; background:#f0f5ff; color:#1565c0; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+.rs-dot       { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
 .rs-box {
-  display: flex; align-items: center; gap: 8px;
-  background: #fff; border: 1.5px solid #e5ddd1; border-radius: 10px;
-  padding: 10px 12px; margin-bottom: 8px;
+  display:flex; align-items:center; gap:10px;
+  background:#fff; border:1.5px solid #d8e0f4; border-left-width:4px;
+  border-radius:12px; padding:12px 10px; cursor:pointer;
 }
-.rs-priority { display:flex; gap:5px; margin-bottom:8px; }
-.rs-pri-btn {
-  flex:1; height:30px; border:1px solid #ddd; border-radius:8px;
-  font-family:inherit; font-size:11px; font-weight:700; color:#888;
-  background:#f8f8f8; cursor:pointer;
+.rs-box.rs-box-start { border-left-color:#1565c0; }
+.rs-box.rs-box-end   { border-left-color:#c0392b; background:#fff8f7; border-color:#f0d0cc; border-left-color:#c0392b; }
+/* 경로 검색 버튼 */
+.btn-route-search {
+  width:100%; height:54px; margin-top:10px;
+  background:#1565c0; color:#fff; border:none; border-radius:14px;
+  font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; display:none;
 }
-.rs-pri-btn.active { background:var(--navy); color:#fff; border-color:var(--navy); }
-.rs-fare { font-size:11px; color:#aaa; text-align:center; margin-bottom:8px; min-height:14px; }
-.btn-kakao-map {
-  flex:1; height:46px; border:1.5px solid #ddd; border-radius:10px;
-  background:#f8f8f8; color:#555; font-size:13px; font-weight:800;
-  cursor:pointer; font-family:inherit;
-}
-.rs-sep { height: 1px; background: #ebe5d9; margin: 2px 0 10px; }
-
-.rs-stats { display: flex; gap: 10px; margin-bottom: 8px; }
-.rs-stat { flex: 1; background: #fff; border-radius: 10px; padding: 8px 10px; border: 1px solid #e5ddd1; text-align: center; }
-.rs-stat-lbl { font-size: 11px; color: #aaa; font-weight: 600; margin-bottom: 3px; }
-.rs-stat-val { font-size: 18px; font-weight: 800; color: var(--ink); }
-.rs-stat-unit { font-size: 12px; }
-.route-btns { display: flex; gap: 8px; }
-.btn-kakao-navi { flex: 2; height: 46px; border: none; border-radius: 10px; background: #fee500; color: #3a1d1d; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
-.btn-route-reset { flex: 1; height: 46px; border: 1px solid #ddd; border-radius: 10px; background: #f8f8f8; color: #666; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.rs-hint { font-size: 13px; color: #aaa; text-align: center; padding: 14px 0 4px; line-height: 1.6; }
+/* 결과 카드 — 네이비 dark */
+.rs-stats     { display:flex; gap:8px; margin-bottom:10px; }
+.rs-stat      { flex:1; background:#1a2456; border-radius:12px; padding:14px 12px; }
+.rs-stat-lbl  { font-size:10px; font-weight:700; color:rgba(255,255,255,.55); margin-bottom:6px; letter-spacing:.03em; }
+.rs-stat-val  { font-size:28px; font-weight:900; color:#fff; line-height:1; }
+.rs-stat-unit { font-size:14px; font-weight:700; }
+.rs-fare      { font-size:11px; color:#aaa; text-align:center; margin-bottom:8px; }
+.route-btns   { display:flex; gap:8px; }
+.btn-kakao-navi { flex:3; height:50px; border:none; border-radius:12px; background:#fee500; color:#3a1d1d; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; }
+.btn-route-reset{ flex:2; height:50px; border:1.5px solid #ddd; border-radius:12px; background:#f8f8f8; color:#555; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+.btn-kakao-map  { display:none!important; }
+.rs-sep       { height:1px; background:#e8e4dc; margin:10px 0; }
+.rs-hint      { text-align:center; color:#bbb; font-size:12px; line-height:1.9; padding:8px 0; }
 #rs-result { display: none; }
 
 /* ── 인포카드 ── */
@@ -368,6 +361,47 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 .rp-name { font-size:14px; font-weight:700; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rp-addr { font-size:11px; color:#999; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rp-empty { padding:40px 16px; text-align:center; color:#aaa; font-size:14px; }
+
+/* 길찾기 플로팅 버튼 */
+#route-float-x, #route-float-swap {
+  position:fixed; right:14px; z-index:850; display:none;
+  border-radius:50%; background:rgba(255,255,255,.95); border:1.5px solid #ccc;
+  cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.18);
+  align-items:center; justify-content:center;
+}
+#route-float-x    { width:44px; height:44px; font-size:22px; font-weight:900; }
+#route-float-swap { width:40px; height:40px; font-size:18px; }
+
+/* ── 성지 액션 배너 ── */
+#shrine-action-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+  background: #fff; border-top: 2px solid var(--gold);
+  border-radius: 18px 18px 0 0;
+  padding: 14px 16px calc(var(--safe-b) + 14px);
+  transform: translateY(100%); transition: transform .22s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 -8px 24px rgba(0,0,0,.14);
+}
+#shrine-action-bar.open { transform: none; }
+.sab-name {
+  font-size: 15px; font-weight: 800; color: #1f2937;
+  text-align: center; margin-bottom: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sab-btns { display: flex; gap: 8px; }
+.sab-btn {
+  flex: 1; height: 46px; border-radius: 12px; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+}
+.sab-btn-start  { background: #1565c0; color: #fff; }
+.sab-btn-end    { background: #c0392b; color: #fff; }
+.sab-btn-detail { background: #f5f0e8; color: #555; border: 1px solid #ddd; }
+.sab-btn-cancel { background: #f0f0f0; color: #999; }
+#shrine-action-overlay {
+  position: fixed; inset: 0; z-index: 999; display: none; background: rgba(0,0,0,.3);
+}
+
+/* ── 시트 스와이퍼 ── */
+.sheet { touch-action: pan-y; }
 </style>
 </head>
 <body>
@@ -457,55 +491,50 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 </div>
 
 <!-- 길찾기 시트 -->
+<!-- 길찾기 플로팅 버튼 (지도 우상단) -->
+<button id="route-float-x"    style="top:calc(var(--tab-h) + var(--safe-t) + 10px)"  onclick="switchTab('route')">×</button>
+<button id="route-float-swap" style="top:calc(var(--tab-h) + var(--safe-t) + 62px)">↕</button>
+
 <div class="sheet" id="sheet-route">
-  <!-- 지도 위 가이드 툴팁 -->
   <div id="rs-guide-tip" style="display:none;position:absolute;top:-52px;left:50%;transform:translateX(-50%);background:rgba(31,42,68,.92);color:#fff;padding:9px 20px;border-radius:22px;font-size:13px;font-weight:700;white-space:nowrap;z-index:100;pointer-events:none">도착 성지를 탭하세요</div>
-  <!-- rs-top: flex-shrink:0, 스크롤 없음 -->
   <div id="rs-top">
-    <div style="display:flex;align-items:flex-start;gap:8px">
-      <!-- 출발~경유~도착 세로 열 -->
-      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-        <!-- 출발 -->
-        <div class="rs-box">
-          <div class="rs-dot" style="background:#1565c0"></div>
-          <span class="rs-lbl empty" id="rs-start-lbl">출발지를 선택하세요</span>
-          <button class="rs-myloc" id="rs-myloc">📍현위치</button>
-          <button class="rs-x-btn" id="rs-start-x" style="display:none">×</button>
-        </div>
-        <!-- 경유지 (출발↔도착 사이) -->
-        <div id="rs-via-wrap"></div>
-        <button class="rs-add-via" id="rs-add-via">➕ 경유지 추가</button>
-        <!-- 도착 -->
-        <div class="rs-box">
-          <div class="rs-dot" style="background:#c0392b"></div>
-          <span class="rs-lbl empty" id="rs-end-lbl">도착지를 선택하세요</span>
-          <button class="rs-x-btn" id="rs-end-x" style="display:none">×</button>
-        </div>
-      </div>
-      <!-- 스왑 버튼 -->
-      <button id="rs-swap-btn" title="출발↔도착 바꾸기" style="width:38px;height:38px;margin-top:6px;border-radius:10px;border:1.5px solid #ddd;background:#f8f8f8;font-size:18px;cursor:pointer;flex-shrink:0;font-family:inherit;display:flex;align-items:center;justify-content:center">↕</button>
+    <!-- 출발 -->
+    <div class="rs-box rs-box-start">
+      <div class="rs-dot" style="background:#1565c0"></div>
+      <span class="rs-lbl empty" id="rs-start-lbl">출발지를 선택하세요</span>
+      <button class="rs-myloc" id="rs-myloc">📍현위치</button>
+      <button class="rs-x-btn" id="rs-start-x" style="display:none">×</button>
+    </div>
+    <!-- 경유지 중간 -->
+    <div id="rs-via-wrap" style="margin-top:6px"></div>
+    <button class="rs-add-via" id="rs-add-via">➕ 경유지 추가</button>
+    <!-- 도착 -->
+    <div class="rs-box rs-box-end" style="margin-top:4px">
+      <div class="rs-dot" style="background:#c0392b"></div>
+      <span class="rs-lbl empty" id="rs-end-lbl">도착지를 선택하세요</span>
+      <button class="rs-x-btn" id="rs-end-x" style="display:none">×</button>
     </div>
     <!-- 우선순위 -->
-    <div class="rs-priority" id="rs-priority-bar" style="margin-top:8px">
+    <div class="rs-priority" id="rs-priority-bar" style="margin-top:10px">
       <button class="rs-pri-btn active" data-pri="RECOMMEND">추천</button>
       <button class="rs-pri-btn" data-pri="TIME">최단시간</button>
       <button class="rs-pri-btn" data-pri="DISTANCE">최단거리</button>
     </div>
+    <!-- 출발+도착 설정 시 나타나는 경로검색 버튼 -->
+    <button class="btn-route-search" id="rs-search-btn">🔍 경로 검색</button>
     <div class="rs-sep"></div>
   </div>
-  <!-- rs-bottom: flex:1 + overflow-y:auto → 결과가 시트 안에서 스크롤 -->
   <div id="rs-bottom">
     <div id="rs-result" style="display:none">
       <div class="rs-stats">
         <div class="rs-stat"><div class="rs-stat-lbl">도로 거리</div><div class="rs-stat-val"><span id="rs-km">—</span><span class="rs-stat-unit"> km</span></div></div>
-        <div class="rs-stat"><div class="rs-stat-lbl">예상 시간</div><div class="rs-stat-val" id="rs-time">—</div></div>
+        <div class="rs-stat"><div class="rs-stat-lbl">소요시간</div><div class="rs-stat-val" id="rs-time">—</div></div>
       </div>
       <div class="rs-fare" id="rs-fare"></div>
       <div class="route-btns">
-        <button class="btn-kakao-navi" id="rs-navi-btn">🧭 카카오내비</button>
-        <button class="btn-kakao-map" id="rs-map-btn">🗺 카카오맵</button>
+        <button class="btn-kakao-navi" id="rs-navi-btn">카카오내비</button>
+        <button class="btn-route-reset" id="rs-reset-btn">다시선택</button>
       </div>
-      <button class="btn-route-reset" id="rs-reset-btn" style="width:100%;margin-top:6px">↺ 다시선택</button>
     </div>
     <div class="rs-hint" id="rs-hint">출발·도착을 탭하거나<br>지도에서 마커를 직접 탭하세요</div>
   </div>
@@ -572,5 +601,17 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(function(){});
 }
 </script>
+
+<!-- 성지 액션 배너 -->
+<div id="shrine-action-overlay" onclick="_sabClose()"></div>
+<div id="shrine-action-bar">
+  <div class="sab-name" id="sab-name">성지명</div>
+  <div class="sab-btns">
+    <button class="sab-btn sab-btn-start"  id="sab-start">🔵 출발지</button>
+    <button class="sab-btn sab-btn-end"    id="sab-end">🔴 도착지</button>
+    <button class="sab-btn sab-btn-detail" id="sab-detail">상세</button>
+    <button class="sab-btn sab-btn-cancel" onclick="_sabClose()">취소</button>
+  </div>
+</div>
 </body>
 </html>
