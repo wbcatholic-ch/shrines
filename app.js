@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B013"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B014"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -34,7 +34,7 @@ let _map, _LL, _MM, _MI, _SZ, _PT, _PL;
 let _shrines = [], _byseq = {};
 let _markers = [];
 let _myMk = null, _myLat = null, _myLng = null;  /* 현재 위치 (인포카드 거리) */
-let _regionMk = null, _routePolyline = null;
+let _regionMk = null, _routeRegionStart = null, _routePolyline = null;
 let _curIdx = -1, _cur = null;
 let _activeTab = '';
 let _rS = null, _rVia = [], _rE = null;
@@ -331,6 +331,19 @@ function _regionShowShrines(lat, lng, placeName) {
   if (_regionMk) _regionMk.setMap(null);
   _regionMk = new _MM({ map:_map, position:new _LL(lat,lng), image:_mkrRegion(), title:placeName, zIndex:500 });
 
+  /* 지역 기억 — 경로탐색 시 출발점으로 사용 */
+  _routeRegionStart = { lat, lng, name: placeName };
+
+  /* 보라색 마커 클릭 → 길찾기 탭으로 이동, 지역을 출발지로 자동 설정 */
+  kakao.maps.event.addListener(_regionMk, 'click', () => {
+    if (!_routeRegionStart) return;
+    _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
+    switchTab('route');
+    /* 가이드: 도착 성지를 탭하세요 */
+    const tip = document.getElementById('rs-guide-tip');
+    if (tip) { tip.textContent = '도착 성지를 탭하세요'; tip.style.display = ''; }
+  });
+
   /* 근처 성지 정렬 (직선거리 × 1.35 자동차 거리 추정) */
   const sorted = _shrines
     .map((s,i) => ({ i, d: _dist(lat,lng,s.lat,s.lng) }))
@@ -527,6 +540,16 @@ function _clearRoute() {
   _clearRouteTmpMkrs();
   window._updateSearchBtn && window._updateSearchBtn();
   _showAll();  /* 모든 마커 복원 */
+
+  /* 지역검색 컨텍스트 — 보라색 마커 복원 + 지역 출발지 자동 유지 */
+  if (_routeRegionStart) {
+    if (_regionMk) _regionMk.setMap(_map);   /* 보라색 마커 다시 표시 */
+    /* 지역을 출발지로 재설정 (라벨만, 경로 자동계산 안 함) */
+    setTimeout(() => {
+      _setStart({ idx:-1, name:_routeRegionStart.name,
+        lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
+    }, 50);
+  }
 }
 function _renderViaList() {
   const wrap = _q('#rs-via-wrap');
@@ -551,12 +574,16 @@ function _openViaEdit(i) {
 function _setRouteFromMarker(idx) {
   const s = _shrines[idx];
   const pt = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
-  if (!_rS) {
+
+  if (!_rS && _routeRegionStart) {
+    /* 지역 컨텍스트: 지역 출발 → 마커를 도착지로 */
+    _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
+    _setEnd(pt);
+    _tryRoute(); switchTab('route');
+  } else if (!_rS) {
     _setStart(pt); switchTab('route');
   } else if (!_rE) {
-    _setEnd(pt);
-    _tryRoute();   /* 출발+도착 완성 → 바로 경로 계산 */
-    switchTab('route');
+    _setEnd(pt); _tryRoute(); switchTab('route');
   } else {
     _addVia(pt); _tryRoute();
   }
@@ -708,11 +735,15 @@ function _initSab() {
     const s = _shrines[_sabIdx];
     _setEnd({ idx: _sabIdx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
     _sabClose();
-    switchTab('route');
     if (_rS) {
-      _tryRoute();          /* 출발지 있으면 바로 경로 계산 */
+      switchTab('route'); _tryRoute();
+    } else if (_routeRegionStart) {
+      /* 지역검색 컨텍스트 — 지역이 자동 출발지 */
+      _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
+      switchTab('route'); _tryRoute();
     } else {
-      _setGpsStart();       /* 출발지 없으면 현위치 자동 설정 → GPS 확인 후 _tryRoute() 호출됨 */
+      switchTab('route');
+      _setGpsStart();   /* 기타 경우: 현위치 자동 설정 */
     }
   });
 }
@@ -1108,6 +1139,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     _q('#region-inp').value = '';
     _q('#region-body').innerHTML = '<div style="padding:32px;text-align:center;color:#bbb;font-size:13px;line-height:1.9">🏞 여행지나 숙소 지역을 검색하면<br>근처 성지 목록이 나타납니다</div>';
     if (_regionMk) { _regionMk.setMap(null); _regionMk = null; }
+    _routeRegionStart = null;   /* 지역 컨텍스트 초기화 */
     _showAll();
   });
 
