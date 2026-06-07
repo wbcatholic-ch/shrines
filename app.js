@@ -204,7 +204,7 @@ function _loadNearby() {
       const km  = (o.d / 1000 * 1.35).toFixed(1);
       const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
       const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
-      return `<div class="nearby-item" onclick="_sabOpen(${o.i})">
+      return `<div class="nearby-item" onclick="_openCard(${o.i})">
         <div class="nearby-num" style="background:${c}!important">${n+1}</div>
         <div class="nearby-info">
           <div class="nearby-name">${_esc(s.name)}</div>
@@ -266,7 +266,7 @@ function _renderList(kw) {
       d.innerHTML = `<div class="li-dot" style="background:${c}"></div>
         <div class="li-info"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').substring(0,28))}</div></div>
         <span class="li-badge" style="background:${c}18;color:${c}">${_esc(s.type)}</span>`;
-      d.onclick = () => _sabOpen(i);
+      d.onclick = () => _openCard(i);
       body2.appendChild(d);
     });
   });
@@ -369,7 +369,7 @@ function _regionShowShrines(lat, lng, placeName) {
     }).join('');
 
   body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _sabOpen(+el.dataset.i))
+    el.addEventListener('click', () => _openCard(+el.dataset.i))
   );
 }
 
@@ -393,7 +393,7 @@ function _regionFallback(q) {
       </div>`;
     }).join('');
   body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _sabOpen(+el.dataset.i))
+    el.addEventListener('click', () => _openCard(+el.dataset.i))
   );
 }
 
@@ -838,7 +838,21 @@ function _openCard(idx) {
   };
 
   _updateStamp(s);
-  _map.panTo(new _LL(s.lat, s.lng));
+
+  /* 시트 닫기 — 인포카드 열 때 목록 시트 닫힘 */
+  document.querySelectorAll('.sheet').forEach(sh => sh.classList.remove('open'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  _activeTab = '';
+  _showAll();  /* 모든 마커 복원 */
+  _resizeMk(idx, true);  /* 선택 마커 노랑으로 재적용 */
+
+  /* 지도 중심: 인포카드가 올라온 만큼 위쪽으로 보정 (구 앱 동일) */
+  const offset = 120;
+  const proj = _map.getProjection();
+  const pt = proj.pointFromCoords(new _LL(s.lat, s.lng));
+  const adjusted = proj.coordsFromPoint({ x: pt.x, y: pt.y - offset });
+  _map.setCenter(adjusted);
+
   _q('#info-card').classList.add('open');
 }
 function _closeCard() {
