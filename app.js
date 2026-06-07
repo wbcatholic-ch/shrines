@@ -577,14 +577,14 @@ async function _tryRoute() {
     if (b) _map.setBounds(new kakao.maps.LatLngBounds(new _LL(b.min_y, b.min_x), new _LL(b.max_y, b.max_x)), 60);
 
     _showRouteMarkersOnly();  /* 출/도 마커만 남김 */
-    _q('#rs-result').style.display = ''; _q('#rs-hint').style.display = 'none';
+    _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
 
   } catch (e) {
     console.warn('[경로]', e.message);
     _q('#rs-km').textContent = '—'; _q('#rs-time').textContent = '—';
     _q('#rs-fare').textContent = '경로 데이터를 가져올 수 없습니다. 내비로 확인하세요.';
     _showRouteMarkersOnly();  /* 실패해도 출/도 마커만 표시 */
-    _q('#rs-result').style.display = ''; _q('#rs-hint').style.display = 'none';
+    _q('#rs-result').style.display = 'block'; _q('#rs-hint').style.display = 'none';
   }
 }
 
@@ -969,6 +969,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     btn.style.display = (_rS && _rE) ? 'block' : 'none';  /* '' 아닌 'block' — CSS display:none 방지 */
   };
 
+  _q('#rs-myloc').addEventListener('click', _setGpsStart);  /* 현위치 버튼 */
   _q('#rs-start-x').addEventListener('click', () => { _clearStart(); window._updateSearchBtn && window._updateSearchBtn(); });
   _q('#rs-end-x').addEventListener('click',   () => { _clearEnd();   window._updateSearchBtn && window._updateSearchBtn(); });
 
