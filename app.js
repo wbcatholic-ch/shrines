@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B016"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B017"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -488,26 +488,34 @@ function _clearRouteTmpMkrs() {
 }
 
 function _showRouteMarkersOnly() {
-  /* 성지 마커: 출발/도착만 표시 */
+  /* 출/도/경유 마커 인덱스 수집 */
   const keep = new Set();
   if (_rS?.idx >= 0) keep.add(_rS.idx);
   if (_rE?.idx >= 0) keep.add(_rE.idx);
-  _rVia.forEach(v => { if (v.idx >= 0) keep.add(v.idx); });
+  _rVia.filter(v => !v.pending && v.idx >= 0).forEach(v => keep.add(v.idx));
   _markers.forEach((mk, i) => mk && mk.setMap(keep.has(i) ? _map : null));
 
-  /* GPS 출발지 임시 "출" 마커 (shrine 마커 아닐 때) */
-  _clearRouteTmpMkrs();
-  if (_rS && _rS.idx < 0 && _rS.lat) {
-    _startTmpMkr = new _MM({ map:_map, position:new _LL(_rS.lat,_rS.lng),
-      image:_mkrRoute('출'), zIndex:340 });
+  /* 출/도/경 마커 이미지 강제 적용 */
+  if (_rS?.idx >= 0 && _markers[_rS.idx]) {
+    _markers[_rS.idx].setImage(_mkrRoute('출')); _markers[_rS.idx].setZIndex(340);
   }
-  /* GPS 경유지 임시 마커 */
-  _rVia.forEach((v) => {
-    if (v.idx < 0 && v.lat) {
-      const mk = new _MM({ map:_map, position:new _LL(v.lat, v.lng),
-        image:_mkrRoute('경'), zIndex:50 });
-      _viaTmpMkrs.push(mk);
-    }
+  if (_rE?.idx >= 0 && _markers[_rE.idx]) {
+    _markers[_rE.idx].setImage(_mkrRoute('도')); _markers[_rE.idx].setZIndex(320);
+  }
+  _rVia.filter(v => !v.pending && v.idx >= 0).forEach(v => {
+    if (_markers[v.idx]) { _markers[v.idx].setImage(_mkrRoute('경')); _markers[v.idx].setZIndex(50); }
+  });
+
+  /* GPS 임시 마커 */
+  _clearRouteTmpMkrs();
+  if (_rS?.idx < 0 && _rS?.lat) {
+    _startTmpMkr = new _MM({ map:_map, position:new _LL(_rS.lat,_rS.lng), image:_mkrRoute('출'), zIndex:340 });
+  }
+  if (_rE?.idx < 0 && _rE?.lat) {
+    _endTmpMkr = new _MM({ map:_map, position:new _LL(_rE.lat,_rE.lng), image:_mkrRoute('도'), zIndex:320 });
+  }
+  _rVia.filter(v => !v.pending && v.idx < 0 && v.lat).forEach(v => {
+    _viaTmpMkrs.push(new _MM({ map:_map, position:new _LL(v.lat,v.lng), image:_mkrRoute('경'), zIndex:50 }));
   });
 }
 
@@ -968,35 +976,39 @@ function _openCard(idx) {
     }
   }
 
-  /* 전화 */
+  /* 전화 — 없으면 display:none → 경로검색이 행 전체 차지 */
   const tel = _q('#ic-tel');
   if (s.tel) {
     _q('#ic-tel-num').textContent = s.tel;
     tel.href = 'tel:' + s.tel.replace(/[^0-9+]/g, '');
-    tel.style.display = ''; tel.style.visibility = 'visible';
-  } else { tel.style.visibility = 'hidden'; tel.style.display = ''; }
+    tel.style.display = '';
+  } else {
+    tel.style.display = 'none';
+  }
 
   /* 홈페이지 + 성지 상세 링크 */
   const hp    = _q('#ic-hp');
   const guide = _q('#ic-guide');
+  const row2  = document.getElementById('ic-row-2');
   const links = _q('#ic-links');
 
   if (s.hp) {
     hp.href = s.hp;
-    hp.style.display = ''; hp.style.visibility = 'visible';
+    hp.style.display = '';
   } else {
-    hp.style.visibility = 'hidden'; hp.style.display = '';
+    hp.style.display = 'none';
   }
 
   if (s.cbck || s.seq) {
-    /* cbck = 전체 CBCK URL (diocese 파라미터 포함), 없으면 seq로 구성 */
     guide.href = s.cbck || ('https://www.cbck.or.kr/Catholic/Shrine/Read?seq=' + s.seq);
     guide.style.display = '';
   } else {
     guide.style.display = 'none';
   }
 
-  links.style.display = (s.hp || s.cbck || s.seq) ? '' : 'none';
+  /* 홈페이지+성지상세 둘 다 없으면 2행 전체 숨김 */
+  if (row2) row2.style.display = (s.hp || s.cbck || s.seq) ? '' : 'none';
+  links.style.display = '';
 
   /* 카카오맵 — kurl(place 직링크) 우선, 없으면 kw 검색, 최후 좌표 링크 */
   _q('#ic-kakao-nav').onclick = () => {
@@ -1029,7 +1041,18 @@ function _openCard(idx) {
   _q('#info-card').classList.add('open');
 }
 function _closeCard() {
-  if (_curIdx>=0){_resizeMk(_curIdx,false);_curIdx=-1;} _cur=null;
+  if (_curIdx >= 0) {
+    /* 경로 마커(출/도/경유)이면 이미지 유지 — 일반 마커만 복원 */
+    const isStart = _rS?.idx === _curIdx;
+    const isEnd   = _rE?.idx === _curIdx;
+    const isVia   = _rVia.some(v => !v.pending && v.idx === _curIdx);
+    if (isStart) { _markers[_curIdx]?.setImage(_mkrRoute('출')); _markers[_curIdx]?.setZIndex(340); }
+    else if (isEnd) { _markers[_curIdx]?.setImage(_mkrRoute('도')); _markers[_curIdx]?.setZIndex(320); }
+    else if (isVia) { _markers[_curIdx]?.setImage(_mkrRoute('경')); _markers[_curIdx]?.setZIndex(50); }
+    else _resizeMk(_curIdx, false);
+    _curIdx = -1;
+  }
+  _cur = null;
   _q('#info-card').classList.remove('open');
 }
 
@@ -1098,7 +1121,11 @@ async function _loadCourse(id,autoNavi){
     const visited=(Array.isArray(v[s.seq])?v[s.seq]:[]).length>0,bg=visited?'#2A8040':'#1B7FD8';
     const svg=`<svg ${_NS} width="34" height="42"><path d="M17 41C17 41 2 26 2 17a15 15 0 1 1 30 0C32 26 17 41 17 41Z" fill="${bg}" stroke="#fff" stroke-width="1.5"/><circle cx="17" cy="17" r="9" fill="#fff"/><text x="17" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="${bg}" font-family="sans-serif">${n+1}</text></svg>`;
     const mk=new _MM({map:_map,position:new _LL(s.lat,s.lng),image:new _MI(_EC(svg),new _SZ(34,42),{offset:new _PT(17,42)}),zIndex:10});
-    kakao.maps.event.addListener(mk,'click',()=>_openCard(_shrines.indexOf(s)));
+    kakao.maps.event.addListener(mk,'click',()=>{
+      const i = _shrines.indexOf(s);
+      if (_activeTab === 'route') _setRouteFromMarker(i);
+      else _openCard(i);
+    });
     bounds.extend(new _LL(s.lat,s.lng));
   });
   _map.setBounds(bounds,60);

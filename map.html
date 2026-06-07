@@ -283,8 +283,9 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 .ic-dist-val { font-size: 14px; font-weight: 800; color: #1565c0; }
 .ic-addr-lbl { font-size: 12px; color: #aaa; font-weight: 600; margin-bottom: 2px; }
 .ic-addr-val { font-size: 15px; color: var(--ink); word-break: keep-all; line-height: 1.45; }
-.ic-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 10px 14px 0; }
-.ic-btn-grid > * { min-width: 0; box-sizing: border-box; }
+.ic-btn-grid { display: flex; flex-direction: column; gap: 7px; padding: 10px 14px 0; }
+.ic-row { display: flex; gap: 7px; }
+.ic-row > * { flex: 1; min-width: 0; box-sizing: border-box; }
 .ic-body { padding: 0 0 12px; }
 .ic-tel-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -591,11 +592,16 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
       </div>
     </div>
     <!-- 4개 버튼 2×2 균등 그리드 -->
+    <!-- 인포카드 버튼: 행별 flex — 하나 없으면 나머지가 전체 너비 -->
     <div class="ic-btn-grid" id="ic-links">
-      <a class="ic-tel-btn"              id="ic-tel"   href="#" style="display:none"><span>📞</span><span id="ic-tel-num"></span></a>
-      <button class="ic-route-btn"       id="ic-route-btn">🧭 경로검색</button>
-      <a class="ic-link-btn ic-hp-btn"    id="ic-hp"    href="#" target="_blank" rel="noopener" style="display:none">🌐 홈페이지</a>
-      <a class="ic-link-btn ic-guide-btn" id="ic-guide" href="#" target="_blank" rel="noopener" style="display:none">📖 성지 상세</a>
+      <div class="ic-row" id="ic-row-1">
+        <a class="ic-tel-btn"        id="ic-tel"   href="#"><span>📞</span><span id="ic-tel-num"></span></a>
+        <button class="ic-route-btn" id="ic-route-btn">🧭 경로검색</button>
+      </div>
+      <div class="ic-row" id="ic-row-2">
+        <a class="ic-link-btn ic-hp-btn"    id="ic-hp"    href="#" target="_blank" rel="noopener">🌐 홈페이지</a>
+        <a class="ic-link-btn ic-guide-btn" id="ic-guide" href="#" target="_blank" rel="noopener">📖 성지 상세</a>
+      </div>
     </div>
     <div style="padding:8px 14px 0">
       <button class="btn-kakao-nav" id="ic-kakao-nav">🚗 카카오내비</button>
@@ -623,7 +629,7 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 <script src="shrines.js?v=V3"></script>
 <script src="courses.js?v=V1b"></script>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
-<script src="app.js?v=B016"></script>
+<script src="app.js?v=B017"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(function(){});
