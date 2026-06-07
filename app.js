@@ -101,7 +101,7 @@ function _buildMarkers() {
     for (; i < end; i++) {
       const s = _shrines[i];
       if (!s.lat||!s.lng||s.lat<33||s.lat>38||s.lng<124||s.lng>132) continue;
-      const mk = new _MM({position:new _LL(s.lat,s.lng), image:_mkr(_CLR[s.type],false), title:s.name});
+      const mk = new _MM({position:new _LL(s.lat,s.lng), image:_mkr(_typeColor(s.type),false), title:s.name});
       mk.setMap(_map);
       const idx = i;
       kakao.maps.event.addListener(mk, 'click', () => _onMarkerClick(idx));
@@ -121,7 +121,7 @@ function _showAll()         { _markers.forEach(mk=>mk&&mk.setMap(_map)); }
 function _resizeMk(idx,big) {
   if (!_markers[idx]) return;
   /* 선택 마커 = 노란색(#FFE500) 큰 사이즈 — 구 앱 동일 */
-  _markers[idx].setImage(big ? _mkr('#FFE500', true) : _mkr(_CLR[_shrines[idx].type], false));
+  _markers[idx].setImage(big ? _mkr('#FFE500', true) : _mkr(_typeColor(_shrines[idx].type), false));
 }
 
 /* §5 탭 전환 */
@@ -386,7 +386,7 @@ function _regionFallback(q) {
   _showOnly(matched.map(o => o.i));
   body.innerHTML = `<div style="padding:10px 14px 4px;font-size:11px;font-weight:700;color:#aaa">✝ "${_esc(q)}" 검색 결과</div>` +
     matched.slice(0, 20).map(o => {
-      const s=o.s, c=_CLR[s.type];
+      const s=o.s, c=_typeColor(s.type);
       return `<div class="li" data-i="${o.i}">
         <div class="li-dot" style="background:${c}"></div>
         <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
@@ -778,7 +778,7 @@ function _openCard(idx) {
   const tb = _q('#ic-type');
   /* 스펙: 타입 배지 = 한글 레이블 (성지/순례지/순교 사적지) */
   tb.textContent = s.type || '';  /* 이미 한글 변환됨 */
-  tb.style.background = _CLR[s.type] || '#888'; tb.style.color = s.type ? '#fff' : '#555';
+  tb.style.background = _typeColor(s.type); tb.style.color = '#fff';
 
   _q('#ic-addr').textContent = s.addr || '';
   _q('#ic-addr-row').style.display = s.addr ? '' : 'none';
