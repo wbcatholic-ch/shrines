@@ -910,7 +910,7 @@ window.addEventListener('pagehide',()=>{if(_watchId!==null){navigator.geolocatio
 window.addEventListener('pageshow',()=>{if(_map&&!_courseMode)_startGPS();});
 
 document.addEventListener('DOMContentLoaded',()=>{
-  _shrines=(window._SH_RAW||[]).map(s=>{const r={...s};if(_TY[r.type])r.type=_TY[r.type];return r;}).filter(s=>s.lat&&s.lng);
+  _shrines = (window._SH_RAW||[]).filter(s => s.lat && s.lng);
 
   /* 탭 버튼 */
   document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
@@ -953,7 +953,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const tmpS = _rS, tmpE = _rE;
     if (tmpS) _setEnd({...tmpS}); else _clearEnd();
     if (tmpE) _setStart({...tmpE}); else _clearStart();
-    _updateSearchBtn();
+    window._updateSearchBtn && window._updateSearchBtn();
     _q('#rs-result').style.display = 'none';
     _q('#rs-hint').style.display = '';
   });
