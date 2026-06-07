@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = 'B009'; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = 'B010'; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -356,23 +356,20 @@ function _regionShowShrines(lat, lng, placeName) {
       const km  = (o.d / 1000 * 1.35).toFixed(1);
       const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
       const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
-      return `<div class="li" data-i="${o.i}">
-        <div class="li-num" style="background:${c}">${n+1}</div>
-        <div class="li-main">
-          <div class="li-name">${_esc(s.name)}</div>
-          <div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
+      return `<div class="nearby-item" onclick="_openCard(${o.i})">
+        <div class="nearby-num" style="background:${c}!important">${n+1}</div>
+        <div class="nearby-info">
+          <div class="nearby-name">${_esc(s.name)}</div>
+          <div class="nearby-addr">${_esc((s.addr||'').substring(0,28))}</div>
         </div>
-        <div class="li-right">
-          <span class="li-badge" style="background:${c}18;color:${c}">${_esc(s.type)}</span>
-          <span class="li-dist">🚗${km}km</span>
-          <span class="li-dur">${dur}</span>
+        <div class="nearby-meta">
+          <div class="nearby-type" style="background:${c}18!important;color:${c}!important">${_esc(s.type)}</div>
+          <div class="nearby-dist" style="color:${c}!important">🚗${km}km</div>
+          <div class="nearby-dur">${dur}</div>
         </div>
       </div>`;
     }).join('');
 
-  body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _openCard(+el.dataset.i))
-  );
 }
 
 /* 카카오 장소 검색 실패 시: 성지명·주소 직접 검색 */
@@ -389,14 +386,12 @@ function _regionFallback(q) {
   body.innerHTML = `<div style="padding:10px 14px 4px;font-size:11px;font-weight:700;color:#aaa">✝ "${_esc(q)}" 검색 결과</div>` +
     matched.slice(0, 20).map(o => {
       const s=o.s, c=_typeColor(s.type);
-      return `<div class="li" data-i="${o.i}">
+      return `<div class="list-item" onclick="_openCard(${o.i})">
         <div class="li-dot" style="background:${c}"></div>
-        <div class="li-main"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').split(' ').slice(0,3).join(' '))}</div></div>
+        <div class="li-info"><div class="li-name">${_esc(s.name)}</div><div class="li-sub">${_esc((s.addr||'').substring(0,28))}</div></div>
+        <span class="li-badge" style="background:${c}18;color:${c}">${_esc(s.type)}</span>
       </div>`;
     }).join('');
-  body.querySelectorAll('[data-i]').forEach(el =>
-    el.addEventListener('click', () => _openCard(+el.dataset.i))
-  );
 }
 
 /* §9 길찾기 (Kakao Mobility API + Kakao Navi JS SDK)
@@ -655,12 +650,10 @@ function _initSab() {
     _setEnd({ idx: _sabIdx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
     _sabClose();
     switchTab('route');
-    /* 도착지 설정 → 출발지도 있으면 바로 경로 계산 */
     if (_rS) {
-      _tryRoute();   /* 성공 시 _showRouteMarkersOnly() 호출됨 */
+      _tryRoute();          /* 출발지 있으면 바로 경로 계산 */
     } else {
-      /* 출발지 없음 → 도착지 마커만 강조 */
-      _showOnly([_sabIdx]);
+      _setGpsStart();       /* 출발지 없으면 현위치 자동 설정 → GPS 확인 후 _tryRoute() 호출됨 */
     }
   });
 }
@@ -703,10 +696,9 @@ function _closePicker() {
 }
 
 function _renderPickerList(kw) {
-  const clr = { A:'#c0392b', B:'#1565c0', C:'#1b7a3e' };
-  const q   = kw.trim();
+  const q = kw.trim();
   const list = q
-    ? _shrines.filter(s => s.name.includes(q) || (s.addr||'').includes(q))
+    ? _shrines.filter(s => s.name.includes(q) || (s.addr||'').includes(q) || (s.diocese||'').includes(q))
     : _shrines;
 
   let html = '';
@@ -718,15 +710,17 @@ function _renderPickerList(kw) {
   if (!list.length) {
     html += `<div class="rp-empty">검색 결과가 없습니다</div>`;
   } else {
+    /* 성지찾기 list-item 디자인과 통일 */
     html += list.map(s => {
-      const idx  = _shrines.indexOf(s);
-      const dioc = s.diocese || '';
-      return `<div class="rp-item" data-idx="${idx}">
-        <div class="rp-dot" style="background:${clr[s.type]||'#888'}"></div>
-        <div class="rp-info">
-          <div class="rp-name">${_esc(s.name)}</div>
-          <div class="rp-addr">${_esc(dioc)} · ${_esc((s.addr||'').split(' ').slice(0,4).join(' '))}</div>
+      const idx = _shrines.indexOf(s);
+      const c   = _typeColor(s.type);
+      return `<div class="list-item" data-idx="${idx}">
+        <div class="li-dot" style="background:${c}"></div>
+        <div class="li-info">
+          <div class="li-name">${_esc(s.name)}</div>
+          <div class="li-sub">${_esc(s.diocese||'')} · ${_esc((s.addr||'').substring(0,28))}</div>
         </div>
+        <span class="li-badge" style="background:${c}18;color:${c}">${_esc(s.type)}</span>
       </div>`;
     }).join('');
   }
@@ -741,8 +735,7 @@ function _initPicker() {
   _q('#rp-input').addEventListener('input', e => _renderPickerList(e.target.value));
   _q('#rp-list').addEventListener('click', e => {
     const item = e.target.closest('[data-idx]');
-    if (!item) return;
-    const idx = parseInt(item.dataset.idx);
+    if (!item) return;    const idx = parseInt(item.dataset.idx);
     const s   = _shrines[idx];
     if (!s) return;
     const pt  = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
