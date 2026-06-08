@@ -149,7 +149,7 @@ function switchTab(tab) {
 
   if (tab === 'nearby') _loadNearby();
   if (tab === 'list')   _renderList('');
-  if (tab === 'route')  _restoreRouteMarkers();  /* 길찾기 탭 → 미완성 시 전체 마커 복원 */
+  if (tab === 'route')  { _restoreRouteMarkers(); _renderAllRouteItems(); }
 }
 
 function _closeTab() {
@@ -688,9 +688,11 @@ function _moveRouteItem(fromSi, toSi) {
   if (_rS && _rE) _tryRoute();
 }
 
-/* 터치 드래그 소트 */
+/* 터치 드래그 소트 — 중복 등록 방지 */
 let _drag = null;
 function _initDragSort(list) {
+  if (list._dragInited) return;   /* 이미 등록됐으면 재등록 안 함 */
+  list._dragInited = true;
   list.addEventListener('touchstart', e => {
     const handle = e.target.closest('.rp-handle');
     if (!handle) return;
