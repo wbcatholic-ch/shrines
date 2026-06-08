@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B025"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B026"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -640,9 +640,9 @@ function _renderViaList() {
 
 /* 출발/도착 마커 재클릭 안내 (실수 방지) */
 function _showMarkerConfirm(role, idx, name) {
-  const label  = role === 'start' ? '출발지' : '도착지';
-  const color  = role === 'start' ? '#1565c0' : '#c0392b';
-  const toast  = document.createElement('div');
+  const label = role === 'start' ? '출발지' : role === 'end' ? '도착지' : '경유지';
+  const color = role === 'start' ? '#1565c0' : role === 'end' ? '#c0392b' : '#FF8C00';
+  const toast = document.createElement('div');
   toast.id = 'marker-confirm-toast';
   toast.style.cssText = `
     position:fixed; bottom:calc(var(--safe-b,0px) + 60px); left:50%; transform:translateX(-50%);
@@ -657,21 +657,23 @@ function _showMarkerConfirm(role, idx, name) {
     </div>
     <div style="font-weight:700;margin-bottom:12px;font-size:14px">${_esc(name)}</div>
     <div style="display:flex;gap:8px">
-      <button onclick="_confirmMarkerCancel('${role}')" style="flex:1;height:36px;border:none;border-radius:10px;background:${color};color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">${label} 취소</button>
       <button onclick="_dismissMarkerConfirm()" style="flex:1;height:36px;border:1.5px solid rgba(255,255,255,.3);border-radius:10px;background:transparent;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">유지</button>
+      <button onclick="_confirmMarkerCancel('${role}',${idx})" style="flex:1;height:36px;border:none;border-radius:10px;background:${color};color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">${label} 취소</button>
     </div>`;
-  /* 기존 토스트 제거 */
   const prev = document.getElementById('marker-confirm-toast');
   if (prev) prev.remove();
   document.body.appendChild(toast);
-  /* 5초 후 자동 사라짐 */
   clearTimeout(window._markerConfirmTimer);
   window._markerConfirmTimer = setTimeout(_dismissMarkerConfirm, 5000);
 }
-function _confirmMarkerCancel(role) {
+function _confirmMarkerCancel(role, idx) {
   _dismissMarkerConfirm();
   if (role === 'start') _clearStart();
   else if (role === 'end') _clearEnd();
+  else if (role === 'via') {
+    const i = _rVia.findIndex(v => !v.pending && v.idx === idx);
+    if (i >= 0) _removeVia(i);
+  }
 }
 function _dismissMarkerConfirm() {
   clearTimeout(window._markerConfirmTimer);
@@ -695,11 +697,11 @@ function _setRouteFromMarker(idx) {
   const s = _shrines[idx];
   const pt = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
 
-  /* 같은 마커 재클릭 → 확인 (출/도) 또는 즉시 취소 (경유) */
+  /* 같은 마커 재클릭 → 확인 배너 (출/도/경 모두) */
   if (_rS?.idx === idx) { _showMarkerConfirm('start', idx, _rS.name); return; }
   if (_rE?.idx === idx) { _showMarkerConfirm('end',   idx, _rE.name); return; }
   const assignedVia = _rVia.findIndex(v => !v.pending && v.idx === idx);
-  if (assignedVia >= 0) { _removeVia(assignedVia); return; }  /* 경 마커 재클릭 → 즉시 취소 */
+  if (assignedVia >= 0) { _showMarkerConfirm('via', idx, _rVia[assignedVia].name); return; }
 
   /* 빈 경유 슬롯(pending)이 있으면 채우기 */
   const pendingIdx = _rVia.findIndex(v => v.pending);
