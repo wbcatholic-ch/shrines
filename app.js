@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B031"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B032"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -601,8 +601,61 @@ function _clearRoute(fresh = false) {
     }, 50);
   }
 }
-/* 출발·경유·도착 카카오 스타일 렌더 */
+/* 출발·경유·도착 카드 렌더 (드래그 핸들 포함) */
 function _renderAllRouteItems() {
+  const el = document.getElementById('rs-items');
+  if (!el) return;
+
+  const sortable = [];
+  sortable.push({ role:'start', pt:_rS });
+  _rVia.filter(v=>!v.pending).forEach((v,i)=>sortable.push({ role:'via', pt:v, vi:i }));
+  sortable.push({ role:'end', pt:_rE });
+  const pendingSlots = _rVia.map((v,i)=>({v,i})).filter(x=>x.v.pending);
+
+  const dotColor = r => r==='start'?'#1565c0':r==='end'?'#c0392b':'#FF8C00';
+
+  /* sortable 항목 (출발+경유 / 도착 사이에 pending) */
+  const midItems = sortable.slice(0, -1);
+  const endItem  = sortable[sortable.length - 1];
+
+  const makeCard = (item, si) => {
+    const {role, pt} = item;
+    const c = dotColor(role);
+    const name = pt?.name || '';
+    const ph = role==='start'?'출발지를 선택하세요':role==='end'?'도착지를 선택하세요':'경유지를 선택하세요';
+    const tap = role==='start'?`_openPicker('start')`:role==='end'?`_openPicker('end')`:`_openViaEdit(${item.vi})`;
+    const xBtn = name ? `<button class="rp-x" onclick="_clearItem('${role}',${item.vi??-1});event.stopPropagation()">✕</button>` : '';
+    const isEnd = role === 'end';
+    return `<div class="rp-item" data-si="${si}">
+      <div class="rp-card${isEnd?' end-card':''}" style="border-left-color:${c}" onclick="${tap}">
+        <div class="rp-dot" style="background:${c}"></div>
+        <span class="rp-name${name?'':' empty'}">${_esc(name||ph)}</span>
+        ${xBtn}
+      </div>
+      <div class="rp-handle" data-si="${si}">⠿</div>
+    </div>`;
+  };
+
+  let html = midItems.map((item, si) => makeCard(item, si)).join('');
+
+  /* pending 슬롯 — 출발/경유와 도착 사이 */
+  html += pendingSlots.map(({v,i}) =>
+    `<div class="rp-item">
+      <div class="rp-card" style="border-left-color:#FF8C00;border-style:dashed;opacity:.8" onclick="_openViaEdit(${i})">
+        <div class="rp-dot" style="background:#FF8C00;opacity:.5"></div>
+        <span class="rp-name empty">경유지를 선택하세요</span>
+        <button class="rp-x" onclick="_removeVia(${i});event.stopPropagation()">✕</button>
+      </div>
+      <div class="rp-handle" style="visibility:hidden">⠿</div>
+    </div>`
+  ).join('');
+
+  /* 도착 */
+  html += makeCard(endItem, sortable.length - 1);
+
+  el.innerHTML = html;
+  _initDragSort(el);
+}
   const el = document.getElementById('rs-items');
   if (!el) return;
 
@@ -612,57 +665,6 @@ function _renderAllRouteItems() {
   _rVia.filter(v=>!v.pending).forEach((v,i)=>sortable.push({ role:'via', pt:v, vi:i }));
   sortable.push({ role:'end', pt:_rE });
 
-  /* pending 슬롯 (출발-도착 사이에 표시) */
-  const pendingSlots = _rVia.map((v,i)=>({v,i})).filter(x=>x.v.pending);
-  const totalLast = sortable.length - 1 + pendingSlots.length;
-
-  const dotColor = r => r==='start'?'#1565c0':r==='end'?'#c0392b':'#FF8C00';
-
-  const makeRow = (item, si, showLine) => {
-    const {role,pt} = item;
-    const c = dotColor(role);
-    const name = pt?.name||'';
-    const ph = role==='start'?'출발지를 선택하세요':role==='end'?'도착지를 선택하세요':'경유지를 선택하세요';
-    const tap = role==='start'?`_openPicker('start')`:role==='end'?`_openPicker('end')`:`_openViaEdit(${item.vi})`;
-    const xBtn = name ? `<button class="rp-x" onclick="_clearItem('${role}',${item.vi??-1});event.stopPropagation()">✕</button>` : '';
-    const line = showLine ? `<div class="rp-line"></div>` : '';
-    return `<div class="rp-item" data-si="${si}" onclick="${tap}">
-      <div class="rp-left">
-        <div class="rp-dot" style="border-color:${c};${role==='via'?'background:'+c:''}"></div>
-        ${line}
-      </div>
-      <div class="rp-body"><span class="rp-name${name?'':' empty'}">${_esc(name||ph)}</span></div>
-      ${xBtn}
-      <div class="rp-handle" data-si="${si}">⠿</div>
-    </div>`;
-  };
-
-  /* 출발 + 경유(non-pending) → pending 슬롯 → 도착 순으로 렌더 */
-  const midItems = sortable.slice(0, -1);   /* start + via */
-  const endItem  = sortable[sortable.length - 1];  /* end */
-
-  let html = midItems.map((item,si) => makeRow(item, si, true)).join('');
-
-  /* pending 슬롯 — 출발/경유 아래, 도착 위 */
-  html += pendingSlots.map(({v,i},pi) => {
-    const showLine = pi < pendingSlots.length - 1 || true; /* 도착 위 연결선 */
-    return `<div class="rp-item" onclick="_openViaEdit(${i})">
-      <div class="rp-left">
-        <div class="rp-dot" style="border-color:#FF8C00;border-style:dashed"></div>
-        <div class="rp-line"></div>
-      </div>
-      <div class="rp-body"><span class="rp-name empty">경유지를 선택하세요</span></div>
-      <button class="rp-x" onclick="_removeVia(${i});event.stopPropagation()">✕</button>
-      <div class="rp-handle" style="visibility:hidden">⠿</div>
-    </div>`;
-  }).join('');
-
-  /* 도착 (마지막 — 연결선 없음) */
-  html += makeRow(endItem, sortable.length - 1, false);
-
-  el.innerHTML = html;
-  _initDragSort(el);
-}
 
 /* 순서 이동 (드래그 완료 후) */
 function _moveRouteItem(fromSi, toSi) {
@@ -694,15 +696,23 @@ function _initDragSort(list) {
     if (!handle) return;
     e.preventDefault();
     const si = +handle.dataset.si;
-    const item = list.querySelectorAll('.rp-item')[si];
+    const item = list.querySelectorAll('.rp-item[data-si]')[si];
     if (!item) return;
     const rect = item.getBoundingClientRect();
-    const ghost = item.cloneNode(true);
+    /* ghost: 카드 내용만 복사 */
+    const card = item.querySelector('.rp-card');
+    const ghost = document.createElement('div');
     ghost.className = 'rp-drag-ghost';
-    ghost.style.cssText += `top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+    ghost.style.top = rect.top + 'px';
+    ghost.style.height = rect.height + 'px';
+    const dot = card ? card.querySelector('.rp-dot') : null;
+    const nameEl = card ? card.querySelector('.rp-name') : null;
+    ghost.innerHTML = `
+      <div class="rp-ghost-dot" style="background:${dot?dot.style.background:'#888'}"></div>
+      <div class="rp-ghost-name">${nameEl?nameEl.textContent:''}</div>`;
     document.body.appendChild(ghost);
     item.classList.add('rp-dragging');
-    _drag = { si, item, ghost, startY: e.touches[0].clientY, offsetY: e.touches[0].clientY - rect.top, list };
+    _drag = { si, item, ghost, offsetY: e.touches[0].clientY - rect.top, list };
   }, { passive:false });
 
   list.addEventListener('touchmove', e => {
