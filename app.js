@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B021"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B022"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -148,7 +148,7 @@ function switchTab(tab) {
   if (tip) tip.style.display = isRoute ? '' : 'none';
 
   if (tab === 'nearby') _loadNearby();
-  if (tab === 'list')   _renderList('');
+  if (tab === 'list')   { _autoFilterDiocese(); _renderList(''); }
 }
 
 function _closeTab() {
@@ -206,7 +206,7 @@ function _loadNearby() {
       const km  = (o.d / 1000 * 1.35).toFixed(1);
       const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
       const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
-      return `<div class="nearby-item" onclick="_openCard(${o.i})">
+      return `<div class="nearby-item" onclick="_regionShrineTap(${o.i})">
         <div class="nearby-num" style="background:${c}!important">${n+1}</div>
         <div class="nearby-info">
           <div class="nearby-name">${_esc(s.name)}</div>
@@ -238,6 +238,22 @@ function _matchShrines(s, q) {
     name.includes(t) || addr.includes(t) || dioc.includes(t) ||
     name.replace(/\s/g,'').includes(t.replace(/\s/g,''))
   );
+}
+
+/* 성지찾기 탭 열 때 내 위치 가장 가까운 교구로 자동 필터 */
+function _autoFilterDiocese() {
+  if (!_myLat || !_myLng || !_shrines.length) return;
+  let minD = Infinity, bestDio = '';
+  _shrines.forEach(s => {
+    if (!s.lat || !s.lng) return;
+    const d = Math.hypot(s.lat - _myLat, s.lng - _myLng);
+    if (d < minD) { minD = d; bestDio = s.diocese; }
+  });
+  if (!bestDio || bestDio === _filterDio) return;
+  _filterDio = bestDio;
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.dio === bestDio);
+  });
 }
 
 function _renderList(kw) {
@@ -274,6 +290,18 @@ function _renderList(kw) {
   });
   body.innerHTML = '';
   body.appendChild(body2);
+}
+
+/* 지역검색 근처 성지 탭 — 출발지가 있으면 바로 도착지 설정 */
+function _regionShrineTap(idx) {
+  const s = _shrines[idx];
+  if (_rS && _routeRegionStart) {
+    /* 지역이 출발지 → 이 성지를 바로 도착지로 */
+    _setEnd({ idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false });
+    _ensureRouteTab(); _tryRoute();
+  } else {
+    _openCard(idx);  /* 일반 컨텍스트: 인포카드 */
+  }
 }
 
 /* 지역검색 "지도 보기" — 시트 닫고 지역 마커로 지도 이동 */
@@ -385,7 +413,7 @@ function _regionShowShrines(lat, lng, placeName) {
       const km  = (o.d / 1000 * 1.35).toFixed(1);
       const min = Math.round(o.d / 1000 * 1.35 / 40 * 60);
       const dur = min < 60 ? min+'분' : Math.floor(min/60)+'시간'+(min%60 ? (min%60)+'분' : '');
-      return `<div class="nearby-item" onclick="_openCard(${o.i})">
+      return `<div class="nearby-item" onclick="_regionShrineTap(${o.i})">
         <div class="nearby-num" style="background:${c}!important">${n+1}</div>
         <div class="nearby-info">
           <div class="nearby-name">${_esc(s.name)}</div>
@@ -458,7 +486,11 @@ function _setEnd(pt) {
 function _addVia(pt) {
   if (_rVia.some(v => v.idx >= 0 && v.idx === pt.idx)) return;
   _rVia.push(pt);
-  if (pt.idx >= 0 && _markers[pt.idx]) { _markers[pt.idx].setMap(_map); _markers[pt.idx].setImage(_mkrRoute("경")); _markers[pt.idx].setZIndex(50); }
+  if (pt.idx >= 0 && _markers[pt.idx]) {
+    _markers[pt.idx].setMap(_map);
+    _markers[pt.idx].setImage(_mkrRoute('경'));
+    _markers[pt.idx].setZIndex(50);
+  }
   _renderViaList();
 }
 function _removeVia(i) {
