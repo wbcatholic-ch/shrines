@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B030"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B031"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -606,26 +606,29 @@ function _renderAllRouteItems() {
   const el = document.getElementById('rs-items');
   if (!el) return;
 
+  /* sortable: [start, ...via(non-pending), end] */
   const sortable = [];
   sortable.push({ role:'start', pt:_rS });
   _rVia.filter(v=>!v.pending).forEach((v,i)=>sortable.push({ role:'via', pt:v, vi:i }));
   sortable.push({ role:'end', pt:_rE });
-  const pending = _rVia.map((v,i)=>({v,i})).filter(x=>x.v.pending);
-  const total = sortable.length + pending.length;
+
+  /* pending 슬롯 (출발-도착 사이에 표시) */
+  const pendingSlots = _rVia.map((v,i)=>({v,i})).filter(x=>x.v.pending);
+  const totalLast = sortable.length - 1 + pendingSlots.length;
 
   const dotColor = r => r==='start'?'#1565c0':r==='end'?'#c0392b':'#FF8C00';
 
-  const makeRow = (item, si, isLast) => {
+  const makeRow = (item, si, showLine) => {
     const {role,pt} = item;
     const c = dotColor(role);
     const name = pt?.name||'';
     const ph = role==='start'?'출발지를 선택하세요':role==='end'?'도착지를 선택하세요':'경유지를 선택하세요';
     const tap = role==='start'?`_openPicker('start')`:role==='end'?`_openPicker('end')`:`_openViaEdit(${item.vi})`;
-    const line = !isLast ? `<div class="rp-line"></div>` : '';
     const xBtn = name ? `<button class="rp-x" onclick="_clearItem('${role}',${item.vi??-1});event.stopPropagation()">✕</button>` : '';
+    const line = showLine ? `<div class="rp-line"></div>` : '';
     return `<div class="rp-item" data-si="${si}" onclick="${tap}">
       <div class="rp-left">
-        <div class="rp-dot" style="border-color:${c};${role!=='start'&&role!=='end'?'background:'+c:''}"></div>
+        <div class="rp-dot" style="border-color:${c};${role==='via'?'background:'+c:''}"></div>
         ${line}
       </div>
       <div class="rp-body"><span class="rp-name${name?'':' empty'}">${_esc(name||ph)}</span></div>
@@ -634,18 +637,28 @@ function _renderAllRouteItems() {
     </div>`;
   };
 
-  let html = sortable.map((item,si)=>makeRow(item,si,si===sortable.length-1&&!pending.length)).join('');
+  /* 출발 + 경유(non-pending) → pending 슬롯 → 도착 순으로 렌더 */
+  const midItems = sortable.slice(0, -1);   /* start + via */
+  const endItem  = sortable[sortable.length - 1];  /* end */
 
-  /* pending 슬롯 */
-  html += pending.map(({v,i},pi)=>`<div class="rp-item" onclick="_openViaEdit(${i})">
-    <div class="rp-left">
-      <div class="rp-dot" style="border-color:#FF8C00;border-style:dashed"></div>
-      ${pi<pending.length-1?'<div class="rp-line"></div>':''}
-    </div>
-    <div class="rp-body"><span class="rp-name empty">경유지를 선택하세요</span></div>
-    <button class="rp-x" onclick="_removeVia(${i});event.stopPropagation()">✕</button>
-    <div class="rp-handle" style="visibility:hidden">⠿</div>
-  </div>`).join('');
+  let html = midItems.map((item,si) => makeRow(item, si, true)).join('');
+
+  /* pending 슬롯 — 출발/경유 아래, 도착 위 */
+  html += pendingSlots.map(({v,i},pi) => {
+    const showLine = pi < pendingSlots.length - 1 || true; /* 도착 위 연결선 */
+    return `<div class="rp-item" onclick="_openViaEdit(${i})">
+      <div class="rp-left">
+        <div class="rp-dot" style="border-color:#FF8C00;border-style:dashed"></div>
+        <div class="rp-line"></div>
+      </div>
+      <div class="rp-body"><span class="rp-name empty">경유지를 선택하세요</span></div>
+      <button class="rp-x" onclick="_removeVia(${i});event.stopPropagation()">✕</button>
+      <div class="rp-handle" style="visibility:hidden">⠿</div>
+    </div>`;
+  }).join('');
+
+  /* 도착 (마지막 — 연결선 없음) */
+  html += makeRow(endItem, sortable.length - 1, false);
 
   el.innerHTML = html;
   _initDragSort(el);
@@ -698,15 +711,15 @@ function _initDragSort(list) {
     const y = e.touches[0].clientY;
     _drag.ghost.style.top = (y - _drag.offsetY) + 'px';
 
-    /* 드롭 위치 계산 */
-    const items = [..._drag.list.querySelectorAll('.rp-item')];
+    /* sortable 항목만(data-si 있는 것) 기준으로 드롭 위치 계산 */
+    const sortItems = [..._drag.list.querySelectorAll('.rp-item[data-si]')];
     let newIdx = 0;
-    for (let i = 0; i < items.length; i++) {
-      const r = items[i].getBoundingClientRect();
+    for (let i = 0; i < sortItems.length; i++) {
+      const r = sortItems[i].getBoundingClientRect();
       if (y > r.top + r.height / 2) newIdx = i + 1;
     }
-    newIdx = Math.min(newIdx, items.length - 1);
-    /* splice(fromSi,1) 후 splice(toSi,0) 기준으로 보정 */
+    newIdx = Math.min(newIdx, sortItems.length - 1);
+    /* splice(fromSi,1) 후 인덱스 보정 */
     _drag.targetSi = newIdx > _drag.si ? newIdx - 1 : newIdx;
   }, { passive:false });
 
