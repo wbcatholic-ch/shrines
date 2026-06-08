@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B028"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B029"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -601,74 +601,71 @@ function _clearRoute(fresh = false) {
     }, 50);
   }
 }
-/* 출발·경유·도착 통합 렌더 (순서 변경 화살표 포함) */
+/* 출발·경유·도착 카카오 스타일 렌더 */
 function _renderAllRouteItems() {
   const el = document.getElementById('rs-items');
   if (!el) return;
 
-  /* sortable 리스트: [start, ...via(non-pending), end] */
   const sortable = [];
   sortable.push({ role:'start', pt:_rS });
-  _rVia.forEach((v,i) => { if (!v.pending) sortable.push({ role:'via', pt:v, vi:i }); });
+  _rVia.filter(v=>!v.pending).forEach((v,i)=>sortable.push({ role:'via', pt:v, vi:i }));
   sortable.push({ role:'end', pt:_rE });
+  const pending = _rVia.map((v,i)=>({v,i})).filter(x=>x.v.pending);
+  const total = sortable.length + pending.length;
 
-  const pending = _rVia.filter(v => v.pending);
+  const dotColor = r => r==='start'?'#1565c0':r==='end'?'#c0392b':'#FF8C00';
 
-  const makeItem = (item, si) => {
-    const { role, pt } = item;
-    const color = role==='start' ? '#1565c0' : role==='end' ? '#c0392b' : '#FF8C00';
-    const name  = pt?.name || '';
-    const ph    = role==='start' ? '출발지를 선택하세요' : role==='end' ? '도착지를 선택하세요' : '경유지를 선택하세요';
-    const canUp = si > 0, canDown = si < sortable.length - 1;
-    const endStyle = role==='end' ? 'background:#fff8f7;border-color:#f0d0cc;' : '';
-    const tap = role==='start' ? `_openPicker('start')` : role==='end' ? `_openPicker('end')` : `_openViaEdit(${item.vi})`;
-    const xBtn = name ? `<button class="rs-x-btn" onclick="_clearItem('${role}',${item.vi??-1});event.stopPropagation()">×</button>` : '';
-    return `<div class="rs-input-row" style="margin-bottom:6px">
-      <div class="rs-sort-col">
-        <button class="rs-sort-btn" ${canUp?`onclick="_moveRouteItem(${si},-1)"`:'disabled'}>↑</button>
-        <button class="rs-sort-btn" ${canDown?`onclick="_moveRouteItem(${si},1)"`:'disabled'}>↓</button>
+  const makeRow = (item, si, isLast) => {
+    const {role,pt} = item;
+    const c = dotColor(role);
+    const name = pt?.name||'';
+    const ph = role==='start'?'출발지를 선택하세요':role==='end'?'도착지를 선택하세요':'경유지를 선택하세요';
+    const tap = role==='start'?`_openPicker('start')`:role==='end'?`_openPicker('end')`:`_openViaEdit(${item.vi})`;
+    const line = !isLast ? `<div class="rp-line"></div>` : '';
+    const xBtn = name ? `<button class="rp-x" onclick="_clearItem('${role}',${item.vi??-1});event.stopPropagation()">✕</button>` : '';
+    return `<div class="rp-item" data-si="${si}" onclick="${tap}">
+      <div class="rp-left">
+        <div class="rp-dot" style="border-color:${c};${role!=='start'&&role!=='end'?'background:'+c:''}"></div>
+        ${line}
       </div>
-      <div class="rs-box" style="border-left-color:${color};${endStyle}cursor:pointer;flex:1" onclick="${tap}">
-        <div class="rs-dot" style="background:${color}"></div>
-        <span class="rs-lbl${name?' ':' empty'}">${_esc(name||ph)}</span>
-        ${xBtn}
-      </div>
+      <div class="rp-body"><span class="rp-name${name?'':' empty'}">${_esc(name||ph)}</span></div>
+      ${xBtn}
+      <div class="rp-handle" data-si="${si}">⠿</div>
     </div>`;
   };
 
-  let html = sortable.map((item,si) => makeItem(item,si)).join('');
+  let html = sortable.map((item,si)=>makeRow(item,si,si===sortable.length-1&&!pending.length)).join('');
 
-  /* pending 슬롯 (화살표 없음) */
-  html += pending.map((_,pi) => {
-    const gi = _rVia.findIndex((v,j) => v.pending && j >= pi);
-    return `<div class="rs-input-row" style="margin-bottom:6px">
-      <div class="rs-sort-col"><button class="rs-sort-btn" disabled>↑</button><button class="rs-sort-btn" disabled>↓</button></div>
-      <div class="rs-box" style="border-left-color:#FF8C00;border-style:dashed;opacity:.75;cursor:pointer;flex:1" onclick="_openViaEdit(${gi})">
-        <div class="rs-dot" style="background:#FF8C00;opacity:.5"></div>
-        <span class="rs-lbl empty">경유지를 선택하세요</span>
-        <button class="rs-x-btn" onclick="_removeVia(${gi});event.stopPropagation()">×</button>
-      </div>
-    </div>`;
-  }).join('');
+  /* pending 슬롯 */
+  html += pending.map(({v,i},pi)=>`<div class="rp-item" onclick="_openViaEdit(${i})">
+    <div class="rp-left">
+      <div class="rp-dot" style="border-color:#FF8C00;border-style:dashed"></div>
+      ${pi<pending.length-1?'<div class="rp-line"></div>':''}
+    </div>
+    <div class="rp-body"><span class="rp-name empty">경유지를 선택하세요</span></div>
+    <button class="rp-x" onclick="_removeVia(${i});event.stopPropagation()">✕</button>
+    <div class="rp-handle" style="visibility:hidden">⠿</div>
+  </div>`).join('');
 
   el.innerHTML = html;
+  _initDragSort(el);
 }
 
-/* 경로 포인트 순서 이동 */
-function _moveRouteItem(si, dir) {
+/* 순서 이동 (드래그 완료 후) */
+function _moveRouteItem(fromSi, toSi) {
+  if (fromSi === toSi) return;
   const sortable = [];
-  if (_rS) sortable.push({ pt:_rS });
-  _rVia.filter(v=>!v.pending).forEach(v=>sortable.push({ pt:v }));
-  if (_rE) sortable.push({ pt:_rE });
+  if (_rS) sortable.push(_rS);
+  _rVia.filter(v=>!v.pending).forEach(v=>sortable.push(v));
+  if (_rE) sortable.push(_rE);
 
-  const ni = si + dir;
-  if (ni<0 || ni>=sortable.length) return;
-  [sortable[si], sortable[ni]] = [sortable[ni], sortable[si]];
+  const item = sortable.splice(fromSi, 1)[0];
+  sortable.splice(toSi, 0, item);
 
-  const pending = _rVia.filter(v=>v.pending);
-  _rS  = sortable.length > 0 ? sortable[0].pt : null;
-  _rE  = sortable.length > 1 ? sortable[sortable.length-1].pt : null;
-  _rVia = [...sortable.slice(1, sortable.length>1 ? -1 : undefined).map(s=>({...s.pt,pending:false})), ...pending];
+  const pend = _rVia.filter(v=>v.pending);
+  _rS  = sortable.length>0 ? sortable[0] : null;
+  _rE  = sortable.length>1 ? sortable[sortable.length-1] : null;
+  _rVia = [...sortable.slice(1, sortable.length>1?-1:undefined).map(p=>({...p,pending:false})), ...pend];
 
   _restoreRouteMarkers();
   _renderAllRouteItems();
@@ -676,16 +673,61 @@ function _moveRouteItem(si, dir) {
   if (_rS && _rE) _tryRoute();
 }
 
-/* 경로 포인트 삭제 */
+/* 터치 드래그 소트 */
+let _drag = null;
+function _initDragSort(list) {
+  list.addEventListener('touchstart', e => {
+    const handle = e.target.closest('.rp-handle');
+    if (!handle) return;
+    e.preventDefault();
+    const si = +handle.dataset.si;
+    const item = list.querySelectorAll('.rp-item')[si];
+    if (!item) return;
+    const rect = item.getBoundingClientRect();
+    const ghost = item.cloneNode(true);
+    ghost.className = 'rp-drag-ghost';
+    ghost.style.cssText += `top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+    document.body.appendChild(ghost);
+    item.classList.add('rp-dragging');
+    _drag = { si, item, ghost, startY: e.touches[0].clientY, offsetY: e.touches[0].clientY - rect.top, list };
+  }, { passive:false });
+
+  list.addEventListener('touchmove', e => {
+    if (!_drag) return;
+    e.preventDefault();
+    const y = e.touches[0].clientY;
+    _drag.ghost.style.top = (y - _drag.offsetY) + 'px';
+
+    /* 어느 슬롯 위에 있는지 */
+    const items = [..._drag.list.querySelectorAll('.rp-item:not(.rp-dragging)')];
+    let target = _drag.si;
+    items.forEach((it,i) => {
+      const r = it.getBoundingClientRect();
+      if (y > r.top + r.height/2) target = i >= _drag.si ? i+1 : i;
+    });
+    _drag.targetSi = Math.max(0, Math.min(target, _drag.list.querySelectorAll('.rp-item').length - 1));
+  }, { passive:false });
+
+  const endDrag = () => {
+    if (!_drag) return;
+    _drag.ghost.remove();
+    _drag.item.classList.remove('rp-dragging');
+    if (_drag.targetSi !== undefined && _drag.targetSi !== _drag.si)
+      _moveRouteItem(_drag.si, _drag.targetSi);
+    _drag = null;
+  };
+  list.addEventListener('touchend', endDrag);
+  list.addEventListener('touchcancel', endDrag);
+}
+
 function _clearItem(role, vi) {
   if (role==='start') _clearStart();
   else if (role==='end') _clearEnd();
   else if (role==='via' && vi>=0) _removeVia(vi);
 }
-
-/* 하위 호환 — _renderViaList은 _renderAllRouteItems 호출 */
 function _renderViaList() { _renderAllRouteItems(); }
 
+/* 경로 포인트 순서 이동 (드래그 완료 후 호출) */
 /* 출발/도착 마커 재클릭 안내 (실수 방지) */
 function _showMarkerConfirm(role, idx, name) {
   const label = role === 'start' ? '출발지' : role === 'end' ? '도착지' : '경유지';

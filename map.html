@@ -245,6 +245,27 @@ html, body { height: 100%; overflow: hidden; background: #e8e3d9; font-family: '
 }
 .rs-sort-btn:disabled { opacity:.25; cursor:default; pointer-events:none; }
 .rs-sort-btn:not(:disabled):active { background:#e8e8e8; }
+/* ── 카카오 스타일 경로 포인트 ── */
+#rs-items { position:relative; padding:4px 0; }
+.rp-item { display:flex; align-items:stretch; min-height:48px; cursor:pointer; }
+.rp-item:active { background:rgba(0,0,0,.03); border-radius:10px; }
+.rp-left { width:28px; display:flex; flex-direction:column; align-items:center; flex-shrink:0; padding:2px 0; }
+.rp-dot  { width:13px; height:13px; border-radius:50%; border:2.5px solid; flex-shrink:0; background:#fff; }
+.rp-line { flex:1; width:2px; background:#ddd; margin:2px 0; min-height:8px; }
+.rp-body { flex:1; display:flex; align-items:center; padding:8px 4px 8px 6px; min-width:0; }
+.rp-name { flex:1; font-size:15px; font-weight:700; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rp-name.empty { color:#bbb; font-weight:400; }
+.rp-x    { width:28px; height:28px; border:none; background:none; color:#ccc; font-size:18px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.rp-handle { width:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#ccc; font-size:20px; cursor:grab; touch-action:none; padding:0 2px; }
+.rp-handle:active { cursor:grabbing; color:#999; }
+/* 드래그 중 */
+.rp-item.rp-dragging { opacity:.4; }
+.rp-drag-ghost {
+  position:fixed; left:0; right:0; z-index:2000; pointer-events:none;
+  background:#fff; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.2);
+  opacity:.95; display:flex; align-items:stretch;
+}
+
 /* 경로 검색 버튼 */
 .btn-route-search {
   width:100%; height:42px; margin:8px 0 4px;
