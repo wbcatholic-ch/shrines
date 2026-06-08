@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B020"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B021"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -348,7 +348,7 @@ function _regionShowShrines(lat, lng, placeName) {
     if (!_rS || _rS.lat !== lat) {
       _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
     }
-    switchTab('route');
+    _ensureRouteTab();
     const tip = document.getElementById('rs-guide-tip');
     if (tip) { tip.textContent = '도착 성지를 탭하세요'; tip.style.display = ''; }
   });
@@ -642,6 +642,12 @@ function _openViaEdit(i) {
   _openPicker('via-edit');
 }
 
+/* 경로 탭 열기 — 이미 열려있으면 유지 (switchTab은 토글이라 사용 불가) */
+function _ensureRouteTab() {
+  if (_activeTab === 'route') return;
+  switchTab('route');
+}
+
 /* ── 마커 탭 → 자동 출발/도착/경유 할당 ── */
 function _setRouteFromMarker(idx) {
   const s = _shrines[idx];
@@ -666,11 +672,11 @@ function _setRouteFromMarker(idx) {
   /* 지역 컨텍스트: 지역 출발 → 마커를 도착지로 */
   if (!_rS && _routeRegionStart) {
     _setStart({ idx:-1, name:_routeRegionStart.name, lat:_routeRegionStart.lat, lng:_routeRegionStart.lng, isGps:false });
-    _setEnd(pt); _tryRoute(); switchTab('route');
+    _setEnd(pt); _ensureRouteTab(); _tryRoute();
   } else if (!_rS) {
-    _setStart(pt); switchTab('route');
+    _setStart(pt); _ensureRouteTab();
   } else if (!_rE) {
-    _setEnd(pt); _tryRoute(); switchTab('route');
+    _setEnd(pt); _ensureRouteTab(); _tryRoute();
   } else {
     _addVia(pt); _tryRoute();
   }
