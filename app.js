@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B029"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B030"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -698,14 +698,16 @@ function _initDragSort(list) {
     const y = e.touches[0].clientY;
     _drag.ghost.style.top = (y - _drag.offsetY) + 'px';
 
-    /* 어느 슬롯 위에 있는지 */
-    const items = [..._drag.list.querySelectorAll('.rp-item:not(.rp-dragging)')];
-    let target = _drag.si;
-    items.forEach((it,i) => {
-      const r = it.getBoundingClientRect();
-      if (y > r.top + r.height/2) target = i >= _drag.si ? i+1 : i;
-    });
-    _drag.targetSi = Math.max(0, Math.min(target, _drag.list.querySelectorAll('.rp-item').length - 1));
+    /* 드롭 위치 계산 */
+    const items = [..._drag.list.querySelectorAll('.rp-item')];
+    let newIdx = 0;
+    for (let i = 0; i < items.length; i++) {
+      const r = items[i].getBoundingClientRect();
+      if (y > r.top + r.height / 2) newIdx = i + 1;
+    }
+    newIdx = Math.min(newIdx, items.length - 1);
+    /* splice(fromSi,1) 후 splice(toSi,0) 기준으로 보정 */
+    _drag.targetSi = newIdx > _drag.si ? newIdx - 1 : newIdx;
   }, { passive:false });
 
   const endDrag = () => {
