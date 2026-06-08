@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B026"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B028"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -349,10 +349,7 @@ function _regionShowShrines(lat, lng, placeName) {
 
   /* 자동 출발지 설정 (탭 전환 없이 백그라운드로) */
   _rS = { idx:-1, name:placeName, lat, lng, isGps:false };
-  const startLbl = document.getElementById('rs-start-lbl');
-  if (startLbl) { startLbl.textContent = placeName; startLbl.classList.remove('empty'); }
-  const startX = document.getElementById('rs-start-x');
-  if (startX) startX.style.display = '';
+  _renderAllRouteItems();  /* 지역 자동 출발 후 재렌더 */
   window._updateSearchBtn && window._updateSearchBtn();
 
   /* 보라색 마커 클릭 → 길찾기 탭으로 이동, 출발지 확인 */
@@ -455,16 +452,14 @@ let _rPriority = 'RECOMMEND';
 function _setStart(pt) {
   if (_rS?.idx >= 0) _resizeMk(_rS.idx, false);
   _rS = pt;
-  const lbl = _q('#rs-start-lbl'); lbl.textContent = pt.name; lbl.classList.remove('empty');
-  _q('#rs-start-x').style.display = '';
+  _renderAllRouteItems();  /* 출발 설정 후 재렌더 */
   if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('출'));
   window._updateSearchBtn && window._updateSearchBtn();
 }
 function _setEnd(pt) {
   if (_rE?.idx >= 0) _resizeMk(_rE.idx, false);
   _rE = pt;
-  const lbl = _q('#rs-end-lbl'); lbl.textContent = pt.name; lbl.classList.remove('empty');
-  _q('#rs-end-x').style.display = '';
+  _renderAllRouteItems();  /* 도착 설정 후 재렌더 */
   if (pt.idx >= 0 && _markers[pt.idx]) _markers[pt.idx].setImage(_mkrRoute('도'));
   window._updateSearchBtn && window._updateSearchBtn();
 }
@@ -509,8 +504,7 @@ function _removeVia(i) {
 function _clearStart() {
   if (_rS?.idx >= 0) _resizeMk(_rS.idx, false);
   _rS = null;
-  const lbl = _q('#rs-start-lbl'); lbl.textContent = '출발지를 선택하세요'; lbl.classList.add('empty');
-  _q('#rs-start-x').style.display = 'none';
+  _renderAllRouteItems();  /* 출발 해제 후 재렌더 */
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
   _clearRouteTmpMkrs();
   _restoreRouteMarkers();  /* 출발 해제 → 마커 전체 복원 */
@@ -520,8 +514,7 @@ function _clearStart() {
 function _clearEnd() {
   if (_rE?.idx >= 0) _resizeMk(_rE.idx, false);
   _rE = null;
-  const lbl = _q('#rs-end-lbl'); lbl.textContent = '도착지를 선택하세요'; lbl.classList.add('empty');
-  _q('#rs-end-x').style.display = 'none';
+  _renderAllRouteItems();  /* 도착 해제 후 재렌더 */
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
   _clearRouteTmpMkrs();
   _restoreRouteMarkers();  /* 도착 해제 → 마커 전체 복원 */
@@ -591,10 +584,7 @@ function _fitRouteBounds(bound) {
 function _clearRoute(fresh = false) {
   [_rS, ..._rVia, _rE].forEach(p => { if (p?.idx >= 0) _resizeMk(p.idx, false); });
   _rS = null; _rVia = []; _rE = null;
-  _q('#rs-start-lbl').textContent = '출발지를 선택하세요'; _q('#rs-start-lbl').classList.add('empty');
-  _q('#rs-end-lbl').textContent   = '도착지를 선택하세요'; _q('#rs-end-lbl').classList.add('empty');
-  _q('#rs-start-x').style.display = 'none'; _q('#rs-end-x').style.display = 'none';
-  _q('#rs-via-wrap').innerHTML = '';
+  _renderAllRouteItems();  /* 전체 초기화 후 재렌더 */
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
   _clearRouteTmpMkrs();
@@ -611,32 +601,90 @@ function _clearRoute(fresh = false) {
     }, 50);
   }
 }
-function _renderViaList() {
-  const wrap = _q('#rs-via-wrap');
-  wrap.innerHTML = _rVia.map((v, i) => {
-    if (v.pending) {
-      /* 빈 경유 슬롯 — 탭하면 모달 열림, 지도 마커 탭으로도 채울 수 있음 */
-      return `<div class="rs-input-row" style="margin-bottom:4px">
-        <div class="rs-box" style="cursor:pointer;border-style:dashed;border-color:#FF8C00;opacity:.7" onclick="_openViaEdit(${i})">
-          <div class="rs-dot" style="background:#FF8C00;opacity:.5"></div>
-          <span class="rs-lbl empty" style="color:#FF8C00">경유지를 선택하세요</span>
-        </div>
-        <div class="rs-side-col">
-          <button class="rs-x-btn" onclick="_removeVia(${i})" style="font-size:16px;color:#aaa">×</button>
-        </div>
-      </div>`;
-    }
-    return `<div class="rs-input-row" style="margin-bottom:4px">
-      <div class="rs-box" style="cursor:pointer" onclick="_openViaEdit(${i})">
-        <div class="rs-dot" style="background:#FF8C00"></div>
-        <span class="rs-lbl" style="color:#FF8C00;font-weight:800">${_esc(v.name)}</span>
+/* 출발·경유·도착 통합 렌더 (순서 변경 화살표 포함) */
+function _renderAllRouteItems() {
+  const el = document.getElementById('rs-items');
+  if (!el) return;
+
+  /* sortable 리스트: [start, ...via(non-pending), end] */
+  const sortable = [];
+  sortable.push({ role:'start', pt:_rS });
+  _rVia.forEach((v,i) => { if (!v.pending) sortable.push({ role:'via', pt:v, vi:i }); });
+  sortable.push({ role:'end', pt:_rE });
+
+  const pending = _rVia.filter(v => v.pending);
+
+  const makeItem = (item, si) => {
+    const { role, pt } = item;
+    const color = role==='start' ? '#1565c0' : role==='end' ? '#c0392b' : '#FF8C00';
+    const name  = pt?.name || '';
+    const ph    = role==='start' ? '출발지를 선택하세요' : role==='end' ? '도착지를 선택하세요' : '경유지를 선택하세요';
+    const canUp = si > 0, canDown = si < sortable.length - 1;
+    const endStyle = role==='end' ? 'background:#fff8f7;border-color:#f0d0cc;' : '';
+    const tap = role==='start' ? `_openPicker('start')` : role==='end' ? `_openPicker('end')` : `_openViaEdit(${item.vi})`;
+    const xBtn = name ? `<button class="rs-x-btn" onclick="_clearItem('${role}',${item.vi??-1});event.stopPropagation()">×</button>` : '';
+    return `<div class="rs-input-row" style="margin-bottom:6px">
+      <div class="rs-sort-col">
+        <button class="rs-sort-btn" ${canUp?`onclick="_moveRouteItem(${si},-1)"`:'disabled'}>↑</button>
+        <button class="rs-sort-btn" ${canDown?`onclick="_moveRouteItem(${si},1)"`:'disabled'}>↓</button>
       </div>
-      <div class="rs-side-col">
-        <button class="rs-x-btn" onclick="_removeVia(${i})" style="font-size:16px;color:#aaa">×</button>
+      <div class="rs-box" style="border-left-color:${color};${endStyle}cursor:pointer;flex:1" onclick="${tap}">
+        <div class="rs-dot" style="background:${color}"></div>
+        <span class="rs-lbl${name?' ':' empty'}">${_esc(name||ph)}</span>
+        ${xBtn}
+      </div>
+    </div>`;
+  };
+
+  let html = sortable.map((item,si) => makeItem(item,si)).join('');
+
+  /* pending 슬롯 (화살표 없음) */
+  html += pending.map((_,pi) => {
+    const gi = _rVia.findIndex((v,j) => v.pending && j >= pi);
+    return `<div class="rs-input-row" style="margin-bottom:6px">
+      <div class="rs-sort-col"><button class="rs-sort-btn" disabled>↑</button><button class="rs-sort-btn" disabled>↓</button></div>
+      <div class="rs-box" style="border-left-color:#FF8C00;border-style:dashed;opacity:.75;cursor:pointer;flex:1" onclick="_openViaEdit(${gi})">
+        <div class="rs-dot" style="background:#FF8C00;opacity:.5"></div>
+        <span class="rs-lbl empty">경유지를 선택하세요</span>
+        <button class="rs-x-btn" onclick="_removeVia(${gi});event.stopPropagation()">×</button>
       </div>
     </div>`;
   }).join('');
+
+  el.innerHTML = html;
 }
+
+/* 경로 포인트 순서 이동 */
+function _moveRouteItem(si, dir) {
+  const sortable = [];
+  if (_rS) sortable.push({ pt:_rS });
+  _rVia.filter(v=>!v.pending).forEach(v=>sortable.push({ pt:v }));
+  if (_rE) sortable.push({ pt:_rE });
+
+  const ni = si + dir;
+  if (ni<0 || ni>=sortable.length) return;
+  [sortable[si], sortable[ni]] = [sortable[ni], sortable[si]];
+
+  const pending = _rVia.filter(v=>v.pending);
+  _rS  = sortable.length > 0 ? sortable[0].pt : null;
+  _rE  = sortable.length > 1 ? sortable[sortable.length-1].pt : null;
+  _rVia = [...sortable.slice(1, sortable.length>1 ? -1 : undefined).map(s=>({...s.pt,pending:false})), ...pending];
+
+  _restoreRouteMarkers();
+  _renderAllRouteItems();
+  window._updateSearchBtn && window._updateSearchBtn();
+  if (_rS && _rE) _tryRoute();
+}
+
+/* 경로 포인트 삭제 */
+function _clearItem(role, vi) {
+  if (role==='start') _clearStart();
+  else if (role==='end') _clearEnd();
+  else if (role==='via' && vi>=0) _removeVia(vi);
+}
+
+/* 하위 호환 — _renderViaList은 _renderAllRouteItems 호출 */
+function _renderViaList() { _renderAllRouteItems(); }
 
 /* 출발/도착 마커 재클릭 안내 (실수 방지) */
 function _showMarkerConfirm(role, idx, name) {
@@ -836,11 +884,24 @@ function _drawFallbackLines() {
 function _startNavi() {
   if (!_rE) return;
   if (!Kakao.isInitialized()) Kakao.init(KAKAO_KEY);
+
   const via = [];
-  if (_rS && !_rS.isGps) via.push({ name: _rS.name, x: String(_rS.lng), y: String(_rS.lat) });
-  _rVia.forEach(v => via.push({ name: v.name, x: String(v.lng), y: String(v.lat) }));
+  /* 직접 지정 출발지(GPS 아님)는 viaPoints 맨 앞에 삽입 */
+  if (_rS && !_rS.isGps && _rS.lat && _rS.lng) {
+    via.push({ name: _rS.name || '출발지', x: String(_rS.lng), y: String(_rS.lat) });
+  }
+  /* 경유지 — pending이거나 좌표 없는 것 제외 */
+  _rVia.filter(v => !v.pending && v.lat && v.lng).forEach(v => {
+    via.push({ name: v.name || '경유지', x: String(v.lng), y: String(v.lat) });
+  });
+
   try {
-    const params = { name: _rE.name, x: String(_rE.lng), y: String(_rE.lat), coordType: 'wgs84' };
+    const params = {
+      name: _rE.name || '도착지',
+      x: String(_rE.lng),
+      y: String(_rE.lat),
+      coordType: 'wgs84'
+    };
     if (via.length) params.viaPoints = via;
     Kakao.Navi.start(params);
   } catch (e) {
@@ -848,11 +909,18 @@ function _startNavi() {
   }
 }
 
-/* ── 카카오맵 웹 경로 (내비 미설치 fallback) ── */
+/* ── 카카오맵 웹 경로 (내비 미설치 fallback) — 경유지 포함 ── */
 function _openKakaoMapRoute() {
   if (!_rE) return;
-  const url = 'https://map.kakao.com/link/to/' + encodeURIComponent(_rE.name) + ',' + _rE.lat + ',' + _rE.lng;
-  window.open(url, '_blank');
+  /* 출발지 있으면 from/to, 없으면 to만 */
+  if (_rS && _rS.lat) {
+    const from = encodeURIComponent(_rS.name||'출발지') + ',' + _rS.lat + ',' + _rS.lng;
+    const to   = encodeURIComponent(_rE.name||'도착지') + ',' + _rE.lat + ',' + _rE.lng;
+    /* 카카오맵은 경유지 URL 파라미터 미지원 — 도착지만 */
+    window.open('https://map.kakao.com/link/from/' + from + '/to/' + to, '_blank');
+  } else {
+    window.open('https://map.kakao.com/link/to/' + encodeURIComponent(_rE.name||'도착지') + ',' + _rE.lat + ',' + _rE.lng, '_blank');
+  }
 }
 
 /* §9-3 성지 액션 배너 (출발지/도착지/상세) */
@@ -1258,12 +1326,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   };
 
   _q('#rs-myloc').addEventListener('click', _setGpsStart);  /* 현위치 버튼 */
-  _q('#rs-start-x').addEventListener('click', () => { _clearStart(); window._updateSearchBtn && window._updateSearchBtn(); });
-  _q('#rs-end-x').addEventListener('click',   () => { _clearEnd();   window._updateSearchBtn && window._updateSearchBtn(); });
-
-  /* 출발/도착 박스 탭 → picker */
-  _q('#rs-start-lbl').addEventListener('click', () => _openPicker('start'));
-  _q('#rs-end-lbl').addEventListener('click',   () => _openPicker('end'));
+  /* 출발/도착/경유 박스 및 X버튼은 _renderAllRouteItems()가 동적으로 생성 */
   _q('#rs-add-via').addEventListener('click', () => {
     /* 빈 경유 슬롯 추가 + 지도에 마커 전체 표시 (경유 선택하기 위해) */
     _rVia.push({ idx:-1, name:'', lat:null, lng:null, pending:true });
@@ -1289,8 +1352,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   /* 플로팅 스왑 버튼 */
-  /* 인라인 스왑 버튼 (rs-swap-inline) + 레거시 플로팅 스왑 모두 처리 */
-  ['route-float-swap','rs-swap-inline'].forEach(id => {
+  /* 플로팅 스왑 버튼 (route-float-swap) */
+  ['route-float-swap'].forEach(id => {
     const el=document.getElementById(id); if(!el) return;
     el.addEventListener('click', () => {
     const tmpS = _rS, tmpE = _rE;
