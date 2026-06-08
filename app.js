@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B022"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B024"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -148,7 +148,8 @@ function switchTab(tab) {
   if (tip) tip.style.display = isRoute ? '' : 'none';
 
   if (tab === 'nearby') _loadNearby();
-  if (tab === 'list')   { _autoFilterDiocese(); _renderList(''); }
+  if (tab === 'list')   _renderList('');
+  if (tab === 'route')  _restoreRouteMarkers();  /* 길찾기 탭 → 미완성 시 전체 마커 복원 */
 }
 
 function _closeTab() {
@@ -238,22 +239,6 @@ function _matchShrines(s, q) {
     name.includes(t) || addr.includes(t) || dioc.includes(t) ||
     name.replace(/\s/g,'').includes(t.replace(/\s/g,''))
   );
-}
-
-/* 성지찾기 탭 열 때 내 위치 가장 가까운 교구로 자동 필터 */
-function _autoFilterDiocese() {
-  if (!_myLat || !_myLng || !_shrines.length) return;
-  let minD = Infinity, bestDio = '';
-  _shrines.forEach(s => {
-    if (!s.lat || !s.lng) return;
-    const d = Math.hypot(s.lat - _myLat, s.lng - _myLng);
-    if (d < minD) { minD = d; bestDio = s.diocese; }
-  });
-  if (!bestDio || bestDio === _filterDio) return;
-  _filterDio = bestDio;
-  document.querySelectorAll('.filter-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.dio === bestDio);
-  });
 }
 
 function _renderList(kw) {
@@ -493,12 +478,33 @@ function _addVia(pt) {
   }
   _renderViaList();
 }
+/* 경로 미완성 시 마커 복원 — 출/도/경 이미지는 유지, 나머지 전체 표시 */
+function _restoreRouteMarkers() {
+  _showAll();
+  if (_myMk) _myMk.setMap(_routePolyline ? null : _map);
+  if (_rS?.idx >= 0 && _markers[_rS.idx]) {
+    _markers[_rS.idx].setImage(_mkrRoute('출')); _markers[_rS.idx].setZIndex(340);
+  }
+  if (_rE?.idx >= 0 && _markers[_rE.idx]) {
+    _markers[_rE.idx].setImage(_mkrRoute('도')); _markers[_rE.idx].setZIndex(320);
+  }
+  _rVia.filter(v => !v.pending && v.idx >= 0).forEach(v => {
+    if (_markers[v.idx]) { _markers[v.idx].setImage(_mkrRoute('경')); _markers[v.idx].setZIndex(50); }
+  });
+}
+
 function _removeVia(i) {
   const pt = _rVia[i];
   if (pt?.idx >= 0) _resizeMk(pt.idx, false);
   _rVia.splice(i, 1);
-  _rVia.forEach((v, j) => { if (v.idx >= 0 && _markers[v.idx]) _markers[v.idx].setImage(_mkrRoute("경")); });
+  _rVia.forEach(v => { if (v.idx >= 0 && _markers[v.idx]) _markers[v.idx].setImage(_mkrRoute('경')); });
   _renderViaList();
+  if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  _clearRouteTmpMkrs();
+  _restoreRouteMarkers();  /* 경유 제거 → 마커 전체 복원 */
+  _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
+  window._updateSearchBtn && window._updateSearchBtn();
+  if (_rS && _rE) _tryRoute();
 }
 function _clearStart() {
   if (_rS?.idx >= 0) _resizeMk(_rS.idx, false);
@@ -506,6 +512,8 @@ function _clearStart() {
   const lbl = _q('#rs-start-lbl'); lbl.textContent = '출발지를 선택하세요'; lbl.classList.add('empty');
   _q('#rs-start-x').style.display = 'none';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  _clearRouteTmpMkrs();
+  _restoreRouteMarkers();  /* 출발 해제 → 마커 전체 복원 */
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
   window._updateSearchBtn && window._updateSearchBtn();
 }
@@ -515,6 +523,8 @@ function _clearEnd() {
   const lbl = _q('#rs-end-lbl'); lbl.textContent = '도착지를 선택하세요'; lbl.classList.add('empty');
   _q('#rs-end-x').style.display = 'none';
   if (_routePolyline) { _routePolyline.setMap(null); _routePolyline = null; }
+  _clearRouteTmpMkrs();
+  _restoreRouteMarkers();  /* 도착 해제 → 마커 전체 복원 */
   _q('#rs-result').style.display = 'none'; _q('#rs-hint').style.display = '';
   window._updateSearchBtn && window._updateSearchBtn();
 }
@@ -685,11 +695,11 @@ function _setRouteFromMarker(idx) {
   const s = _shrines[idx];
   const pt = { idx, name: s.name, lat: s.lat, lng: s.lng, isGps: false };
 
-  /* 같은 마커 재클릭 → 확인 안내 후 취소 */
+  /* 같은 마커 재클릭 → 확인 (출/도) 또는 즉시 취소 (경유) */
   if (_rS?.idx === idx) { _showMarkerConfirm('start', idx, _rS.name); return; }
   if (_rE?.idx === idx) { _showMarkerConfirm('end',   idx, _rE.name); return; }
   const assignedVia = _rVia.findIndex(v => !v.pending && v.idx === idx);
-  if (assignedVia >= 0) { _removeVia(assignedVia); return; }
+  if (assignedVia >= 0) { _removeVia(assignedVia); return; }  /* 경 마커 재클릭 → 즉시 취소 */
 
   /* 빈 경유 슬롯(pending)이 있으면 채우기 */
   const pendingIdx = _rVia.findIndex(v => v.pending);
