@@ -3,7 +3,7 @@
    §5 탭  §6 내주변  §7 성지찾기  §8 지역검색  §9 길찾기
    §10 인포카드  §11 GPS·스탬프  §12 코스모드  §13 시작 */
 'use strict';
-const APP_BUILD = "B024"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
+const APP_BUILD = "B025"; /* ★ 매 수정마다 +1 — SW 캐시 갱신 트리거 ★ */
 
 /* §0 상수 */
 const KAKAO_KEY      = '07f7989e29fdfb425fff924f36fb3ec0';
@@ -707,7 +707,9 @@ function _setRouteFromMarker(idx) {
     _rVia[pendingIdx] = { ...pt, pending:false };
     if (_markers[idx]) { _markers[idx].setMap(_map); _markers[idx].setImage(_mkrRoute('경')); _markers[idx].setZIndex(50); }
     _renderViaList();
-    if (_rS && _rE) _tryRoute();
+    /* 경유 채워졌으면 경로 재계산 → 마커 정리 */
+    if (_rS && _rE) { _showRouteMarkersOnly(); _tryRoute(); }
+    else _restoreRouteMarkers();
     return;
   }
 
@@ -1261,9 +1263,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   _q('#rs-start-lbl').addEventListener('click', () => _openPicker('start'));
   _q('#rs-end-lbl').addEventListener('click',   () => _openPicker('end'));
   _q('#rs-add-via').addEventListener('click', () => {
-    /* 빈 경유 슬롯 추가 — 클릭해야 모달 열림, 지도 마커 탭으로도 채울 수 있음 */
+    /* 빈 경유 슬롯 추가 + 지도에 마커 전체 표시 (경유 선택하기 위해) */
     _rVia.push({ idx:-1, name:'', lat:null, lng:null, pending:true });
     _renderViaList();
+    _restoreRouteMarkers();  /* 모든 마커 표시 — 경유 선택 가능하게 */
   });
 
   /* 경로 검색 버튼 (수동 트리거) */

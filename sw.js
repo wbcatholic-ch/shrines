@@ -5,7 +5,7 @@
 'use strict';
 
 /* ★ 수정할 때마다 BUILD 번호만 올리면 됩니다 ★ */
-const BUILD = "B024";
+const BUILD = "B025";
 const CACHE_VERSION = 'catholic-pilgrim-V3-' + BUILD;
 
 const SHELL_STATIC = [
