@@ -330,6 +330,15 @@
     }
     window.isMyFaithLifeModalOpen = function(){ try{ return !!(modal && modal.classList.contains('show')); }catch(_e){ return false; } };
     window.closeMyFaithLifeModal = function(){ closeModal(); };
+    /* 나의 신앙생활: 안쪽 선택화면이면 첫화면으로, 아니면 'close'를 돌려준다(중앙 컨트롤러가 모달을 닫음). */
+    window.oaiMyFaithStepBack = function(){
+      try{
+        if(typeof myFaithPendingActive !== 'undefined' && myFaithPendingActive){
+          if(typeof cancelMyFaithSettingsAndReturn === 'function'){ cancelMyFaithSettingsAndReturn(); return 'home'; }
+        }
+      }catch(_e){}
+      return 'close';
+    };
     function normalizeMyFaithExternalUrl(url){
       url = String(url || '').trim();
       if(!url) return '';

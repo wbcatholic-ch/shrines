@@ -91,57 +91,10 @@ html.oai-cover-first-reveal #cover > * {
 })();
 </script>
 <script>
-/* V7-1-COVER-HASH-BACK-EXIT-CHECK: PWA-only hash 기반 뒤로가기 bootstrap. 1단계는 커버 종료 안내문구만 처리한다. */
-(function(){
-  'use strict';
-  if(window.__OAI_BACK_STAGE1_BOOTSTRAP__) return;
-  window.__OAI_BACK_STAGE1_BOOTSTRAP__ = true;
-  window.__OAI_FULL_BACK_CTRL_ACTIVE__ = true;
-  var restoring = false;
-  var guardHash = '#oai-back-guard';
-  function baseHref(){ try{ return location.href.split('#')[0]; }catch(_e){ return location.href; } }
-  function guardHref(){ return baseHref() + guardHash; }
-  function arm(reason, force){
-    try{
-      if(window.OAI_BACK && typeof window.OAI_BACK.arm === 'function') return window.OAI_BACK.arm(reason || 'early', {force:!!force});
-      if(!force && location.hash === guardHash) return;
-      history.replaceState({oai_back_hash_root:1,reason:reason||'early-root'}, '', baseHref());
-      history.pushState({oai_back_hash_guard:1,reason:reason||'early-guard'}, '', guardHref());
-    }catch(_e){}
-  }
-  function recover(reason){
-    try{
-      if(window.OAI_BACK && typeof window.OAI_BACK.handleBack === 'function'){
-        window.OAI_BACK.handleBack(reason || 'early');
-        return;
-      }
-      if(restoring) return;
-      restoring = true;
-      setTimeout(function(){
-        try{ arm((reason||'early') + '-hash-rearm', true); }catch(_e){}
-        restoring = false;
-      }, 30);
-    }catch(_e){ restoring=false; try{ arm((reason||'early') + '-fallback', true); }catch(__e){} }
-  }
-  function onPop(e){
-    try{ if(e && e.preventDefault) e.preventDefault(); if(e && e.stopImmediatePropagation) e.stopImmediatePropagation(); else if(e && e.stopPropagation) e.stopPropagation(); }catch(_e){}
-    recover('early-popstate');
-  }
-  function onHash(e){ recover('early-hashchange'); }
-  function onHardware(e){
-    try{ if(e && e.preventDefault) e.preventDefault(); if(e && e.stopImmediatePropagation) e.stopImmediatePropagation(); else if(e && e.stopPropagation) e.stopPropagation(); }catch(_e){}
-    recover('early-hardware');
-  }
-  window.__oaiArmEarlyCoverBackGuard = arm;
-  window.oaiArmBackBlocker = arm;
-  window.addEventListener('popstate', onPop, true);
-  window.addEventListener('hashchange', onHash, true);
-  document.addEventListener('backbutton', onHardware, true);
-  arm('early-init-hash', true);
-  document.addEventListener('DOMContentLoaded', function(){ arm('early-dom-hash', true); }, {once:true});
-  window.addEventListener('pageshow', function(){ arm('early-pageshow-hash', true); }, true);
-  window.addEventListener('focus', function(){ setTimeout(function(){ arm('early-focus-hash', true); }, 0); }, true);
-})();
+/* 뒤로가기는 new-back-controller.js 한 곳에서만 처리한다.
+   app.js의 성지방문 전용 popstate 리스너가 중앙 컨트롤러와 충돌하지 않도록
+   바인딩 전에 미리 막아 둔다(리스너가 등록되지 않음). */
+window.__OAI_SHRINE_VISIT_POPSTATE_BOUND__ = true;
 </script>
 <script>
 /* 짧은/긴 새로고침 직후 첫 페인트를 아이보리 보호막으로 덮어 화면 흔들림을 숨긴다.
@@ -1005,9 +958,8 @@ window.APP_CONFIG = {
 <script src="js/app-state-guards.js?v=V7-1-COVER-HASH-BACK-EXIT-CHECK"></script>
 
 <script src="js/route-web-guards.js?v=V7-1-COVER-HASH-BACK-EXIT-CHECK"></script>
-<script src="js/prayer-back.js?v=V7-1-COVER-HASH-BACK-EXIT-CHECK"></script>
 
-<script src="js/back-controller.js?v=V7-1-COVER-HASH-BACK-EXIT-CHECK"></script>
+<script src="js/new-back-controller.js?v=V7-1-COVER-HASH-BACK-EXIT-CHECK"></script>
 
 <script src="sw-update.js?v=V7-1-COVER-HASH-BACK-EXIT-CHECK"></script>
 
