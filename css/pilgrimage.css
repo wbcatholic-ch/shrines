@@ -1,0 +1,127 @@
+
+
+.trail-body { background: var(--v4-bg-ivory); }
+
+.trail-panel { position: relative; flex: 1; min-height: 0; display: none; overflow: hidden; }
+
+.trail-panel.on { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+
+#trail-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+#trail-list > .trail-card { flex: 0 0 auto; min-height: 118px; width: 100%; display: block; }
+
+#trail-panel-list { display: none; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+
+#trail-panel-list.on { display: flex !important; }
+
+#trail-panel-map { flex: 1 1 0 !important; min-height: 0 !important; overflow: hidden !important; }
+
+.trail-card {
+  background: linear-gradient(180deg, #fffdfb, #faf5ee);
+  border-radius: 18px;
+  border: 1.25px solid #c8b79f;
+  box-shadow: 0 14px 30px rgba(24,32,51,.06);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .12s;
+  display: block;
+  width: 100%;
+}
+
+.trail-card.app-pressing { transform: translateY(6px) scale(.982); filter: brightness(.96); }
+
+.trail-r1 { display: flex; align-items: center; gap: 7px; padding: 14px 16px 0; }
+
+.trail-card.trail-my-diocese-card {
+  border-color: var(--v4-brown) !important;
+  border-width: 2px !important;
+  box-shadow: 0 8px 18px rgba(183,121,31,.12), 0 2px 8px rgba(31,42,68,.07) !important;
+}
+
+.trail-my-diocese-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #FFF3D8;
+  border: 1.5px solid rgba(183,121,31,.52);
+  color: #7A4F10;
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1.15;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.trail-bdg { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; color: var(--v4-surface-white); white-space: nowrap; flex-shrink: 0; }
+
+.trail-bdg.d { background: #1d4ed8; }
+
+.trail-bdg.l { background: #2a8040; }
+
+.trail-reg { font-size: 12px; color: var(--v4-text-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.trail-r2 { display: flex; align-items: flex-start; gap: 12px; padding: 10px 16px 14px; }
+
+.trail-ico { width: 48px; height: 48px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: inset 0 1px 0 rgba(255,255,255,.75); }
+
+.trail-ico.d { background: #eaf2ff; }
+
+.trail-ico.l { background: #eaf8f4; }
+
+.trail-nm { font-size: 18px; font-weight: 800; color: var(--v4-text-strong); word-break: keep-all; line-height: 1.35; }
+
+.trail-foot { border-top: 1px solid #f0f4fa; padding: 11px 16px; background: rgba(244,238,229,.72); display: flex; align-items: center; justify-content: space-between; }
+
+.trail-url { font-size: 11px; color: #2563eb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+
+.trail-arr { font-size: 14px; color: #94a3b8; flex-shrink: 0; margin-left: 6px; }
+
+.trail-loc-btn { position: absolute; right: 14px; bottom: calc(18px + env(safe-area-inset-bottom, 0)); z-index: 5; background: rgba(255,255,255,.94); border: 1.5px solid #dde3ee; border-radius: 24px; box-shadow: 0 2px 10px rgba(0,0,0,.12); padding: 12px 16px; display: flex; align-items: center; gap: 6px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2563eb; cursor: pointer; }
+
+.trail-sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: linear-gradient(180deg, #fffdf9, #f6efe4); border-radius: 26px 26px 0 0; border-top: 1px solid #eadfce; box-shadow: 0 -16px 32px rgba(0,0,0,.18); padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0)); transform: translateY(110%); transition: transform .25s cubic-bezier(.4,0,.2,1); pointer-events: none; overflow: visible; height: auto; }
+
+.trail-sheet.open { transform: none; pointer-events: all; }
+
+.trail-sh-handle { width: 36px; height: 4px; border-radius: 2px; background: #e8ecf3; margin: 10px auto 0; }
+
+.trail-sh-close { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border-radius: 999px; background: transparent; border: 1.5px solid currentColor; box-shadow: none; cursor: pointer; font-size: 20px; font-weight: 900; line-height: 1; color: #64748b; display: flex; align-items: center; justify-content: center; }
+
+.trail-sh-top { display: flex; align-items: center; justify-content: space-between; padding: 18px 54px 0 18px; gap: 8px; }
+
+.trail-sh-bdg { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; color: var(--v4-surface-white); white-space: nowrap; flex-shrink: 0; }
+
+.trail-sh-bdg.d { background: #1d4ed8; }
+
+.trail-sh-bdg.l { background: #2a8040; }
+
+.trail-sh-region { font-size: 11px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+.trail-sh-body { display: flex; align-items: center; gap: 12px; padding: 12px 18px 14px; cursor: pointer; overflow: visible; }
+
+.trail-sh-ico { width: 48px; height: 48px; flex-shrink: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: inset 0 1px 0 rgba(255,255,255,.75); }
+
+.trail-sh-ico.d { background: #eff6ff; }
+
+.trail-sh-ico.l { background: #f0fdf4; }
+
+.trail-sh-info { flex: 1; min-width: 0; overflow: visible; }
+
+.trail-sh-name { font-size: 18px; font-weight: 800; color: var(--v4-text-strong); line-height: 1.35; word-break: keep-all; margin-bottom: 3px; white-space: normal; }
+
+.trail-sh-sub { font-size: 12px; color: var(--v4-text-muted); }
+
+.trail-sh-foot { border-top: 1px solid #f0f4fa; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(244,238,229,.75); cursor: pointer; }
+
+.trail-sh-url { font-size: 11px; color: #2563eb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+
+.trail-sh-arr { font-size: 15px; color: #94a3b8; flex-shrink: 0; }
+
+.trail-myloc { width: 16px; height: 16px; border-radius: 50%; background: #2255cc; border: 2.5px solid var(--v4-surface-white); box-shadow: 0 0 0 4px rgba(34,85,204,.22); }
+
+#trail-view .trail-body { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; }
+
+#trail-view .trail-tab{height:40px!important;min-height:40px!important;padding:0 12px!important;border-radius:10px!important;font-size:15px!important;line-height:1!important;align-items:center!important;box-sizing:border-box!important;}

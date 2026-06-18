@@ -1,14 +1,18 @@
 {
   "name": "가톨릭길동무",
-  "short_name": "길동무",
-  "description": "성지순례의 모든 여정을 함께합니다",
+  "short_name": "가톨릭길동무",
+  "description": "가톨릭 신앙생활 종합 앱 (성지 167곳 · 성당 1697곳 · 순례길 · 기도문)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#1f2a44",
-  "theme_color": "#1f2a44",
   "orientation": "portrait-primary",
-  "lang": "ko-KR",
+  "background_color": "#f5f0e8",
+  "theme_color": "#f5f0e8",
+  "lang": "ko",
+  "categories": [
+    "religion",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "icon-192x192.png",
@@ -28,5 +32,7 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }

@@ -1,0 +1,148 @@
+
+
+#web-view .web-cat-btn.on[data-cat-color="전체"]    { background: #1a2d5a; }
+
+#web-view .web-cat-btn.on[data-cat-color="중앙기구"] { background: #8b1c2a; }
+
+#web-view .web-cat-btn.on[data-cat-color="신앙 포털"] { background: #1a6b3c; }
+
+#web-view .web-cat-btn.on[data-cat-color="미디어"]  { background: #1a4f8b; }
+
+#web-view .web-cat-btn.on[data-cat-color="뉴스"]    { background: #5a3e8b; }
+
+#web-view .web-cat-btn.on[data-cat-color="출판·교육"] { background: #7a5230; }
+
+#web-view .web-cat-btn.on[data-cat-color="교구"]    { background: #2e5a3a; }
+
+#web-view .web-cat-btn.on .cnt { background: rgba(255,255,255,.22); color: var(--v4-surface-white); }
+
+.web-cat-btn[data-web-cat="⭐ 즐겨찾기"] { order: -1; color: var(--v4-header-navy); border-color: rgba(31,42,68,.35); background: #f4f6fb; }
+
+.web-cat-btn[data-web-cat="⭐ 즐겨찾기"].on { background: var(--v4-header-navy); color: var(--v4-surface-white); border-color: var(--v4-header-navy); box-shadow: 0 4px 14px rgba(31,42,68,.28); }
+
+.web-cat-btn .cnt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#web-view .web-cats { -webkit-overflow-scrolling: touch; touch-action: pan-x; overscroll-behavior-x: contain; }
+
+.web-card {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  background: var(--v4-card-bg-warm) !important;
+  border: 1.25px solid var(--v4-card-border-warm) !important;
+  border-radius: var(--v4-radius-card) !important;
+  box-shadow: var(--v4-card-shadow-soft) !important;
+  cursor: pointer;
+  margin-bottom: var(--v4-card-gap);
+  transition: transform .12s, box-shadow .12s;
+}
+
+.web-card.app-pressing { transform: translateY(6px) scale(.982); box-shadow: none; filter: brightness(.96); }
+
+.web-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px 0 !important; }
+
+.web-card-badge { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; padding: 0 10px; border-radius: 6px !important; color: var(--v4-surface-white); font-size: 12px; font-weight: 800; white-space: nowrap; flex-shrink: 0; }
+
+.web-card-op { display: flex; min-width: 0; flex: 1; justify-content: flex-end; align-items: center; color: #9999bb; font-size: 11.5px; font-weight: 500; line-height: 1.4; overflow: hidden; white-space: nowrap; }
+
+.web-card-body { display: flex; align-items: center; gap: 12px; padding: 9px 14px 10px !important; align-items: center !important; }
+
+.web-card-ico { width: 52px !important; height: 52px !important; flex-shrink: 0; border-radius: 12px !important; display: flex; align-items: center; justify-content: center; font-size: 28px; line-height: 1; background: var(--v4-bg-cream) !important; box-shadow: none !important; }
+
+.web-card.web-priest-card .web-card-ico{background:var(--v4-bg-cream)!important;color:#0F766E!important;font-size:31px!important;font-weight:900!important;font-family:Georgia,"Times New Roman",serif!important;}
+
+.web-card.web-priest-card .web-card-badge{box-shadow:0 2px 6px rgba(31,42,68,.13);}
+
+.web-my-diocese-badge { display: inline-flex; align-items: center; justify-content: center; margin-left: 7px; padding: 4px 11px; border-radius: 999px; background: #FFF3D8; border: 1.5px solid rgba(183,121,31,.52); color: #7A4F10; font-size: 12.8px; font-weight: 950; line-height: 1.15; letter-spacing: -.035em; vertical-align: 2px; white-space: nowrap; }
+
+.web-province-inline { display: none; }
+
+.web-card-name-tail { margin-left: 4px; }
+
+.web-card.web-my-diocese-card { border-color: var(--v4-brown) !important; border-width: 2px !important; box-shadow: 0 8px 18px rgba(183,121,31,.12), 0 2px 8px rgba(31,42,68,.07) !important; }
+
+.web-card-info { flex: 1; min-width: 0; display: block; }
+
+.web-card-name { display: block; color: #1a1a2e; font-size: 17px; font-weight: 800; line-height: 1.38; letter-spacing: -.02em; margin: 0 0 4px; word-break: keep-all; }
+
+.web-card-desc { display: block; color: #555577; font-size: 13px; font-weight: 500; line-height: 1.55; letter-spacing: -.01em; word-break: keep-all; white-space: normal; }
+
+.web-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; background: #faf8f4; border-top: 1px solid #ede8e2; }
+
+.web-card-url { display: block; min-width: 0; flex: 1; color: var(--v4-header-navy); font-size: 12px; font-weight: 500; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.web-card-arrow { flex-shrink: 0; color: #9999bb; font-size: 15px; line-height: 1; }
+
+.web-empty { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 12px; color: #94a3b8; font-size: 13px; text-align: center; }
+
+.web-empty.show { display: flex; }
+
+.web-fav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #ccccdd;
+  font-size: 20px;
+  line-height: 1;
+  transition: color .14s, transform .14s;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.web-fav-btn:active { transform: scale(.88); }
+
+.web-fav-btn.on { color: #f59e0b; }
+
+.web-prov-hd { padding: 14px 16px 6px; display: none; align-items: center; }
+
+.web-prov-badge { display: inline-flex; align-items: center; padding: 4px 14px; border-radius: 999px; background: #2e5a3a; color: var(--v4-surface-white); font-size: 13px; font-weight: 800; letter-spacing: .02em; }
+
+html.ios-device .web-card { border-radius: 12px; margin-bottom: 12px; }
+
+html.ios-device .web-card-top { padding: 9px 11px 0; }
+
+html.ios-device .web-card-body { padding: 8px 12px 9px; gap: 9px; }
+
+html.ios-device .web-card-foot { padding: 7px 11px; }
+
+html.ios-device .web-card-ico { width: 44px; height: 44px; border-radius: 10px; font-size: 23px; }
+
+html.ios-device .web-card-badge { min-height: 21px; padding: 0 8px; }
+
+.web-cat-btn[data-cat-color="전체"].on{background:#0e1a3a!important}
+
+.web-cat-btn[data-cat-color="중앙기구"].on{background:#8B1C2A!important}
+
+.web-cat-btn[data-cat-color="신앙 포털"].on{background:#1A6B3C!important}
+
+.web-cat-btn[data-cat-color="미디어"].on{background:#1A4F8B!important}
+
+.web-cat-btn[data-cat-color="뉴스"].on{background:#5A3E8B!important}
+
+.web-cat-btn[data-cat-color="출판·교육"].on{background:#7A5230!important}
+
+.web-cat-btn[data-cat-color="교구"].on{background:#2e5a3a!important}
+
+html.oai-font-global .web-card-name{font-size:calc(17px * var(--app-inner-font-scale,1))!important}
+
+html.oai-font-global .web-card-desc{font-size:calc(15px * var(--app-inner-font-scale,1))!important}
+

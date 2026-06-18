@@ -1,0 +1,153 @@
+
+
+#pr-external-guide {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: var(--v4-bg-cream);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .08s ease;
+  overflow: hidden;
+}
+#pr-external-guide.show { opacity: 1; }
+.pr-external-guide-card {
+  min-width: min(272px, calc(100vw - 48px));
+  max-width: min(352px, calc(100vw - 48px));
+  border-radius: 22px;
+  background: rgba(255,253,249,.98);
+  border: 1px solid rgba(212,170,106,.22);
+  box-shadow: 0 16px 38px rgba(14,21,53,.13);
+  padding: 22px 20px 21px;
+  text-align: center;
+  color: var(--v4-text-main);
+}
+.pr-external-guide-cross {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--v4-gold);
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(184,150,90,.20);
+  animation: prExternalCrossSpin 2.4s linear infinite !important;
+  animation-delay: 0s !important;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.pr-external-guide-text {
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  word-break: keep-all;
+}
+@keyframes prExternalCrossSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+html.pr-external-guide-active #prayer-bar,
+html.pr-external-guide-active #prayer-tabs,
+html.pr-external-guide-active #prayer-search-bar {
+  visibility: hidden !important;
+}
+html.pr-external-guide-active.oai-stability-veil::before,
+html.pr-external-guide-active.oai-stability-veil::after {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  animation: none !important;
+}
+#pr-external-guide::before,
+#pr-external-guide::after,
+.pr-external-guide-card::before,
+.pr-external-guide-card::after,
+.pr-external-guide-cross::before,
+.pr-external-guide-cross::after {
+  content: none !important;
+  display: none !important;
+}
+
+#route-choice-modal{
+  position:fixed;
+  inset:0;
+  z-index:14000;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  padding:20px 18px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  box-sizing:border-box;
+}
+#route-choice-modal.open{display:flex;}
+.route-choice-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(17,24,39,.36);
+  backdrop-filter:blur(2px);
+}
+.route-choice-panel{
+  position:relative;
+  width:min(360px,calc(100vw - 44px));
+  max-height:calc(100vh - 96px - env(safe-area-inset-bottom, 0px));
+  overflow:auto;
+  background:#fffdf7;
+  border:1.5px solid rgba(183,121,31,.22);
+  border-radius:20px;
+  box-shadow:0 18px 45px rgba(17,24,39,.22);
+  padding:18px 16px 16px;
+  box-sizing:border-box;
+  text-align:left;
+}
+.route-choice-title{
+  font-size:20px;
+  font-weight:900;
+  color:var(--v4-text-main);
+  line-height:1.25;
+  letter-spacing:-.04em;
+  margin-bottom:6px;
+}
+.route-choice-desc{
+  font-size:13px;
+  color:#5f513f;
+  font-weight:700;
+  line-height:1.35;
+  margin-bottom:14px;
+}
+.route-choice-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.route-choice-btn{
+  width:100%;
+  min-height:58px;
+  padding:0 16px;
+  border-radius:14px;
+  border:2px solid transparent;
+  font-size:15px;
+  font-weight:900;
+  font-family:inherit;
+  letter-spacing:-.04em;
+  line-height:1.15;
+  touch-action:manipulation;
+}
+.route-choice-btn.start{background:#FDE8E5;color:#9F1D18;border-color:#D24B43;box-shadow:none;order:1;}
+.route-choice-btn.end{background:#E8F2FF;color:#135BA1;border-color:#2D7DD2;box-shadow:none;order:2;}
+.route-choice-btn.cancel{background:#EAF7F0;color:#167448;border-color:#35A86B;box-shadow:none;order:3;grid-column:1 / -1;}
+.route-choice-btn.keep{background:#EAF7F0;color:#167448;border-color:#35A86B;box-shadow:none;}
+.route-choice-btn.danger{background:#FDE8E5;color:#9F1D18;border-color:#D24B43;box-shadow:none;}
+@media(max-width:420px){
+  .route-choice-panel{width:calc(100vw - 36px);padding:18px 14px 16px;}
+  .route-choice-btn{min-height:56px;font-size:14.5px;}
+}

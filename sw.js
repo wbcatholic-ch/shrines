@@ -1,51 +1,76 @@
-/* 가톨릭길동무 Service Worker
-   BUILD 번호를 올릴 때마다 캐시가 완전히 갱신됩니다.
-   HTML·JS → 항상 네트워크 우선 (즉시 반영)
-   이미지  → 캐시 우선 (오프라인 지원) */
-'use strict';
-
-/* ★ 수정할 때마다 BUILD 번호만 올리면 됩니다 ★ */
-const BUILD = "B032";
-const CACHE_VERSION = 'catholic-pilgrim-V3-' + BUILD;
-
-const SHELL_STATIC = [
-  './icon-192x192.png',
-  './icon-512x512.png',
-  './icon-512x512-maskable.png',
+const CACHE_VERSION = 'catholic-way-V7-1-COVER-HASH-BACK-EXIT-CHECK';
+const ASSET_VERSION = 'V7-1-COVER-HASH-BACK-EXIT-CHECK';
+function withVersion(path) {
+  return path + '?v=' + ASSET_VERSION;
+}
+const APP_SHELL = [
+  './',
+  './index.html',
+  withVersion('./style.css'),
+  withVersion('./css/module-common.css'),
+  withVersion('./css/prayer.css'),
+  withVersion('./css/web.css'),
+  withVersion('./css/pilgrimage.css'),
+  withVersion('./css/overlays.css'),
+  withVersion('./css/cover-modals.css'),
+  withVersion('./css/myfaith.css'),
+  withVersion('./css/my-diocese.css'),
+  withVersion('./js/myfaith.js'),
+  withVersion('./app.js'),
+  withVersion('./js/cover-common.js'),
+  withVersion('./js/touch-ux.js'),
+  withVersion('./js/prayer-ui.js'),
+  withVersion('./js/cover-refresh.js'),
+  withVersion('./js/app-state-guards.js'),
+  withVersion('./web.js'),
+  withVersion('./js/route-web-guards.js'),
+  withVersion('./js/prayer-back.js'),
+  withVersion('./js/back-controller.js'),
+  withVersion('./sw-update.js'),
+  withVersion('./manifest.json'),
+  withVersion('./icon-192x192.png'),
+  withVersion('./icon-512x512.png'),
+  withVersion('./icon-512x512-maskable.png'),
 ];
 
-/* ── 설치: 정적 자산만 선캐시 (JS/HTML은 네트워크 우선이라 선캐시 불필요) ── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
-      .then((cache) => Promise.all(
-        SHELL_STATIC.map((url) => cache.add(url).catch(() => null))
-      ))
-      .then(() => self.skipWaiting())   /* 즉시 활성화 */
+      .then((cache) => Promise.all(APP_SHELL.map((url) => cache.add(url).catch(() => null))))
+      .then(() => self.skipWaiting())
   );
 });
 
-/* ── 활성화: 구버전 캐시 전부 삭제 ── */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(
-        keys.map((key) => key === CACHE_VERSION ? null : caches.delete(key))
-      ))
-      .then(() => self.clients.claim())  /* 즉시 모든 탭에 적용 */
+      .then((keys) => Promise.all(keys.map((key) => key === CACHE_VERSION ? null : caches.delete(key))))
+      .then(() => self.clients.claim())
   );
 });
 
-/* ── 전략 ── */
+function sameOrigin(request) {
+  try { return new URL(request.url).origin === self.location.origin; } catch (e) { return false; }
+}
+function isHtmlRequest(request) {
+  return request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html');
+}
+function isVersionedAsset(request) {
+  try {
+    const url = new URL(request.url);
+    return url.searchParams.has('v') ||
+      /parishes-[a-z-]+\.js|prayer-data\.js|prayer\.js|retreats\.js|shrines\.js|diocese\.html|diocese\.css|qa-firebase\.html|app\.js|style\.css|module-common\.css|prayer\.css|web\.css|pilgrimage\.css|overlays\.css|cover-modals\.css|myfaith\.css|my-diocese\.css|web\.js|touch-ux\.js|prayer-ui\.js|cover-refresh\.js|app-state-guards\.js|route-web-guards\.js|prayer-back\.js|back-controller\.js|sw-update\.js/.test(url.pathname);
+  } catch (e) { return false; }
+}
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_VERSION);
   try {
-    const fresh = await fetch(request, { cache: 'no-store' });
+    const fresh = await fetch(request, { cache: 'no-cache' });
     if (fresh && fresh.ok) cache.put(request, fresh.clone()).catch(() => null);
     return fresh;
   } catch (e) {
     const cached = await cache.match(request);
-    return cached || new Response('Offline', { status: 503 });
+    return cached || cache.match('./index.html');
   }
 }
 async function cacheFirst(request) {
@@ -60,24 +85,30 @@ async function cacheFirst(request) {
     return new Response('Offline', { status: 503 });
   }
 }
-
-function sameOrigin(request) {
-  try { return new URL(request.url).origin === self.location.origin; }
-  catch (e) { return false; }
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_VERSION);
+  const cached = await cache.match(request);
+  const freshPromise = fetch(request)
+    .then((fresh) => {
+      if (fresh && fresh.ok) cache.put(request, fresh.clone()).catch(() => null);
+      return fresh;
+    })
+    .catch(() => null);
+  if (cached) return cached;
+  const fresh = await freshPromise;
+  return fresh || new Response('Offline', { status: 503 });
 }
-function isStaticAsset(request) {
-  return /\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf)(\?|$)/.test(request.url);
-}
-
-/* ── fetch 인터셉트 ── */
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
-  if (!sameOrigin(request)) return;     /* 외부 리소스(카카오맵 SDK 등) 제외 */
-
-  if (isStaticAsset(request)) {
-    event.respondWith(cacheFirst(request));    /* 이미지·폰트: 캐시 우선 */
-  } else {
-    event.respondWith(networkFirst(request)); /* HTML·JS·JSON: 항상 네트워크 우선 */
+  if (!sameOrigin(request)) return;
+  if (isHtmlRequest(request)) {
+    event.respondWith(networkFirst(request));
+    return;
   }
+  if (isVersionedAsset(request)) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+  event.respondWith(staleWhileRevalidate(request));
 });
