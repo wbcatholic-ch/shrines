@@ -31,6 +31,35 @@
   function removeOpen(id){ var v = byId(id); if (v) v.classList.remove('open'); }
   function hideShow(id){ var v = byId(id); if (v){ v.classList.remove('show'); v.setAttribute('aria-hidden','true'); } }
 
+  /* ── 디버그 HUD (화면 좌하단에 버전 + 뒤로가기 결정 표시) ─────────────
+   * 문제 진단이 끝나면 OAI_BACK_DEBUG 를 false 로 바꾸면 사라진다. */
+  var VERSION = 'V7-5-DEBUG-HUD';
+  var OAI_BACK_DEBUG = true;
+  function snapshot(){
+    var map = [['미사','missa-view','open'],['기도목록','prayer-view','open'],['기도본문','prayer-detail','show'],
+      ['교구','diocese-view','open'],['웹','web-view','open'],['순례길','trail-view','open'],['문의','qna-view','open'],
+      ['빠른배너','mass-quick-modal','show'],['메뉴','cover-menu-modal','show'],['나의신앙','my-diocese-modal','show'],
+      ['주요기능','guide-manual-modal','show'],['카드','info-card','open'],['검색','srch-modal','open'],['길찾기','sheet-route','open']];
+    var s = [];
+    for (var i=0;i<map.length;i++){ if (hasCls(map[i][1], map[i][2])) s.push(map[i][0]); }
+    try{ if (document.documentElement.classList.contains('app-active')) s.push('지도'); }catch(_e){}
+    if (faithPortalActive && faithPortalActive()) s.push('외부iframe');
+    s.push(coverVisible() ? '커버✓' : '커버✗');
+    return s.join(',') || '(없음)';
+  }
+  function dbg(action){
+    if (!OAI_BACK_DEBUG) return;
+    try{
+      var el = byId('__oai_back_hud');
+      if (!el){
+        el = document.createElement('div'); el.id = '__oai_back_hud';
+        el.style.cssText = 'position:fixed;left:5px;bottom:5px;z-index:2147483647;background:rgba(0,0,0,.85);color:#7CFC9A;font:700 11px/1.4 monospace;padding:5px 8px;border-radius:8px;pointer-events:none;max-width:88vw;white-space:pre-wrap;word-break:break-all;';
+        document.body.appendChild(el);
+      }
+      el.textContent = '뒤로 ' + VERSION + '\n열림: ' + snapshot() + '\n결정: ' + action;
+    }catch(_e){}
+  }
+
   /* ── 단일 history 트랩 ────────────────────────────────────────────── */
   function isArmed(){ try{ return !!(history.state && history.state[GUARD]); }catch(_e){ return false; } }
   function arm(){
@@ -192,30 +221,30 @@
   var toastAt = 0;
   function onBack(){
     var t = now();
-    if (t - lastHandled < DEBOUNCE_MS){ arm(); return; }  // 일반 중복 popstate 흡수
+    if (t - lastHandled < DEBOUNCE_MS){ arm(); dbg('중복흡수(디바운스)'); return; }  // 일반 중복 popstate 흡수
     lastHandled = t;
     arm();                                                // ★ 트랩 즉시 복구(히스토리 소진 종료 차단)
 
     var handled = false;
     try{ handled = step(); }catch(e){ console.warn('[가톨릭길동무]', e); }
-    if (handled){ toastAt = 0; arm(); return; }           // 맨 위 한 겹 닫음
+    if (handled){ toastAt = 0; arm(); dbg('한겹 닫음'); return; }   // 맨 위 한 겹 닫음
 
     /* step 이 닫을 게 없다고 판단 */
     if (!safeToExit()){
       /* ② 커버가 아니거나 외부 iframe 이 살아있음 → 절대 종료 금지, 커버로 정리 */
       toastAt = 0;
-      if (faithPortalActive() && fn('closeMissa')) callFn('closeMissa');  // 외부사이트 정리(프레임 교체→history 정리)
-      else if (fn('goToCover')) callFn('goToCover');
+      if (faithPortalActive() && fn('closeMissa')){ callFn('closeMissa'); dbg('외부iframe 정리(closeMissa)'); }  // 외부사이트 정리
+      else { callFn('goToCover'); dbg('커버로 강제(safe아님)'); }
       arm();
       return;
     }
 
     /* ③ 진짜 커버 바닥 — Predictive Back 중복은 종료문구 가드로 흡수 */
-    if (toastAt && (t - toastAt) < EXIT_GUARD_MS){ arm(); return; }
+    if (toastAt && (t - toastAt) < EXIT_GUARD_MS){ arm(); dbg('종료가드(중복흡수)'); return; }
 
     var exited = coverBack();
-    if (exited){ toastAt = 0; }                            // 종료됨 → 트랩 재설치 안 함
-    else { toastAt = t; arm(); }                           // 토스트만 떴음 → 가드 시작 + 재설치
+    if (exited){ toastAt = 0; dbg('★ 앱 종료'); }            // 종료됨 → 트랩 재설치 안 함
+    else { toastAt = t; arm(); dbg('종료문구 표시'); }        // 토스트만 떴음 → 가드 시작 + 재설치
   }
 
   /* ── 이벤트 ──────────────────────────────────────────────────────── */
@@ -250,7 +279,8 @@
   window._armMassQuickHistoryTrap    = function(){ arm(); };
 
   /* ── 초기화: 첫 트랩 설치 ────────────────────────────────────────── */
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm, {once:true});
-  else arm();
-  window.addEventListener('load', arm, {once:true});
+  function boot(){ arm(); dbg('로드됨'); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
+  else boot();
+  window.addEventListener('load', function(){ arm(); dbg('로드됨'); }, {once:true});
 })();
