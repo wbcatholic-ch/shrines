@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'catholic-way-V7-6-SELF-EXIT';
-const ASSET_VERSION = 'V7-6-SELF-EXIT';
+const CACHE_VERSION = 'catholic-way-V7-7-DISARM-LOG';
+const ASSET_VERSION = 'V7-7-DISARM-LOG';
 function withVersion(path) {
   return path + '?v=' + ASSET_VERSION;
 }

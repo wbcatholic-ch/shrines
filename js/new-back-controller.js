@@ -33,7 +33,7 @@
 
   /* ── 디버그 HUD (화면 좌하단에 버전 + 뒤로가기 결정 표시) ─────────────
    * 문제 진단이 끝나면 OAI_BACK_DEBUG 를 false 로 바꾸면 사라진다. */
-  var VERSION = 'V7-6-SELF-EXIT';
+  var VERSION = 'V7-7-DISARM-LOG';
   var OAI_BACK_DEBUG = true;
   function snapshot(){
     var map = [['미사','missa-view','open'],['기도목록','prayer-view','open'],['기도본문','prayer-detail','show'],
@@ -47,16 +47,29 @@
     s.push(coverVisible() ? '커버✓' : '커버✗');
     return s.join(',') || '(없음)';
   }
+  function logEvt(s){
+    try{
+      var a = JSON.parse(localStorage.getItem('oai_back_log') || '[]');
+      var d = new Date(); var hh = ('0'+d.getHours()).slice(-2), mm=('0'+d.getMinutes()).slice(-2), ss=('0'+d.getSeconds()).slice(-2);
+      a.push(hh+':'+mm+':'+ss+' '+s);
+      while (a.length > 8) a.shift();
+      localStorage.setItem('oai_back_log', JSON.stringify(a));
+    }catch(_e){}
+  }
+  function prevLog(){
+    try{ var a = JSON.parse(localStorage.getItem('oai_back_log') || '[]'); return a.join('\n'); }catch(_e){ return ''; }
+  }
   function dbg(action){
+    logEvt(action);
     if (!OAI_BACK_DEBUG) return;
     try{
       var el = byId('__oai_back_hud');
       if (!el){
         el = document.createElement('div'); el.id = '__oai_back_hud';
-        el.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:2147483647;background:rgba(0,0,0,.6);color:#9ad;font:600 9px/1.3 monospace;padding:2px 5px;border-radius:5px;pointer-events:none;max-width:70vw;white-space:pre-wrap;word-break:break-all;opacity:.7;';
+        el.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:2147483647;background:rgba(0,0,0,.6);color:#9ad;font:600 9px/1.3 monospace;padding:2px 5px;border-radius:5px;pointer-events:none;max-width:78vw;white-space:pre-wrap;word-break:break-all;opacity:.72;';
         document.body.appendChild(el);
       }
-      el.textContent = '뒤로 ' + VERSION + '\n열림: ' + snapshot() + '\n결정: ' + action;
+      el.textContent = '뒤로 ' + VERSION + '  열림:' + snapshot() + '\n결정: ' + action + '\n[직전기록]\n' + prevLog();
     }catch(_e){}
   }
 
@@ -272,7 +285,7 @@
   window.OAI_BACK = {
     arm: arm,
     handleBack: onBack,
-    enterCover: function(){ arm(); }
+    enterCover: function(){ disarmExit(); arm(); }
   };
   window.oaiArmBackBlocker           = function(){ arm(); return true; };
   window.__oaiArmEarlyCoverBackGuard = window.oaiArmBackBlocker;
