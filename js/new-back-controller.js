@@ -33,7 +33,7 @@
 
   /* ── 디버그 HUD (화면 좌하단에 버전 + 뒤로가기 결정 표시) ─────────────
    * 문제 진단이 끝나면 OAI_BACK_DEBUG 를 false 로 바꾸면 사라진다. */
-  var VERSION = 'V7-5-DEBUG-HUD';
+  var VERSION = 'V7-6-SELF-EXIT';
   var OAI_BACK_DEBUG = true;
   function snapshot(){
     var map = [['미사','missa-view','open'],['기도목록','prayer-view','open'],['기도본문','prayer-detail','show'],
@@ -53,7 +53,7 @@
       var el = byId('__oai_back_hud');
       if (!el){
         el = document.createElement('div'); el.id = '__oai_back_hud';
-        el.style.cssText = 'position:fixed;left:5px;bottom:5px;z-index:2147483647;background:rgba(0,0,0,.85);color:#7CFC9A;font:700 11px/1.4 monospace;padding:5px 8px;border-radius:8px;pointer-events:none;max-width:88vw;white-space:pre-wrap;word-break:break-all;';
+        el.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:2147483647;background:rgba(0,0,0,.6);color:#9ad;font:600 9px/1.3 monospace;padding:2px 5px;border-radius:5px;pointer-events:none;max-width:70vw;white-space:pre-wrap;word-break:break-all;opacity:.7;';
         document.body.appendChild(el);
       }
       el.textContent = '뒤로 ' + VERSION + '\n열림: ' + snapshot() + '\n결정: ' + action;
@@ -179,19 +179,14 @@
     return false;
   }
 
-  /* ── 커버 바닥 처리: 앱 자체 종료 토스트/종료에 위임 ───────────────
-   *  _showBackToast(): 1회=토스트(false 반환) / 2회=종료(doExit, true 반환).
-   *  기도문 first-toast·force-toast·hard-exit 플래그까지 이 함수가 다 처리한다.
-   */
-  var fbExitReady = false, fbTimer = 0;
-  function fallbackCoverBack(){           // _showBackToast 부재 시에만 사용
-    if (fbExitReady){
-      fbExitReady = false; try{ clearTimeout(fbTimer); }catch(_e){}
-      var b = byId('_bt'); if (b && b.parentNode) b.parentNode.removeChild(b);
-      if (fn('attemptAppExit')) callFn('attemptAppExit'); else { try{ history.back(); }catch(_e){} }
-      return true;
-    }
-    fbExitReady = true;
+  /* ── 커버 바닥 처리: 앱 종료-상태 시스템에 의존하지 않는 자체 카운터 ───
+   *  1회 = 종료 안내문구, 2회(가드 후~유효시간 내) = 앱 종료.
+   *  _showBackToast/_exitReady/armed 플래그를 일절 쓰지 않아 잔재로 인한 오종료가 없다. */
+  var EXIT_DUP_GUARD_MS = 1000;   // 같은 누름의 중복(Predictive Back) 흡수: 이 시간 내 재입력은 무시
+  var EXIT_TOAST_MS     = 2500;   // 종료 안내문구 유효시간
+  var exitArmed = false, exitArmedAt = 0, exitTimer = 0;
+
+  function showExitToast(){
     try{
       var old = byId('_bt'); if (old && old.parentNode) old.parentNode.removeChild(old);
       var t = document.createElement('div'); t.id = '_bt';
@@ -199,52 +194,63 @@
       t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(14,21,53,.94);color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:800;z-index:99999;white-space:nowrap;pointer-events:none;box-shadow:0 14px 36px rgba(0,0,0,.32);';
       document.body.appendChild(t);
     }catch(_e){}
-    fbTimer = setTimeout(function(){ fbExitReady = false; var b = byId('_bt'); if (b && b.parentNode) b.parentNode.removeChild(b); }, 2500);
-    return false;
   }
+  function clearExitToast(){ var b = byId('_bt'); if (b && b.parentNode) b.parentNode.removeChild(b); }
+  function disarmExit(){ exitArmed = false; try{ clearTimeout(exitTimer); }catch(_e){} clearExitToast(); }
+
+  /* 반환: 'exit' | 'toast' | 'dup' */
   function coverBack(){
-    if (fn('_showBackToast')){
-      var exited = false;
-      try{ exited = (window._showBackToast() === true); }catch(e){ console.warn('[가톨릭길동무]', e); }
-      return exited;   // true=종료됨(트랩 재설치 안 함)
+    var t = now();
+    if (exitArmed){
+      var dt = t - exitArmedAt;
+      if (dt < EXIT_DUP_GUARD_MS) return 'dup';        // 같은 누름 중복 → 무시(종료 안 함)
+      if (dt < EXIT_TOAST_MS){                          // 진짜 두 번째 누름 → 종료
+        disarmExit();
+        if (fn('attemptAppExit')) callFn('attemptAppExit');
+        else { try{ history.back(); }catch(_e){} }
+        return 'exit';
+      }
+      // 유효시간 지남 → 처음부터 다시
     }
-    return fallbackCoverBack();
+    exitArmed = true; exitArmedAt = t;
+    showExitToast();
+    try{ clearTimeout(exitTimer); }catch(_e){}
+    exitTimer = setTimeout(disarmExit, EXIT_TOAST_MS);
+    return 'toast';
   }
 
   /* ── 뒤로가기 진입점 ─────────────────────────────────────────────────
    * 대원칙(이 함수가 보장):
-   *   ① 카테고리 안에서는 절대 앱을 종료하지 않는다.
+   *   ① 카테고리 안에서는 절대 앱을 종료하지 않는다. (종료는 safeToExit + 2회 누름일 때만)
    *   ② 닫을 게 없는데 커버가 아니면 → 무조건 커버로 보낸다.
-   *   ③ 커버가 확실하고 외부 iframe 도 죽었을 때만 → 종료문구 → 종료.
-   * 그리고 매 호출 맨 앞에서 트랩을 즉시 복구해 "뒤로가기로 페이지를 벗어나" 종료되는 일을 막는다. */
+   *   ③ 커버가 확실하고 외부 iframe 도 죽었을 때만 → 종료문구 → (2회) 앱 종료.
+   * 재무장(arm)은 "처리 끝에서만" 한다 — 종료 분기에서는 재무장하지 않아야 history.back() 종료가 먹는다. */
   var lastHandled = 0;
-  var toastAt = 0;
   function onBack(){
+    if (window._appExiting) return;                        // 종료 진행 중이면 간섭 금지
     var t = now();
-    if (t - lastHandled < DEBOUNCE_MS){ arm(); dbg('중복흡수(디바운스)'); return; }  // 일반 중복 popstate 흡수
+    if (t - lastHandled < DEBOUNCE_MS){ arm(); dbg('중복흡수(디바운스)'); return; }
     lastHandled = t;
-    arm();                                                // ★ 트랩 즉시 복구(히스토리 소진 종료 차단)
 
     var handled = false;
     try{ handled = step(); }catch(e){ console.warn('[가톨릭길동무]', e); }
-    if (handled){ toastAt = 0; arm(); dbg('한겹 닫음'); return; }   // 맨 위 한 겹 닫음
+    if (handled){ disarmExit(); arm(); dbg('한겹 닫음'); return; }   // 맨 위 한 겹 닫음 → 커버 벗어남
 
     /* step 이 닫을 게 없다고 판단 */
     if (!safeToExit()){
       /* ② 커버가 아니거나 외부 iframe 이 살아있음 → 절대 종료 금지, 커버로 정리 */
-      toastAt = 0;
-      if (faithPortalActive() && fn('closeMissa')){ callFn('closeMissa'); dbg('외부iframe 정리(closeMissa)'); }  // 외부사이트 정리
+      disarmExit();
+      if (faithPortalActive() && fn('closeMissa')){ callFn('closeMissa'); dbg('외부iframe 정리(closeMissa)'); }
       else { callFn('goToCover'); dbg('커버로 강제(safe아님)'); }
       arm();
       return;
     }
 
-    /* ③ 진짜 커버 바닥 — Predictive Back 중복은 종료문구 가드로 흡수 */
-    if (toastAt && (t - toastAt) < EXIT_GUARD_MS){ arm(); dbg('종료가드(중복흡수)'); return; }
-
-    var exited = coverBack();
-    if (exited){ toastAt = 0; dbg('★ 앱 종료'); }            // 종료됨 → 트랩 재설치 안 함
-    else { toastAt = t; arm(); dbg('종료문구 표시'); }        // 토스트만 떴음 → 가드 시작 + 재설치
+    /* ③ 진짜 커버 바닥 */
+    var r = coverBack();
+    if (r === 'exit'){ dbg('★ 앱 종료'); return; }          // 종료 → 재무장 금지(트랩 비워 history.back 종료 허용)
+    arm();                                                  // toast/dup → 트랩 유지
+    dbg(r === 'dup' ? '종료가드(중복흡수)' : '종료문구 표시');
   }
 
   /* ── 이벤트 ──────────────────────────────────────────────────────── */

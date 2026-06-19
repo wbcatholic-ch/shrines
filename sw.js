@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'catholic-way-V7-5-DEBUG-HUD';
-const ASSET_VERSION = 'V7-5-DEBUG-HUD';
+const CACHE_VERSION = 'catholic-way-V7-6-SELF-EXIT';
+const ASSET_VERSION = 'V7-6-SELF-EXIT';
 function withVersion(path) {
   return path + '?v=' + ASSET_VERSION;
 }

@@ -51,7 +51,7 @@ html.oai-cover-first-reveal #cover > * {
     document.documentElement.classList.add('ios-device');
   }
   // iPhone/iPad에서만 iOS 전용 화면 보정을 적용한다.
-  // V7-5-DEBUG-HUD: 키보드가 올라온 동안에는 화면 등급을 다시 바꾸지 않는다.
+  // V7-6-SELF-EXIT: 키보드가 올라온 동안에는 화면 등급을 다시 바꾸지 않는다.
   function applyAndroidScreenClass(){
     var root = document.documentElement;
     if(!root || !root.classList) return;
@@ -502,38 +502,38 @@ window.APP_CONFIG = {
 <meta name="application-name" content="가톨릭길동무">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f5f0e8">
-<link rel="manifest" href="manifest.json?v=V7-5-DEBUG-HUD">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-512x512.png?v=V7-5-DEBUG-HUD">
-<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icon-512x512.png?v=V7-5-DEBUG-HUD">
+<link rel="manifest" href="manifest.json?v=V7-6-SELF-EXIT">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-512x512.png?v=V7-6-SELF-EXIT">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icon-512x512.png?v=V7-6-SELF-EXIT">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="가톨릭길동무 - 가톨릭 신앙생활 종합 앱">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="가톨릭길동무">
 <meta property="og:title" content="가톨릭길동무">
 <meta property="og:description" content="성지 · 성당 · 기도문 · 순례길 · 가톨릭 웹사이트 안내">
-<meta property="og:image" content="icon-512x512.png?v=V7-5-DEBUG-HUD">
+<meta property="og:image" content="icon-512x512.png?v=V7-6-SELF-EXIT">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="가톨릭길동무">
 <meta name="twitter:description" content="성지 · 성당 · 기도문 · 순례길 · 가톨릭 웹사이트 안내">
-<meta name="twitter:image" content="icon-512x512.png?v=V7-5-DEBUG-HUD">
+<meta name="twitter:image" content="icon-512x512.png?v=V7-6-SELF-EXIT">
 <title>가톨릭길동무</title>
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png?v=V7-5-DEBUG-HUD">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png?v=V7-6-SELF-EXIT">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style id="oai-initial-bg">html,body{margin:0;width:100%;height:100%;min-height:100%;background:#f5f0e8;overflow:hidden;color-scheme:light;}#cover{background:#f5f0e8;min-height:100%;}#app{background:#f8f6f2;display:none;}</style>
-<link rel="stylesheet" href="style.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/module-common.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/prayer.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/web.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/pilgrimage.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/overlays.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/cover-modals.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/myfaith.css?v=V7-5-DEBUG-HUD">
-<link rel="stylesheet" href="css/my-diocese.css?v=V7-5-DEBUG-HUD">
+<link rel="stylesheet" href="style.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/module-common.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/prayer.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/web.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/pilgrimage.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/overlays.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/cover-modals.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/myfaith.css?v=V7-6-SELF-EXIT">
+<link rel="stylesheet" href="css/my-diocese.css?v=V7-6-SELF-EXIT">
 </head>
 <body>
 <div id="missa-view" role="dialog" aria-modal="true" aria-label="매일미사">
@@ -704,7 +704,7 @@ window.APP_CONFIG = {
 <div id="cover-bottom-note" aria-label="앱 안내문구">
   본 앱은 가톨릭 신자들의 신앙생활을 돕기 위해 만든 비공식 개인 앱입니다.<br>
   정보는 CBCK, 굿뉴스 및 각 교구 홈페이지를 참고했습니다.<br>
-  <span id="cover-version-label">V7-5-DEBUG-HUD</span>
+  <span id="cover-version-label">V7-6-SELF-EXIT</span>
 </div>
 
 <div id="my-diocese-modal" class="my-diocese-modal" aria-hidden="true">
@@ -737,30 +737,30 @@ window.APP_CONFIG = {
         <div class="ios-safari-step">
           <b>1</b>
           <span>카카오톡 하단 버튼 4개 중 <strong>오른쪽 끝 버튼</strong>을 누르세요.</span>
-          <img data-src="ios-install-step1-kakao-bottom-buttons.png?v=V7-5-DEBUG-HUD" alt="카카오톡 오른쪽 아래 버튼 모양" width="945" height="248" loading="lazy" decoding="async">
+          <img data-src="ios-install-step1-kakao-bottom-buttons.png?v=V7-6-SELF-EXIT" alt="카카오톡 오른쪽 아래 버튼 모양" width="945" height="248" loading="lazy" decoding="async">
         </div>
         <div class="ios-safari-step">
           <b>2</b>
           <span>공유 화면에서 <strong>Safari로 열기</strong>를 누르세요.</span>
-          <img data-src="ios-install-step2-safari-open.png?v=V7-5-DEBUG-HUD" alt="Safari로 열기 버튼" width="880" height="755" loading="lazy" decoding="async" fetchpriority="low">
+          <img data-src="ios-install-step2-safari-open.png?v=V7-6-SELF-EXIT" alt="Safari로 열기 버튼" width="880" height="755" loading="lazy" decoding="async" fetchpriority="low">
         </div>
         <div class="ios-safari-step">
           <b>3</b>
           <span>Safari로 열린 뒤, 화면 <strong>오른쪽 아래 ··· 버튼</strong>을 누르세요.</span>
           <div class="ios-safari-shot ios-safari-shot-more">
-            <img data-src="KakaoTalk_20260514_134255658_04.jpg?v=V7-5-DEBUG-HUD" alt="Safari 오른쪽 아래 더보기 버튼" width="960" height="307" loading="lazy" decoding="async">
+            <img data-src="KakaoTalk_20260514_134255658_04.jpg?v=V7-6-SELF-EXIT" alt="Safari 오른쪽 아래 더보기 버튼" width="960" height="307" loading="lazy" decoding="async">
             <i class="ios-gold-highlight" aria-hidden="true"></i>
           </div>
         </div>
         <div class="ios-safari-step">
           <b>4</b>
           <span>열린 메뉴에서 <strong>공유</strong>를 누르세요.</span>
-          <img data-src="ios-install-step3-share-menu.png?v=V7-5-DEBUG-HUD" alt="Safari 공유 버튼" width="750" height="580" loading="lazy" decoding="async" fetchpriority="low">
+          <img data-src="ios-install-step3-share-menu.png?v=V7-6-SELF-EXIT" alt="Safari 공유 버튼" width="750" height="580" loading="lazy" decoding="async" fetchpriority="low">
         </div>
         <div class="ios-safari-step">
           <b>5</b>
           <span>목록을 아래로 내려 <strong>홈 화면에 추가</strong>를 누르세요.</span>
-          <img data-src="ios-install-step4-home-screen.png?v=V7-5-DEBUG-HUD" alt="홈 화면에 추가 버튼" width="865" height="750" loading="lazy" decoding="async" fetchpriority="low">
+          <img data-src="ios-install-step4-home-screen.png?v=V7-6-SELF-EXIT" alt="홈 화면에 추가 버튼" width="865" height="750" loading="lazy" decoding="async" fetchpriority="low">
         </div>
       </div>
     </div>
@@ -860,7 +860,7 @@ window.APP_CONFIG = {
         <span class="cover-menu-icon">📘</span>
         <span class="cover-menu-text">주요기능</span>
       </button>
-      <a id="cover-menu-privacy-link" class="cover-menu-item" href="privacy.html?v=V7-5-DEBUG-HUD">
+      <a id="cover-menu-privacy-link" class="cover-menu-item" href="privacy.html?v=V7-6-SELF-EXIT">
         <span class="cover-menu-icon">🛡</span>
         <span class="cover-menu-text">개인정보처리방침</span>
       </a>
@@ -872,9 +872,9 @@ window.APP_CONFIG = {
   </div>
 </div>
 
-<script src="js/myfaith.js?v=V7-5-DEBUG-HUD"></script>
-<script src="app.js?v=V7-5-DEBUG-HUD"></script>
-<script src="js/cover-common.js?v=V7-5-DEBUG-HUD"></script>
+<script src="js/myfaith.js?v=V7-6-SELF-EXIT"></script>
+<script src="app.js?v=V7-6-SELF-EXIT"></script>
+<script src="js/cover-common.js?v=V7-6-SELF-EXIT"></script>
 <div id="oai-category-entry-veil" aria-hidden="true"></div>
 <div id="app"><div id="tabbar"><button id="tab-btn-nearby" class="tab-btn" data-tab="nearby"><span class="tab-icon">📍</span><span id="tab-nearby-lbl">내주변</span></button><button id="tab-btn-list" class="tab-btn" data-tab="list"><span class="tab-icon">📋</span><span id="tab-list-lbl">목록</span></button><button id="tab-btn-region" class="tab-btn" data-tab="region"><span class="tab-icon">🔍</span>지역검색
     </button><button id="tab-btn-route" class="tab-btn" data-tab="route"><span class="tab-icon">🧭</span>길찾기
@@ -948,20 +948,20 @@ window.APP_CONFIG = {
     </div>
   </div>
 </div>
-<script src="web.js?v=V7-5-DEBUG-HUD"></script>
+<script src="web.js?v=V7-6-SELF-EXIT"></script>
 
 <div id="qna-view" role="dialog" aria-modal="true" aria-label="문의·건의" class="module-view"><div class="module-bar qna"><div class="module-bar-main"><div class="module-bar-ico">✝</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의</div><div class="module-bar-sub">질문, 오류, 수정요청을 남겨주세요</div></div></div><button id="qna-close-btn" class="module-close" aria-label="문의·건의 닫기">×</button></div><div class="qna-body"><div class="qna-tabs"><button id="qna-tab-write" class="qna-tab on" type="button">작성</button></div><div class="qna-list" id="qna-list"></div></div></div>
 
-<script src="js/touch-ux.js?v=V7-5-DEBUG-HUD"></script>
-<script src="js/prayer-ui.js?v=V7-5-DEBUG-HUD"></script>
-<script src="js/cover-refresh.js?v=V7-5-DEBUG-HUD"></script>
-<script src="js/app-state-guards.js?v=V7-5-DEBUG-HUD"></script>
+<script src="js/touch-ux.js?v=V7-6-SELF-EXIT"></script>
+<script src="js/prayer-ui.js?v=V7-6-SELF-EXIT"></script>
+<script src="js/cover-refresh.js?v=V7-6-SELF-EXIT"></script>
+<script src="js/app-state-guards.js?v=V7-6-SELF-EXIT"></script>
 
-<script src="js/route-web-guards.js?v=V7-5-DEBUG-HUD"></script>
+<script src="js/route-web-guards.js?v=V7-6-SELF-EXIT"></script>
 
-<script src="js/new-back-controller.js?v=V7-5-DEBUG-HUD"></script>
+<script src="js/new-back-controller.js?v=V7-6-SELF-EXIT"></script>
 
-<script src="sw-update.js?v=V7-5-DEBUG-HUD"></script>
+<script src="sw-update.js?v=V7-6-SELF-EXIT"></script>
 
 </body>
 </html>
