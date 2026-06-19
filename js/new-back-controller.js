@@ -55,6 +55,25 @@
     return true;
   }
 
+  /* 외부사이트(매일미사/성가/성경) iframe 이 아직 살아있는가 */
+  function faithPortalActive(){
+    var fr = byId('missa-frame');
+    if (!fr) return false;
+    var s = '';
+    try{ s = (fr.getAttribute('src') || fr.src || '').trim(); }catch(_e){}
+    return !!(s && s !== 'about:blank');
+  }
+
+  /* 지금 진짜 "커버 바닥"이라 종료해도 되는 상태인가
+   * 대원칙: 카테고리 안에서는 절대 종료하지 않는다.
+   * 커버가 보이고 + 외부 iframe 도 죽어있을 때만 종료 허용. */
+  function safeToExit(){
+    if (!coverVisible()) return false;
+    if (faithPortalActive()) return false;
+    if (document.documentElement.classList.contains('app-active')) return false;
+    return true;
+  }
+
   /* ── 나의 신앙생활: 안쪽 선택화면이면 첫화면, 아니면 모달 닫기 ────── */
   function myFaithBack(){
     var f = fn('oaiMyFaithStepBack');
@@ -163,22 +182,35 @@
     return fallbackCoverBack();
   }
 
-  /* ── 뒤로가기 진입점 ─────────────────────────────────────────────── */
+  /* ── 뒤로가기 진입점 ─────────────────────────────────────────────────
+   * 대원칙(이 함수가 보장):
+   *   ① 카테고리 안에서는 절대 앱을 종료하지 않는다.
+   *   ② 닫을 게 없는데 커버가 아니면 → 무조건 커버로 보낸다.
+   *   ③ 커버가 확실하고 외부 iframe 도 죽었을 때만 → 종료문구 → 종료.
+   * 그리고 매 호출 맨 앞에서 트랩을 즉시 복구해 "뒤로가기로 페이지를 벗어나" 종료되는 일을 막는다. */
   var lastHandled = 0;
   var toastAt = 0;
   function onBack(){
     var t = now();
     if (t - lastHandled < DEBOUNCE_MS){ arm(); return; }  // 일반 중복 popstate 흡수
     lastHandled = t;
+    arm();                                                // ★ 트랩 즉시 복구(히스토리 소진 종료 차단)
 
     var handled = false;
     try{ handled = step(); }catch(e){ console.warn('[가톨릭길동무]', e); }
-    if (handled){ toastAt = 0; arm(); return; }           // 화면을 닫았으면 커버를 벗어난 것
+    if (handled){ toastAt = 0; arm(); return; }           // 맨 위 한 겹 닫음
 
-    /* 커버 바닥
-     * Predictive Back(Z폴드 등)은 물리 1회에 popstate를 2번 보낼 수 있다.
-     * 종료 안내문구가 막 떴는데 곧이어 들어온 뒤로가기는 "두 번째 누름"이 아니라
-     * 같은 누름의 재발생이므로 종료시키지 않고 흡수한다(종료문구 가드). */
+    /* step 이 닫을 게 없다고 판단 */
+    if (!safeToExit()){
+      /* ② 커버가 아니거나 외부 iframe 이 살아있음 → 절대 종료 금지, 커버로 정리 */
+      toastAt = 0;
+      if (faithPortalActive() && fn('closeMissa')) callFn('closeMissa');  // 외부사이트 정리(프레임 교체→history 정리)
+      else if (fn('goToCover')) callFn('goToCover');
+      arm();
+      return;
+    }
+
+    /* ③ 진짜 커버 바닥 — Predictive Back 중복은 종료문구 가드로 흡수 */
     if (toastAt && (t - toastAt) < EXIT_GUARD_MS){ arm(); return; }
 
     var exited = coverBack();
