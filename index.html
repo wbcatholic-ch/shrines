@@ -51,7 +51,7 @@ html.oai-cover-first-reveal #cover > * {
     document.documentElement.classList.add('ios-device');
   }
   // iPhone/iPad에서만 iOS 전용 화면 보정을 적용한다.
-  // V7-3-BACK-EXIT-GUARD: 키보드가 올라온 동안에는 화면 등급을 다시 바꾸지 않는다.
+  // V8-1-13-6-SHRINE-BOUNDARY-GUARD: 키보드가 올라온 동안에는 화면 등급을 다시 바꾸지 않는다.
   function applyAndroidScreenClass(){
     var root = document.documentElement;
     if(!root || !root.classList) return;
@@ -91,11 +91,121 @@ html.oai-cover-first-reveal #cover > * {
 })();
 </script>
 <script>
-/* 뒤로가기는 new-back-controller.js 한 곳에서만 처리한다.
-   app.js의 성지방문 전용 popstate 리스너가 중앙 컨트롤러와 충돌하지 않도록
-   바인딩 전에 미리 막아 둔다(리스너가 등록되지 않음). */
-window.__OAI_SHRINE_VISIT_POPSTATE_BOUND__ = true;
+/* back-controller.js가 로드되기 전 첫 커버 Back도 먼저 잡는 최소 조기 가드.
+   실패했던 hash/query URL trap은 사용하지 않고, 같은 URL의 root/trap 한 쌍만 만든다. */
+(function(){
+  'use strict';
+  if(window.__OAI_EARLY_COVER_BACK_GUARD__) return;
+  window.__OAI_EARLY_COVER_BACK_GUARD__ = true;
+
+  var TOAST_MS = 2500;
+  var toastTimer = 0;
+
+  function now(){ return Date.now ? Date.now() : new Date().getTime(); }
+  function baseHref(){ try{ return location.href.split('#')[0]; }catch(_e){ return location.href; } }
+  function isCoverVisible(){
+    try{
+      if(document.documentElement.classList.contains('app-active')) return false;
+      var cover = document.getElementById('cover');
+      if(!cover) return true;
+      if(cover.classList.contains('hidden')) return false;
+      var st = window.getComputedStyle ? window.getComputedStyle(cover) : null;
+      if(st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+      return true;
+    }catch(_e){ return !document.documentElement.classList.contains('app-active'); }
+  }
+  function isRefreshDialogOpen(){
+    try{ return !!document.getElementById('oai-refresh-content-dialog'); }catch(_e){ return false; }
+  }
+  function removeToast(){
+    try{
+      clearTimeout(toastTimer);
+      var old = document.getElementById('_bt');
+      if(old && old.parentNode) old.parentNode.removeChild(old);
+    }catch(_e){}
+  }
+  function setExitArmed(on){
+    try{
+      if(on){
+        var until = now() + TOAST_MS;
+        window.__oaiCoverExitUntil = until;
+        sessionStorage.setItem('oai_cover_exit_armed_until', String(until));
+      }else{
+        window.__oaiCoverExitUntil = 0;
+        sessionStorage.removeItem('oai_cover_exit_armed_until');
+      }
+    }catch(_e){}
+  }
+  function isExitArmed(){
+    try{
+      var until = Number(window.__oaiCoverExitUntil || sessionStorage.getItem('oai_cover_exit_armed_until') || 0);
+      return !!(until && now() < until);
+    }catch(_e){ return false; }
+  }
+  function showToast(){
+    if(isRefreshDialogOpen()) return;
+    setExitArmed(true);
+    function append(){
+      try{
+        removeToast();
+        if(!document.body) return;
+        var t = document.createElement('div');
+        t.id = '_bt';
+        t.textContent = '한 번 더 누르면 앱이 종료됩니다';
+        t.style.cssText = 'position:fixed;top:50%;left:50%;bottom:auto;transform:translate(-50%,-50%);background:rgba(14,21,53,.94);color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:800;z-index:2147483600;white-space:nowrap;pointer-events:none;box-shadow:0 14px 36px rgba(0,0,0,.32);';
+        document.body.appendChild(t);
+        toastTimer = setTimeout(function(){ removeToast(); setExitArmed(false); }, TOAST_MS);
+      }catch(_e){}
+    }
+    if(document.body) append();
+    else document.addEventListener('DOMContentLoaded', append, {once:true});
+  }
+  function attemptExit(){
+    try{ window._appExiting = true; }catch(_e){}
+    removeToast();
+    setExitArmed(false);
+    try{ if(navigator.app && typeof navigator.app.exitApp === 'function'){ navigator.app.exitApp(); return; } }catch(_e){}
+    try{ window.open('', '_self'); window.close(); }catch(_e){}
+    try{ document.documentElement.classList.add('app-exiting'); }catch(_e){}
+    /* 일반 브라우저에서는 window.close가 막힐 수 있어 한 번 더 실제 뒤로가기를 시도한다. */
+    setTimeout(function(){ try{ history.back(); }catch(_e){} }, 30);
+  }
+  function armEarlyCoverBackGuard(reason, force){
+    try{
+      if(!force && !isCoverVisible()) return;
+      var href = baseHref();
+      var st = history.state;
+      // force 호출이어도 이미 커버 trap 상태라면 다시 root/trap을 쌓지 않는다.
+      // 중복 trap이 쌓이면 종료 안내 뒤에도 Back을 여러 번 더 눌러야 한다.
+      if(st && st._p === 1 && st.oai_cover_trap){
+        window.__OAI_EARLY_COVER_BACK_TRAP_READY__ = true;
+        return;
+      }
+      history.replaceState({_p:0, oai_cover_root:reason || 'early-cover-root'}, '', href);
+      history.pushState({_p:1, oai_cover_trap:reason || 'early-cover-trap'}, '', href);
+      window.__OAI_EARLY_COVER_BACK_TRAP_READY__ = true;
+    }catch(e){ try{ console.warn('[가톨릭길동무]', e); }catch(_e){} }
+  }
+  window.__oaiArmEarlyCoverBackGuard = armEarlyCoverBackGuard;
+
+  window.addEventListener('popstate', function(){
+    try{
+      if(window.__OAI_FULL_BACK_CTRL_ACTIVE__) return;
+      if(window._appExiting) return;
+      if(!isCoverVisible()) return;
+      if(isRefreshDialogOpen()) return;
+      if(isExitArmed()){ attemptExit(); return; }
+      showToast();
+      armEarlyCoverBackGuard('early-cover-toast', true);
+    }catch(e){ try{ console.warn('[가톨릭길동무]', e); }catch(_e){} }
+  }, false);
+
+  armEarlyCoverBackGuard('early-init', true);
+  document.addEventListener('DOMContentLoaded', function(){ armEarlyCoverBackGuard('early-dom-ready', false); }, {once:true});
+  window.addEventListener('pageshow', function(){ if(!window.__OAI_FULL_BACK_CTRL_ACTIVE__) armEarlyCoverBackGuard('early-pageshow', false); }, true);
+})();
 </script>
+
 <script>
 /* 짧은/긴 새로고침 직후 첫 페인트를 아이보리 보호막으로 덮어 화면 흔들림을 숨긴다.
    긴 새로고침은 캐시를 비운 뒤 네트워크 로딩 시간이 길 수 있으므로,
@@ -502,38 +612,38 @@ window.APP_CONFIG = {
 <meta name="application-name" content="가톨릭길동무">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f5f0e8">
-<link rel="manifest" href="manifest.json?v=V7-3-BACK-EXIT-GUARD">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-512x512.png?v=V7-3-BACK-EXIT-GUARD">
-<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icon-512x512.png?v=V7-3-BACK-EXIT-GUARD">
+<link rel="manifest" href="manifest.json?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-512x512.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icon-512x512.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="가톨릭길동무 - 가톨릭 신앙생활 종합 앱">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="가톨릭길동무">
 <meta property="og:title" content="가톨릭길동무">
 <meta property="og:description" content="성지 · 성당 · 기도문 · 순례길 · 가톨릭 웹사이트 안내">
-<meta property="og:image" content="icon-512x512.png?v=V7-3-BACK-EXIT-GUARD">
+<meta property="og:image" content="icon-512x512.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="가톨릭길동무">
 <meta name="twitter:description" content="성지 · 성당 · 기도문 · 순례길 · 가톨릭 웹사이트 안내">
-<meta name="twitter:image" content="icon-512x512.png?v=V7-3-BACK-EXIT-GUARD">
+<meta name="twitter:image" content="icon-512x512.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
 <title>가톨릭길동무</title>
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png?v=V7-3-BACK-EXIT-GUARD">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style id="oai-initial-bg">html,body{margin:0;width:100%;height:100%;min-height:100%;background:#f5f0e8;overflow:hidden;color-scheme:light;}#cover{background:#f5f0e8;min-height:100%;}#app{background:#f8f6f2;display:none;}</style>
-<link rel="stylesheet" href="style.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/module-common.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/prayer.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/web.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/pilgrimage.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/overlays.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/cover-modals.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/myfaith.css?v=V7-3-BACK-EXIT-GUARD">
-<link rel="stylesheet" href="css/my-diocese.css?v=V7-3-BACK-EXIT-GUARD">
+<link rel="stylesheet" href="style.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/module-common.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/prayer.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/web.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/pilgrimage.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/overlays.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/cover-modals.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/myfaith.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
+<link rel="stylesheet" href="css/my-diocese.css?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
 </head>
 <body>
 <div id="missa-view" role="dialog" aria-modal="true" aria-label="매일미사">
@@ -704,7 +814,7 @@ window.APP_CONFIG = {
 <div id="cover-bottom-note" aria-label="앱 안내문구">
   본 앱은 가톨릭 신자들의 신앙생활을 돕기 위해 만든 비공식 개인 앱입니다.<br>
   정보는 CBCK, 굿뉴스 및 각 교구 홈페이지를 참고했습니다.<br>
-  <span id="cover-version-label">V7-3-BACK-EXIT-GUARD</span>
+  <span id="cover-version-label">V8-1-13-6-SHRINE-BOUNDARY-GUARD</span>
 </div>
 
 <div id="my-diocese-modal" class="my-diocese-modal" aria-hidden="true">
@@ -737,30 +847,30 @@ window.APP_CONFIG = {
         <div class="ios-safari-step">
           <b>1</b>
           <span>카카오톡 하단 버튼 4개 중 <strong>오른쪽 끝 버튼</strong>을 누르세요.</span>
-          <img data-src="ios-install-step1-kakao-bottom-buttons.png?v=V7-3-BACK-EXIT-GUARD" alt="카카오톡 오른쪽 아래 버튼 모양" width="945" height="248" loading="lazy" decoding="async">
+          <img data-src="ios-install-step1-kakao-bottom-buttons.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD" alt="카카오톡 오른쪽 아래 버튼 모양" width="945" height="248" loading="lazy" decoding="async">
         </div>
         <div class="ios-safari-step">
           <b>2</b>
           <span>공유 화면에서 <strong>Safari로 열기</strong>를 누르세요.</span>
-          <img data-src="ios-install-step2-safari-open.png?v=V7-3-BACK-EXIT-GUARD" alt="Safari로 열기 버튼" width="880" height="755" loading="lazy" decoding="async" fetchpriority="low">
+          <img data-src="ios-install-step2-safari-open.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD" alt="Safari로 열기 버튼" width="880" height="755" loading="lazy" decoding="async" fetchpriority="low">
         </div>
         <div class="ios-safari-step">
           <b>3</b>
           <span>Safari로 열린 뒤, 화면 <strong>오른쪽 아래 ··· 버튼</strong>을 누르세요.</span>
           <div class="ios-safari-shot ios-safari-shot-more">
-            <img data-src="KakaoTalk_20260514_134255658_04.jpg?v=V7-3-BACK-EXIT-GUARD" alt="Safari 오른쪽 아래 더보기 버튼" width="960" height="307" loading="lazy" decoding="async">
+            <img data-src="KakaoTalk_20260514_134255658_04.jpg?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD" alt="Safari 오른쪽 아래 더보기 버튼" width="960" height="307" loading="lazy" decoding="async">
             <i class="ios-gold-highlight" aria-hidden="true"></i>
           </div>
         </div>
         <div class="ios-safari-step">
           <b>4</b>
           <span>열린 메뉴에서 <strong>공유</strong>를 누르세요.</span>
-          <img data-src="ios-install-step3-share-menu.png?v=V7-3-BACK-EXIT-GUARD" alt="Safari 공유 버튼" width="750" height="580" loading="lazy" decoding="async" fetchpriority="low">
+          <img data-src="ios-install-step3-share-menu.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD" alt="Safari 공유 버튼" width="750" height="580" loading="lazy" decoding="async" fetchpriority="low">
         </div>
         <div class="ios-safari-step">
           <b>5</b>
           <span>목록을 아래로 내려 <strong>홈 화면에 추가</strong>를 누르세요.</span>
-          <img data-src="ios-install-step4-home-screen.png?v=V7-3-BACK-EXIT-GUARD" alt="홈 화면에 추가 버튼" width="865" height="750" loading="lazy" decoding="async" fetchpriority="low">
+          <img data-src="ios-install-step4-home-screen.png?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD" alt="홈 화면에 추가 버튼" width="865" height="750" loading="lazy" decoding="async" fetchpriority="low">
         </div>
       </div>
     </div>
@@ -860,7 +970,7 @@ window.APP_CONFIG = {
         <span class="cover-menu-icon">📘</span>
         <span class="cover-menu-text">주요기능</span>
       </button>
-      <a id="cover-menu-privacy-link" class="cover-menu-item" href="privacy.html?v=V7-3-BACK-EXIT-GUARD">
+      <a id="cover-menu-privacy-link" class="cover-menu-item" href="privacy.html?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD">
         <span class="cover-menu-icon">🛡</span>
         <span class="cover-menu-text">개인정보처리방침</span>
       </a>
@@ -872,9 +982,9 @@ window.APP_CONFIG = {
   </div>
 </div>
 
-<script src="js/myfaith.js?v=V7-3-BACK-EXIT-GUARD"></script>
-<script src="app.js?v=V7-3-BACK-EXIT-GUARD"></script>
-<script src="js/cover-common.js?v=V7-3-BACK-EXIT-GUARD"></script>
+<script src="js/myfaith.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
+<script src="app.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
+<script src="js/cover-common.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
 <div id="oai-category-entry-veil" aria-hidden="true"></div>
 <div id="app"><div id="tabbar"><button id="tab-btn-nearby" class="tab-btn" data-tab="nearby"><span class="tab-icon">📍</span><span id="tab-nearby-lbl">내주변</span></button><button id="tab-btn-list" class="tab-btn" data-tab="list"><span class="tab-icon">📋</span><span id="tab-list-lbl">목록</span></button><button id="tab-btn-region" class="tab-btn" data-tab="region"><span class="tab-icon">🔍</span>지역검색
     </button><button id="tab-btn-route" class="tab-btn" data-tab="route"><span class="tab-icon">🧭</span>길찾기
@@ -948,20 +1058,48 @@ window.APP_CONFIG = {
     </div>
   </div>
 </div>
-<script src="web.js?v=V7-3-BACK-EXIT-GUARD"></script>
+<script src="web.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
 
 <div id="qna-view" role="dialog" aria-modal="true" aria-label="문의·건의" class="module-view"><div class="module-bar qna"><div class="module-bar-main"><div class="module-bar-ico">✝</div><div class="module-bar-txt"><div class="module-bar-title">문의·건의</div><div class="module-bar-sub">질문, 오류, 수정요청을 남겨주세요</div></div></div><button id="qna-close-btn" class="module-close" aria-label="문의·건의 닫기">×</button></div><div class="qna-body"><div class="qna-tabs"><button id="qna-tab-write" class="qna-tab on" type="button">작성</button></div><div class="qna-list" id="qna-list"></div></div></div>
 
-<script src="js/touch-ux.js?v=V7-3-BACK-EXIT-GUARD"></script>
-<script src="js/prayer-ui.js?v=V7-3-BACK-EXIT-GUARD"></script>
-<script src="js/cover-refresh.js?v=V7-3-BACK-EXIT-GUARD"></script>
-<script src="js/app-state-guards.js?v=V7-3-BACK-EXIT-GUARD"></script>
+<script src="js/touch-ux.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
+<script src="js/prayer-ui.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
+<script src="js/cover-refresh.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
+<script src="js/app-state-guards.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
 
-<script src="js/route-web-guards.js?v=V7-3-BACK-EXIT-GUARD"></script>
+<script src="js/route-web-guards.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
 
-<script src="js/new-back-controller.js?v=V7-3-BACK-EXIT-GUARD"></script>
 
-<script src="sw-update.js?v=V7-3-BACK-EXIT-GUARD"></script>
+<script src="js/back-controller.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
+<script>
+/* V8-1-12: 문의·건의에서 커버로 복귀한 직후, back-controller가 로드된 뒤 커버 뒤로가기 상태를 한 번 더 재등록한다. */
+(function(){
+  function isQnaReturn(){
+    try{
+      var qs = new URLSearchParams(location.search || '');
+      if((qs.get('oai_cover_return') || '').indexOf('qna') >= 0) return true;
+      if((sessionStorage.getItem('oai_cover_toast_on_return') || '').indexOf('qna') >= 0) return true;
+    }catch(_e){}
+    return false;
+  }
+  if(!isQnaReturn()) return;
+  function rearmQnaCoverReturn(step){
+    try{ if(typeof window._resetCoverExitReady === 'function') window._resetCoverExitReady(); }catch(e){ console.warn('[가톨릭길동무]', e); }
+    try{ if(typeof window._clearCoverExitArmed === 'function') window._clearCoverExitArmed(); }catch(e){ console.warn('[가톨릭길동무]', e); }
+    try{
+      if(typeof window._oaiArmCoverBackTrap === 'function') window._oaiArmCoverBackTrap('qna-return-' + step, {force:true});
+      else if(typeof window._resetCoverBackTrap === 'function') window._resetCoverBackTrap('qna-return-' + step);
+      else if(typeof window._ensureCoverBackTrap === 'function') window._ensureCoverBackTrap('qna-return-' + step);
+    }catch(e){ console.warn('[가톨릭길동무]', e); }
+  }
+  rearmQnaCoverReturn('now');
+  setTimeout(function(){ rearmQnaCoverReturn('80'); },80);
+  setTimeout(function(){ rearmQnaCoverReturn('260'); },260);
+  setTimeout(function(){ rearmQnaCoverReturn('700'); },700);
+})();
+</script>
+
+<script src="sw-update.js?v=V8-1-13-6-SHRINE-BOUNDARY-GUARD"></script>
 
 </body>
 </html>
