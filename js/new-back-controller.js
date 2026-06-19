@@ -20,7 +20,8 @@
   window.__OAI_FULL_BACK_CTRL_ACTIVE__ = true;
 
   var GUARD = '__oaiBackGuard';
-  var DEBOUNCE_MS = 300;     // 단일 제스처 중복 popstate 흡수(Android Predictive Back)
+  var DEBOUNCE_MS = 350;     // 일반 중복 popstate 흡수(Android Predictive Back)
+  var EXIT_GUARD_MS = 700;   // 종료 안내문구 직후 중복 뒤로가기 흡수(Predictive Back 재발생 대비)
 
   function now(){ return Date.now ? Date.now() : new Date().getTime(); }
   function byId(id){ return document.getElementById(id); }
@@ -164,18 +165,25 @@
 
   /* ── 뒤로가기 진입점 ─────────────────────────────────────────────── */
   var lastHandled = 0;
+  var toastAt = 0;
   function onBack(){
     var t = now();
-    if (t - lastHandled < DEBOUNCE_MS){ arm(); return; }  // 중복 popstate 흡수
+    if (t - lastHandled < DEBOUNCE_MS){ arm(); return; }  // 일반 중복 popstate 흡수
     lastHandled = t;
 
     var handled = false;
     try{ handled = step(); }catch(e){ console.warn('[가톨릭길동무]', e); }
-    if (handled){ arm(); return; }
+    if (handled){ toastAt = 0; arm(); return; }           // 화면을 닫았으면 커버를 벗어난 것
 
-    /* 커버 바닥 */
+    /* 커버 바닥
+     * Predictive Back(Z폴드 등)은 물리 1회에 popstate를 2번 보낼 수 있다.
+     * 종료 안내문구가 막 떴는데 곧이어 들어온 뒤로가기는 "두 번째 누름"이 아니라
+     * 같은 누름의 재발생이므로 종료시키지 않고 흡수한다(종료문구 가드). */
+    if (toastAt && (t - toastAt) < EXIT_GUARD_MS){ arm(); return; }
+
     var exited = coverBack();
-    if (!exited) arm();
+    if (exited){ toastAt = 0; }                            // 종료됨 → 트랩 재설치 안 함
+    else { toastAt = t; arm(); }                           // 토스트만 떴음 → 가드 시작 + 재설치
   }
 
   /* ── 이벤트 ──────────────────────────────────────────────────────── */

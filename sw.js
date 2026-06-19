@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'catholic-way-V7-1-COVER-HASH-BACK-EXIT-CHECK';
-const ASSET_VERSION = 'V7-1-COVER-HASH-BACK-EXIT-CHECK';
+const CACHE_VERSION = 'catholic-way-V7-3-BACK-EXIT-GUARD';
+const ASSET_VERSION = 'V7-3-BACK-EXIT-GUARD';
 function withVersion(path) {
   return path + '?v=' + ASSET_VERSION;
 }
